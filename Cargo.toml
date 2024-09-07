@@ -1,6 +1,6 @@
 [workspace.package]
 authors = ["Soc Virnyl Estela"]
-version = "1.1.0"
+version = "1.1.1"
 edition = "2021"
 license = "MPL-2.0"
 

@@ -102,25 +102,13 @@ fn main() -> io::Result<()> {
     if let Some(additional_paths) = roast_args.additional_paths {
         for path in additional_paths {
             if path.is_file() {
-                debug!(?path, "Additional file");
+                debug!(?path, "Additional File");
                 let dst = &workdir.join(path.file_name().unwrap_or(path.as_os_str()));
-                if dst.exists() {
-                    warn!(
-                        "Additional file will overwrite existing file at path `{}`. Consider adding `-p` to mitigate this.",
-                        dst.display()
-                    );
-                }
                 debug!(?dst, "Destination path");
                 fs::copy(&path, dst)?;
             } else if path.is_dir() {
-                debug!(?path, "Additional directory");
+                debug!(?path, "Additional Directory");
                 let dst = &workdir.join(path.file_name().unwrap_or(path.as_os_str()));
-                if dst.exists() {
-                    warn!(
-                        "Additional directory may overwrite contents of existing directory at path `{}`. Consider adding `-p` to mitigate this.",
-                        dst.display()
-                    );
-                }
                 debug!(?dst, "Destination path");
                 copy_dir_all(&path, dst)?;
             }

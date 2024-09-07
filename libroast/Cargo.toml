@@ -1,0 +1,19 @@
+[package]
+name = "libroast"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tracing = { version = "0.1", features = [
+    "max_level_trace",
+    "release_max_level_debug",
+] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+flate2 = { version = "1.0" }
+infer = "0.15"
+tar = "0.4"
+tempfile = "3.8"
+xz2 = "0.1"
+zstd = { version = "0.12", features = ["pkg-config", "zstdmt"] }
+bzip2 = { version = "0.4" }
+walkdir = "2.4"

@@ -1,0 +1,6 @@
+[package]
+name = "roast-cli"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]

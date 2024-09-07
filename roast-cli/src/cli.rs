@@ -43,3 +43,22 @@ pub struct RoastArgs {
     )]
     pub reproducible: bool,
 }
+
+#[derive(Debug, Parser)]
+#[command(
+    author = "Soc Virnyl Estela",
+    about = "Archiver with high-level compression",
+    after_long_help = "Set verbosity and tracing through `RUST_LOG` environmental variable e.g. `RUST_LOG=trace`",
+    help_template = "{name} {version} - {about}\n\n{usage}\n\n{all-args}\n{after-help}\nMaintained by {author} <contact@uncomfyhalomacro.pl>.",
+    version
+)]
+pub struct RawArgs {
+    #[arg(
+        long,
+        short = 't',
+        help = "Target directory to extract and decompress."
+    )]
+    pub target: PathBuf,
+    #[arg(long, short = 'o', help = "Output path of extracted archive.")]
+    pub outpath: Option<PathBuf>,
+}

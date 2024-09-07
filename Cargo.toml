@@ -1,7 +1,8 @@
 [workspace.package]
-name = "roast"
-version = "0.1.0"
+authors = ["Soc Virnyl Estela"]
+version = "1.0.0"
 edition = "2021"
+license = "MPL-2.0"
 
 [workspace]
 members = ["libroast", "roast-cli"]

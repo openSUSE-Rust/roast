@@ -21,14 +21,13 @@ pub fn targz(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<
     src.seek(io::SeekFrom::Start(0))?;
     let enc = GzDecoder::new(src);
     let mut ar = tar::Archive::new(enc);
-    Ok({
-        ar.unpack(outdir.as_ref())?;
-        debug!(
-            "Successfully decompressed Gz archive from {} to {}",
-            srcpath.as_ref().to_string_lossy(),
-            outdir.as_ref().to_string_lossy(),
-        );
-    })
+    ar.unpack(outdir.as_ref())?;
+    debug!(
+        "Successfully decompressed Gz archive from {} to {}",
+        srcpath.as_ref().to_string_lossy(),
+        outdir.as_ref().to_string_lossy(),
+    );
+    Ok(())
 }
 
 pub fn tarzst(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<()> {
@@ -37,14 +36,13 @@ pub fn tarzst(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result
     src.seek(io::SeekFrom::Start(0))?;
     let enc = Decoder::new(src)?;
     let mut ar = tar::Archive::new(enc);
-    Ok({
-        ar.unpack(outdir.as_ref())?;
-        debug!(
-            "Successfully decompressed Zst archive from {} to {}",
-            srcpath.as_ref().to_string_lossy(),
-            outdir.as_ref().to_string_lossy(),
-        );
-    })
+    ar.unpack(outdir.as_ref())?;
+    debug!(
+        "Successfully decompressed Zst archive from {} to {}",
+        srcpath.as_ref().to_string_lossy(),
+        outdir.as_ref().to_string_lossy(),
+    );
+    Ok(())
 }
 
 pub fn tarxz(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<()> {
@@ -53,14 +51,13 @@ pub fn tarxz(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<
     src.seek(io::SeekFrom::Start(0))?;
     let enc = XzDecoder::new(src);
     let mut ar = tar::Archive::new(enc);
-    Ok({
-        ar.unpack(outdir.as_ref())?;
-        debug!(
-            "Successfully decompressed Xz archive from {} to {}",
-            srcpath.as_ref().to_string_lossy(),
-            outdir.as_ref().to_string_lossy(),
-        );
-    })
+    ar.unpack(outdir.as_ref())?;
+    debug!(
+        "Successfully decompressed Xz archive from {} to {}",
+        srcpath.as_ref().to_string_lossy(),
+        outdir.as_ref().to_string_lossy(),
+    );
+    Ok(())
 }
 
 pub fn tarbz2(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<()> {
@@ -70,12 +67,11 @@ pub fn tarbz2(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result
     src.seek(io::SeekFrom::Start(0))?;
     let enc = MultiBzDecoder::new(src);
     let mut ar = tar::Archive::new(enc);
-    Ok({
-        ar.unpack(outdir.as_ref())?;
-        debug!(
-            "Successfully decompressed Bz2 archive from {} to {}",
-            srcpath.as_ref().to_string_lossy(),
-            outdir.as_ref().to_string_lossy(),
-        );
-    })
+    ar.unpack(outdir.as_ref())?;
+    debug!(
+        "Successfully decompressed Bz2 archive from {} to {}",
+        srcpath.as_ref().to_string_lossy(),
+        outdir.as_ref().to_string_lossy(),
+    );
+    Ok(())
 }

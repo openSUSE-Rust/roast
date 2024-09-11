@@ -105,10 +105,8 @@ pub fn targz(
 ) -> io::Result<()> {
     use flate2::write::GzEncoder;
     use flate2::Compression;
-    let outtar = fs::File::create(outpath.as_ref()).map_err(|err| {
-        error!(outpath = ?outpath.as_ref(), "Unable to create outtar");
-        err
-    })?;
+    let outtar = fs::File::create(outpath.as_ref())
+        .inspect_err(|_| error!(outpath = ?outpath.as_ref(), "Unable to create outtar"))?;
     let encoder = GzEncoder::new(outtar, Compression::default());
     let mut builder = tar::Builder::new(encoder);
     tar_builder(&mut builder, target_dir, archive_files, reproducible)
@@ -121,10 +119,8 @@ pub fn tarzst(
     reproducible: bool,
 ) -> io::Result<()> {
     use zstd::Encoder;
-    let outtar = fs::File::create(outpath.as_ref()).map_err(|err| {
-        error!(outpath = ?outpath.as_ref(), "Unable to create outtar");
-        err
-    })?;
+    let outtar = fs::File::create(outpath.as_ref())
+        .inspect_err(|_| error!(outpath = ?outpath.as_ref(), "Unable to create outtar"))?;
     let mut enc_builder = Encoder::new(outtar, 19)?;
     enc_builder.include_checksum(true)?;
     let threads: u32 = std::thread::available_parallelism()?.get() as u32;
@@ -144,10 +140,8 @@ pub fn tarxz(
     use xz2::stream::Check::Crc32;
     use xz2::stream::MtStreamBuilder;
     use xz2::write::XzEncoder;
-    let outtar = fs::File::create(outpath.as_ref()).map_err(|err| {
-        error!(outpath = ?outpath.as_ref(), "Unable to create outtar");
-        err
-    })?;
+    let outtar = fs::File::create(outpath.as_ref())
+        .inspect_err(|_| error!(outpath = ?outpath.as_ref(), "Unable to create outtar"))?;
     let threads: u32 = std::thread::available_parallelism()?.get() as u32;
     let enc_builder = MtStreamBuilder::new()
         .preset(6)
@@ -167,10 +161,8 @@ pub fn tarbz2(
 ) -> io::Result<()> {
     use bzip2::write::BzEncoder;
     use bzip2::Compression;
-    let outtar = fs::File::create(outpath.as_ref()).map_err(|err| {
-        error!(outpath = ?outpath.as_ref(), "Unable to create outtar");
-        err
-    })?;
+    let outtar = fs::File::create(outpath.as_ref())
+        .inspect_err(|_| error!(outpath = ?outpath.as_ref(), "Unable to create outtar"))?;
     let encoder = BzEncoder::new(outtar, Compression::best());
     let mut builder = tar::Builder::new(encoder);
     tar_builder(&mut builder, target_dir, archive_files, reproducible)

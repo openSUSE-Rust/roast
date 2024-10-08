@@ -1,27 +1,43 @@
-use std::path::{Path, PathBuf};
-use std::{fs, io};
-
 use clap::Parser;
 use libroast::compress;
 use roast_cli::cli;
-
+use std::{
+    fs,
+    io,
+    path::{
+        Path,
+        PathBuf,
+    },
+};
+use terminfo::{
+    capability as cap,
+    Database,
+};
 #[allow(unused_imports)]
-use tracing::{debug, error, info, trace, warn, Level};
-
-use terminfo::{capability as cap, Database};
+use tracing::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+    Level,
+};
 use tracing_subscriber::EnvFilter;
 use walkdir::WalkDir;
 
-fn copy_dir_all(src: impl AsRef<Path>, dst: &Path) -> Result<(), io::Error> {
+fn copy_dir_all(src: impl AsRef<Path>, dst: &Path) -> Result<(), io::Error>
+{
     debug!("Copying sources");
     debug!(?dst);
     fs::create_dir_all(dst)?;
-    for entry in fs::read_dir(src)? {
+    for entry in fs::read_dir(src)?
+    {
         let entry = entry?;
         let ty = entry.file_type()?;
         trace!(?entry);
         trace!(?ty);
-        if ty.is_dir() {
+        if ty.is_dir()
+        {
             trace!(?ty, "Is directory?");
             copy_dir_all(entry.path(), &dst.join(entry.file_name()))?;
 
@@ -39,7 +55,9 @@ fn copy_dir_all(src: impl AsRef<Path>, dst: &Path) -> Result<(), io::Error> {
         //     }
 
         // Be pedantic or you get symlink error
-        } else if ty.is_file() {
+        }
+        else if ty.is_file()
+        {
             trace!(?ty, "Is file?");
             fs::copy(entry.path(), dst.join(entry.file_name()))?;
         };
@@ -47,7 +65,8 @@ fn copy_dir_all(src: impl AsRef<Path>, dst: &Path) -> Result<(), io::Error> {
     Ok(())
 }
 
-fn main() -> io::Result<()> {
+fn main() -> io::Result<()>
+{
     let roast_args = cli::RoastArgs::parse();
     let terminfodb = Database::from_env().map_err(|e| {
         error!(err = ?e, "Unable to access terminfo db. This is a bug!");
@@ -57,7 +76,8 @@ fn main() -> io::Result<()> {
         )
     });
 
-    let is_termcolorsupported = match terminfodb {
+    let is_termcolorsupported = match terminfodb
+    {
         Ok(hasterminfodb) => hasterminfodb.get::<cap::MaxColors>().is_some(),
         Err(_) => false,
     };
@@ -69,9 +89,12 @@ fn main() -> io::Result<()> {
         .with_env_filter(filter_layer)
         .with_level(true);
 
-    let builder = if cfg!(debug_assertions) {
+    let builder = if cfg!(debug_assertions)
+    {
         builder.with_file(true).with_line_number(true)
-    } else {
+    }
+    else
+    {
         builder
     };
 
@@ -87,11 +110,14 @@ fn main() -> io::Result<()> {
         })?
         .into_path();
 
-    let target_path = if roast_args.preserve_root {
+    let target_path = if roast_args.preserve_root
+    {
         let newworkdir = workdir.join(target_path.file_name().unwrap_or(target_path.as_os_str()));
         copy_dir_all(&target_path, &newworkdir)?;
         newworkdir
-    } else {
+    }
+    else
+    {
         copy_dir_all(&target_path, &workdir)?;
         workdir.clone()
     };
@@ -99,25 +125,34 @@ fn main() -> io::Result<()> {
     let outpath = roast_args.outpath;
     println!("{}", target_path.display());
 
-    if let Some(additional_paths) = roast_args.additional_paths {
-        for path in additional_paths {
-            if path.is_file() {
+    if let Some(additional_paths) = roast_args.additional_paths
+    {
+        for path in additional_paths
+        {
+            if path.is_file()
+            {
                 debug!(?path, "Additional file");
                 let dst = &workdir.join(path.file_name().unwrap_or(path.as_os_str()));
-                if dst.exists() {
+                if dst.exists()
+                {
                     warn!(
-                        "Additional file will overwrite existing file at path `{}`. Consider adding `-p` to mitigate this.",
+                        "Additional file will overwrite existing file at path `{}`. Consider \
+                         adding `-p` to mitigate this.",
                         dst.display()
                     );
                 }
                 debug!(?dst, "Destination path");
                 fs::copy(&path, dst)?;
-            } else if path.is_dir() {
+            }
+            else if path.is_dir()
+            {
                 debug!(?path, "Additional directory");
                 let dst = &workdir.join(path.file_name().unwrap_or(path.as_os_str()));
-                if dst.exists() {
+                if dst.exists()
+                {
                     warn!(
-                        "Additional directory may overwrite contents of existing directory at path `{}`. Consider adding `-p` to mitigate this.",
+                        "Additional directory may overwrite contents of existing directory at \
+                         path `{}`. Consider adding `-p` to mitigate this.",
                         dst.display()
                     );
                 }
@@ -141,9 +176,12 @@ fn main() -> io::Result<()> {
 
     let reproducible = roast_args.reproducible;
 
-    match outpath.extension() {
-        Some(ext) => match ext.to_string_lossy().to_string().as_str() {
-            "gz" => {
+    match outpath.extension()
+    {
+        Some(ext) => match ext.to_string_lossy().to_string().as_str()
+        {
+            "gz" =>
+            {
                 compress::targz(&outpath, &workdir, &updated_paths, reproducible).map_err(
                     |err| {
                         error!(?err);
@@ -152,7 +190,8 @@ fn main() -> io::Result<()> {
                 )?;
                 info!("Your new tarball is now in {}", &outpath.display());
             }
-            "zst" | "zstd" => {
+            "zst" | "zstd" =>
+            {
                 compress::tarzst(&outpath, &workdir, &updated_paths, reproducible).map_err(
                     |err| {
                         error!(?err);
@@ -161,7 +200,8 @@ fn main() -> io::Result<()> {
                 )?;
                 info!("Your new tarball is now in {}", &outpath.display());
             }
-            "bz" => {
+            "bz" =>
+            {
                 compress::tarbz2(&outpath, &workdir, &updated_paths, reproducible).map_err(
                     |err| {
                         error!(?err);
@@ -170,7 +210,8 @@ fn main() -> io::Result<()> {
                 )?;
                 info!("Your new tarball is now in {}", &outpath.display());
             }
-            "xz" => {
+            "xz" =>
+            {
                 compress::tarxz(&outpath, &workdir, &updated_paths, reproducible).map_err(
                     |err| {
                         error!(?err);
@@ -179,7 +220,8 @@ fn main() -> io::Result<()> {
                 )?;
                 info!("Your new tarball is now in {}", &outpath.display());
             }
-            _ => {
+            _ =>
+            {
                 let err = io::Error::new(
                     io::ErrorKind::Unsupported,
                     "Compression type unsupported. Valid options are xz, zst / zstd, bz, and gz.",
@@ -188,10 +230,12 @@ fn main() -> io::Result<()> {
                 return Err(err);
             }
         },
-        None => {
+        None =>
+        {
             let err = io::Error::new(
                 io::ErrorKind::Unsupported,
-                "Please provide a file extension. Compression type unsupported. Valid options are xz, zst / zstd, bz, and gz.",
+                "Please provide a file extension. Compression type unsupported. Valid options are \
+                 xz, zst / zstd, bz, and gz.",
             );
             error!(?err);
             return Err(err);

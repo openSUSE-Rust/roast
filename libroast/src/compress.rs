@@ -124,9 +124,12 @@ pub fn targz(
     target_dir: impl AsRef<Path>,
     archive_files: &[impl AsRef<Path>],
     reproducible: bool,
-) -> io::Result<()> {
-    use flate2::write::GzEncoder;
-    use flate2::Compression;
+) -> io::Result<()>
+{
+    use flate2::{
+        write::GzEncoder,
+        Compression,
+    };
     let outtar = fs::File::create(outpath.as_ref())
         .inspect_err(|_| error!(outpath = ?outpath.as_ref(), "Unable to create outtar"))?;
     let encoder = GzEncoder::new(outtar, Compression::default());
@@ -161,9 +164,13 @@ pub fn tarxz(
 ) -> io::Result<()>
 {
     // Crc32 is simpler/faster and often hardware accelerated.
-    use xz2::stream::Check::Crc32;
-    use xz2::stream::MtStreamBuilder;
-    use xz2::write::XzEncoder;
+    use xz2::{
+        stream::{
+            Check::Crc32,
+            MtStreamBuilder,
+        },
+        write::XzEncoder,
+    };
     let outtar = fs::File::create(outpath.as_ref())
         .inspect_err(|_| error!(outpath = ?outpath.as_ref(), "Unable to create outtar"))?;
     let threads: u32 = std::thread::available_parallelism()?.get() as u32;
@@ -178,9 +185,12 @@ pub fn tarbz2(
     target_dir: impl AsRef<Path>,
     archive_files: &[impl AsRef<Path>],
     reproducible: bool,
-) -> io::Result<()> {
-    use bzip2::write::BzEncoder;
-    use bzip2::Compression;
+) -> io::Result<()>
+{
+    use bzip2::{
+        write::BzEncoder,
+        Compression,
+    };
     let outtar = fs::File::create(outpath.as_ref())
         .inspect_err(|_| error!(outpath = ?outpath.as_ref(), "Unable to create outtar"))?;
     let encoder = BzEncoder::new(outtar, Compression::best());

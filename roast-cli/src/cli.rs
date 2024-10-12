@@ -33,11 +33,11 @@ pub struct RoastArgs
     #[arg(
         long,
         short = 'a',
-        help = "Additional paths to add to the archive. Their parent directory will be put next \
-                to the target directory."
+        help = "Additional paths such as files or directories to add to the archive. Their parent \
+                directory will be put next to the target directory."
     )]
     pub additional_paths: Option<Vec<PathBuf>>,
-    #[arg(long, short = 'o', help = "Output path of tarball.")]
+    #[arg(long, short = 'o', help = "Output file of the tarball with path.")]
     pub outpath: PathBuf,
     #[arg(
         long,
@@ -68,8 +68,12 @@ pub struct RoastArgs
 )]
 pub struct RawArgs
 {
-    #[arg(long, short = 't', help = "Target directory to extract and decompress.")]
+    #[arg(long, short = 't', help = "Target tarball file to extract and decompress.")]
     pub target: PathBuf,
-    #[arg(long, short = 'o', help = "Output path of extracted archive.")]
+    #[arg(
+        long,
+        short = 'o',
+        help = "Output path of extracted archive. DEFAULT is current directory if omitted."
+    )]
     pub outpath: Option<PathBuf>,
 }

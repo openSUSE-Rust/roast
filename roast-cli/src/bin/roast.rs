@@ -109,7 +109,7 @@ fn main() -> io::Result<()>
     })?;
     let workdir = &tmp_binding.path();
 
-    let target_path = if roast_args.preserve_root
+    if roast_args.preserve_root
     {
         let newworkdir = workdir.join(target_path.file_name().unwrap_or(target_path.as_os_str()));
         copy_dir_all(&target_path, &newworkdir)?;
@@ -122,7 +122,6 @@ fn main() -> io::Result<()>
     };
 
     let outpath = roast_args.outpath;
-    println!("{}", target_path.display());
 
     if let Some(additional_paths) = roast_args.additional_paths
     {
@@ -181,43 +180,39 @@ fn main() -> io::Result<()>
         {
             "gz" =>
             {
-                compress::targz(&outpath, &workdir, &updated_paths, reproducible).map_err(
+                compress::targz(&outpath, workdir, &updated_paths, reproducible).map_err(
                     |err| {
                         error!(?err);
                         err
                     },
                 )?;
-                info!("Your new tarball is now in {}", &outpath.display());
             }
             "zst" | "zstd" =>
             {
-                compress::tarzst(&outpath, &workdir, &updated_paths, reproducible).map_err(
+                compress::tarzst(&outpath, workdir, &updated_paths, reproducible).map_err(
                     |err| {
                         error!(?err);
                         err
                     },
                 )?;
-                info!("Your new tarball is now in {}", &outpath.display());
             }
             "bz" =>
             {
-                compress::tarbz2(&outpath, &workdir, &updated_paths, reproducible).map_err(
+                compress::tarbz2(&outpath, workdir, &updated_paths, reproducible).map_err(
                     |err| {
                         error!(?err);
                         err
                     },
                 )?;
-                info!("Your new tarball is now in {}", &outpath.display());
             }
             "xz" =>
             {
-                compress::tarxz(&outpath, &workdir, &updated_paths, reproducible).map_err(
+                compress::tarxz(&outpath, workdir, &updated_paths, reproducible).map_err(
                     |err| {
                         error!(?err);
                         err
                     },
                 )?;
-                info!("Your new tarball is now in {}", &outpath.display());
             }
             _ =>
             {
@@ -245,5 +240,6 @@ fn main() -> io::Result<()>
         error!(?e, "Failed to delete temporary directory!");
     })?;
 
+    info!("Your new tarball is now in {}", &outpath.display());
     Ok(())
 }

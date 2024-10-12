@@ -1,10 +1,12 @@
 [package]
 name = "libroast"
+description = "Create archive tarballs and roast them! Library crate"
 authors.workspace = true
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
 
 [dependencies]
 tracing = { version = "0.1", features = [

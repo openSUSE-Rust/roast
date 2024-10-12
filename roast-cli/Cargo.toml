@@ -1,10 +1,12 @@
 [package]
 name = "roast-cli"
+description = "Create archive tarballs and roast them!"
 authors.workspace = true
 license.workspace = true
 version.workspace = true
 edition.workspace = true
 repository.workspace = true
+homepage.workspace = true
 
 [dependencies]
 clap = { version = "4.5.17", features = ["cargo", "derive", "help"] }

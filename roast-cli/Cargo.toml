@@ -16,6 +16,6 @@ tracing = { version = "0.1", features = [
     "release_max_level_debug",
 ] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-libroast ={ path = "../libroast", version = "*" }
+libroast ={ path = "../libroast", version = "^3" }
 walkdir = "2.5.0"
 tempfile = "3.12.0"

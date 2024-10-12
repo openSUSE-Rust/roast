@@ -1,5 +1,8 @@
 use clap::Parser;
-use libroast::decompress;
+use libroast::{
+    decompress,
+    is_supported_format,
+};
 use roast_cli::cli;
 use std::{
     fs,
@@ -103,18 +106,55 @@ fn main() -> io::Result<()>
     info!("🥩 Starting Raw.");
     if raw_args.target.is_file()
     {
+        match is_supported_format(&raw_args.target)
+        {
+            Ok(target) =>
+            {
+                match target
+                {
+                    libroast::common::SupportedFormat::Compressed(mime_type, src) =>
+                    {
+                        let curpath = std::env::current_dir().inspect_err(|e| {
+                            error!(?e, "Unable to determine current directory!");
+                        })?;
+                        return match mime_type
+                        {
+                            libroast::common::Compression::Gz =>
+                            {
+                                decompress::targz(raw_args.outpath.unwrap_or(curpath), &src)
+                            }
+                            libroast::common::Compression::Xz =>
+                            {
+                                decompress::tarxz(raw_args.outpath.unwrap_or(curpath), &src)
+                            }
+                            libroast::common::Compression::Zst =>
+                            {
+                                decompress::tarzst(raw_args.outpath.unwrap_or(curpath), &src)
+                            }
+                            libroast::common::Compression::Bz2 =>
+                            {
+                                decompress::tarbz2(raw_args.outpath.unwrap_or(curpath), &src)
+                            }
+                        };
+                    }
+                    libroast::common::SupportedFormat::Dir(_) => unreachable!(
+                        "This should never be a directory since we already checked it!"
+                    ),
+                }
+                Ok(())
+            }
+            Err(err) =>
+            {
+                eprintln!("{}", err);
+                error!(?err);
+                Err(io::Error::new(io::ErrorKind::Unsupported, err.to_string()))
+            }
+        }
     }
     else
     {
         let err = io::Error::new(io::ErrorKind::Unsupported, "Directory detected.");
         error!(?err);
-        return Err(err);
+        Err(err)
     }
-    if let Some(custom_outpath) = raw_args.outpath
-    {
-    }
-    else
-    {
-    }
-    Ok(())
 }

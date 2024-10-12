@@ -4,14 +4,7 @@ use libroast::{
     is_supported_format,
 };
 use roast_cli::cli;
-use std::{
-    fs,
-    io,
-    path::{
-        Path,
-        PathBuf,
-    },
-};
+use std::io;
 use terminfo::{
     capability as cap,
     Database,
@@ -26,7 +19,6 @@ use tracing::{
     Level,
 };
 use tracing_subscriber::EnvFilter;
-use walkdir::WalkDir;
 
 fn main() -> io::Result<()>
 {

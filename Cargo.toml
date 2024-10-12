@@ -3,6 +3,7 @@ authors = ["Soc Virnyl Estela"]
 version = "3.2.2"
 edition = "2021"
 license = "MPL-2.0"
+repository = "https://github.com/openSUSE-Rust/roast"
 
 [workspace]
 members = ["libroast", "roast-cli"]

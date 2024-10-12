@@ -103,12 +103,11 @@ fn main() -> io::Result<()>
     info!("❤️‍🔥 Starting Roast.");
     debug!(?roast_args);
     let target_path = roast_args.target;
-    let workdir = tempfile::TempDir::new()
-        .map_err(|err| {
-            error!(?err, "Failed to create temporary directory");
-            err
-        })?
-        .into_path();
+    let tmp_binding = tempfile::TempDir::new().map_err(|err| {
+        error!(?err, "Failed to create temporary directory");
+        err
+    })?;
+    let workdir = &tmp_binding.path();
 
     let target_path = if roast_args.preserve_root
     {
@@ -118,8 +117,8 @@ fn main() -> io::Result<()>
     }
     else
     {
-        copy_dir_all(&target_path, &workdir)?;
-        workdir.clone()
+        copy_dir_all(&target_path, workdir)?;
+        workdir.to_path_buf()
     };
 
     let outpath = roast_args.outpath;
@@ -162,14 +161,14 @@ fn main() -> io::Result<()>
         }
     }
 
-    let updated_paths: Vec<PathBuf> = WalkDir::new(&workdir)
+    let updated_paths: Vec<PathBuf> = WalkDir::new(workdir)
         .into_iter()
         .filter_map(|entry| entry.ok())
         .map(|f| {
             debug!(?f);
             PathBuf::from(f.path())
         })
-        .filter(|p| *p != workdir)
+        .filter(|p| *p != *workdir)
         .collect();
 
     debug!("Workdir is now in {}", &workdir.display());
@@ -241,5 +240,10 @@ fn main() -> io::Result<()>
             return Err(err);
         }
     }
+
+    tmp_binding.close().inspect_err(|e| {
+        error!(?e, "Failed to delete temporary directory!");
+    })?;
+
     Ok(())
 }

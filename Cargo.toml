@@ -5,6 +5,8 @@ edition = "2021"
 license = "MPL-2.0"
 repository = "https://github.com/openSUSE-Rust/roast"
 homepage = "https://github.com/openSUSE-Rust/roast"
+readme = true
+
 
 [workspace]
 members = ["libroast", "roast-cli"]
@@ -14,11 +16,11 @@ resolver = "1"
 [workspace.dependencies]
 
 [profile.release]
-lto = true          # Enable Link Time Optimization.
-debug = true        # Include debug symbols. If you are going to complain for big binary sizes, there is a release-stripped option :P
-codegen-units = 8   # Default. Little gains if set to 1 so why bother?
-panic = 'abort'     # Abort on panic.
-strip = false       # Strip symbols from binary.
+lto = true        # Enable Link Time Optimization.
+debug = true      # Include debug symbols. If you are going to complain for big binary sizes, there is a release-stripped option :P
+codegen-units = 8 # Default. Little gains if set to 1 so why bother?
+panic = 'abort'   # Abort on panic.
+strip = false     # Strip symbols from binary.
 
 [profile.release-stripped]
 inherits = "release"

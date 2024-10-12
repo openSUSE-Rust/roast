@@ -15,7 +15,6 @@ Plus, it has the comfort of being a simple `tar` alternative.
 Roast contains to binaries
 - `roast`
 - `raw`
-- 
 
 ## Cargo
 

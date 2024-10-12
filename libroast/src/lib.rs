@@ -8,7 +8,7 @@
 
 pub mod common;
 pub mod compress;
-pub(crate) mod consts;
+pub mod consts;
 pub mod decompress;
 
 use crate::{

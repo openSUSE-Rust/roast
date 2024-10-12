@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.1.0] - 2024-10-12
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* Bump version to 3.1.0
+
 ## [3.0.0] - 2024-10-12
 
 ### ⚙️ Miscellaneous Tasks

@@ -64,28 +64,31 @@ fn main() -> io::Result<()>
             {
                 libroast::common::SupportedFormat::Compressed(mime_type, src) =>
                 {
-                    let curpath = std::env::current_dir().inspect_err(|e| {
-                        error!(?e, "Unable to determine current directory!");
-                    })?;
+                    let outpath =
+                        raw_args.outpath.unwrap_or(std::env::current_dir().inspect_err(|e| {
+                            error!(?e, "Unable to determine current directory!");
+                        })?);
                     match mime_type
                     {
                         libroast::common::Compression::Gz =>
                         {
-                            decompress::targz(raw_args.outpath.unwrap_or(curpath), &src)
+                            decompress::targz(&outpath, &src)?;
                         }
                         libroast::common::Compression::Xz =>
                         {
-                            decompress::tarxz(raw_args.outpath.unwrap_or(curpath), &src)
+                            decompress::tarxz(&outpath, &src)?;
                         }
                         libroast::common::Compression::Zst =>
                         {
-                            decompress::tarzst(raw_args.outpath.unwrap_or(curpath), &src)
+                            decompress::tarzst(&outpath, &src)?;
                         }
                         libroast::common::Compression::Bz2 =>
                         {
-                            decompress::tarbz2(raw_args.outpath.unwrap_or(curpath), &src)
+                            decompress::tarbz2(&outpath, &src)?;
                         }
                     }
+                    info!("🥩 You have extracted your source at {}", outpath.display());
+                    Ok(())
                 }
                 libroast::common::SupportedFormat::Dir(_) =>
                 {

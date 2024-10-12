@@ -24,6 +24,7 @@ pub enum SupportedFormat
     Dir(PathBuf),
 }
 
+#[derive(Debug)]
 pub struct UnsupportedFormat
 {
     pub ext: String,

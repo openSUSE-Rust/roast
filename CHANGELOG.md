@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [3.1.1] - 2024-10-12
+## [3.2.0] - 2024-10-12
+
+### Cargo
+
+- Update lockfile
 
 ### Improvement
 

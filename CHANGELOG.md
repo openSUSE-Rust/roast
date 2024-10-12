@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.1] - 2024-10-12
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V3.2.1
+
+### Cli
+
+- Improve description
+
 ## [3.2.0] - 2024-10-12
 
 ### Cargo

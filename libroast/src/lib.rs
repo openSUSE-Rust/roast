@@ -25,7 +25,6 @@ use crate::{
         ZST_MIME,
     },
 };
-
 use std::path::Path;
 
 pub fn is_supported_format(src: &Path) -> Result<SupportedFormat, UnsupportedFormat>
@@ -36,21 +35,21 @@ pub fn is_supported_format(src: &Path) -> Result<SupportedFormat, UnsupportedFor
         {
             if SUPPORTED_MIME_TYPES.contains(&known.mime_type())
             {
-                if known.mime_type().eq(GZ_MIME)
+                return if known.mime_type().eq(GZ_MIME)
                 {
-                    return Ok(SupportedFormat::Compressed(Compression::Gz, src.to_path_buf()));
+                    Ok(SupportedFormat::Compressed(Compression::Gz, src.to_path_buf()))
                 }
                 else if known.mime_type().eq(XZ_MIME)
                 {
-                    return Ok(SupportedFormat::Compressed(Compression::Xz, src.to_path_buf()));
+                    Ok(SupportedFormat::Compressed(Compression::Xz, src.to_path_buf()))
                 }
                 else if known.mime_type().eq(ZST_MIME)
                 {
-                    return Ok(SupportedFormat::Compressed(Compression::Zst, src.to_path_buf()));
+                    Ok(SupportedFormat::Compressed(Compression::Zst, src.to_path_buf()))
                 }
                 else if known.mime_type().eq(BZ2_MIME)
                 {
-                    return Ok(SupportedFormat::Compressed(Compression::Bz2, src.to_path_buf()));
+                    Ok(SupportedFormat::Compressed(Compression::Bz2, src.to_path_buf()))
                 }
                 else
                 {

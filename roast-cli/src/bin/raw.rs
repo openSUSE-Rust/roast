@@ -28,46 +28,6 @@ use tracing::{
 use tracing_subscriber::EnvFilter;
 use walkdir::WalkDir;
 
-fn copy_dir_all(src: impl AsRef<Path>, dst: &Path) -> Result<(), io::Error>
-{
-    debug!("Copying sources");
-    debug!(?dst);
-    fs::create_dir_all(dst)?;
-    for entry in fs::read_dir(src)?
-    {
-        let entry = entry?;
-        let ty = entry.file_type()?;
-        trace!(?entry);
-        trace!(?ty);
-        if ty.is_dir()
-        {
-            trace!(?ty, "Is directory?");
-            copy_dir_all(entry.path(), &dst.join(entry.file_name()))?;
-
-        // Should we respect symlinks?
-        // } else if ty.is_symlink() {
-        //     debug!("Is symlink");
-        //     let path = fs::read_link(&entry.path())?;
-        //     let path = fs::canonicalize(&path).unwrap();
-        //     debug!(?path);
-        //     let pathfilename = path.file_name().unwrap_or(OsStr::new("."));
-        //     if path.is_dir() {
-        //         copy_dir_all(&path, &dst.join(pathfilename))?;
-        //     } else {
-        //         fs::copy(&path, &mut dst.join(pathfilename))?;
-        //     }
-
-        // Be pedantic or you get symlink error
-        }
-        else if ty.is_file()
-        {
-            trace!(?ty, "Is file?");
-            fs::copy(entry.path(), dst.join(entry.file_name()))?;
-        };
-    }
-    Ok(())
-}
-
 fn main() -> io::Result<()>
 {
     let raw_args = cli::RawArgs::parse();
@@ -108,41 +68,38 @@ fn main() -> io::Result<()>
     {
         match is_supported_format(&raw_args.target)
         {
-            Ok(target) =>
+            Ok(target) => match target
             {
-                match target
+                libroast::common::SupportedFormat::Compressed(mime_type, src) =>
                 {
-                    libroast::common::SupportedFormat::Compressed(mime_type, src) =>
+                    let curpath = std::env::current_dir().inspect_err(|e| {
+                        error!(?e, "Unable to determine current directory!");
+                    })?;
+                    match mime_type
                     {
-                        let curpath = std::env::current_dir().inspect_err(|e| {
-                            error!(?e, "Unable to determine current directory!");
-                        })?;
-                        return match mime_type
+                        libroast::common::Compression::Gz =>
                         {
-                            libroast::common::Compression::Gz =>
-                            {
-                                decompress::targz(raw_args.outpath.unwrap_or(curpath), &src)
-                            }
-                            libroast::common::Compression::Xz =>
-                            {
-                                decompress::tarxz(raw_args.outpath.unwrap_or(curpath), &src)
-                            }
-                            libroast::common::Compression::Zst =>
-                            {
-                                decompress::tarzst(raw_args.outpath.unwrap_or(curpath), &src)
-                            }
-                            libroast::common::Compression::Bz2 =>
-                            {
-                                decompress::tarbz2(raw_args.outpath.unwrap_or(curpath), &src)
-                            }
-                        };
+                            decompress::targz(raw_args.outpath.unwrap_or(curpath), &src)
+                        }
+                        libroast::common::Compression::Xz =>
+                        {
+                            decompress::tarxz(raw_args.outpath.unwrap_or(curpath), &src)
+                        }
+                        libroast::common::Compression::Zst =>
+                        {
+                            decompress::tarzst(raw_args.outpath.unwrap_or(curpath), &src)
+                        }
+                        libroast::common::Compression::Bz2 =>
+                        {
+                            decompress::tarbz2(raw_args.outpath.unwrap_or(curpath), &src)
+                        }
                     }
-                    libroast::common::SupportedFormat::Dir(_) => unreachable!(
-                        "This should never be a directory since we already checked it!"
-                    ),
                 }
-                Ok(())
-            }
+                libroast::common::SupportedFormat::Dir(_) =>
+                {
+                    unreachable!("This should never be a directory since we already checked it!")
+                }
+            },
             Err(err) =>
             {
                 eprintln!("{}", err);

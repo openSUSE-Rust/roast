@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.2] - 2024-10-12
+
+### 🐛 Bug Fixes
+
+- Properly delete temporary directories
+
 ## [3.2.1] - 2024-10-12
 
 ### ⚙️ Miscellaneous Tasks

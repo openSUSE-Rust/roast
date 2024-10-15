@@ -30,7 +30,7 @@ pub fn targz(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<
     let mut ar = tar::Archive::new(enc);
     ar.unpack(outdir.as_ref())?;
     debug!(
-        "Successfully decompressed Gz archive from {} to {}",
+        "Successfully decompressed and extracted tape gz-compressed archive from {} to {}",
         srcpath.as_ref().to_string_lossy(),
         outdir.as_ref().to_string_lossy(),
     );
@@ -46,7 +46,7 @@ pub fn tarzst(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result
     let mut ar = tar::Archive::new(enc);
     ar.unpack(outdir.as_ref())?;
     debug!(
-        "Successfully decompressed Zst archive from {} to {}",
+        "Successfully decompressed and extracted tape zstd-compressed archive from {} to {}",
         srcpath.as_ref().to_string_lossy(),
         outdir.as_ref().to_string_lossy(),
     );
@@ -62,7 +62,7 @@ pub fn tarxz(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<
     let mut ar = tar::Archive::new(enc);
     ar.unpack(outdir.as_ref())?;
     debug!(
-        "Successfully decompressed Xz archive from {} to {}",
+        "Successfully decompressed and extracted tape xz-compressed archive from {} to {}",
         srcpath.as_ref().to_string_lossy(),
         outdir.as_ref().to_string_lossy(),
     );
@@ -79,7 +79,21 @@ pub fn tarbz2(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result
     let mut ar = tar::Archive::new(enc);
     ar.unpack(outdir.as_ref())?;
     debug!(
-        "Successfully decompressed Bz2 archive from {} to {}",
+        "Successfully decompressed and extracted tape bz2-compressed archive from {} to {}",
+        srcpath.as_ref().to_string_lossy(),
+        outdir.as_ref().to_string_lossy(),
+    );
+    Ok(())
+}
+
+pub fn vanilla(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<()>
+{
+    let mut src = io::BufReader::new(fs::File::open(srcpath.as_ref())?);
+    src.seek(io::SeekFrom::Start(0))?;
+    let mut ar = tar::Archive::new(src);
+    ar.unpack(outdir.as_ref())?;
+    debug!(
+        "Successfully extracted tape archive from {} to {}",
         srcpath.as_ref().to_string_lossy(),
         outdir.as_ref().to_string_lossy(),
     );

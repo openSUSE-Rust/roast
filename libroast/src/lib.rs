@@ -21,11 +21,19 @@ use crate::{
         BZ2_MIME,
         GZ_MIME,
         SUPPORTED_MIME_TYPES,
+        TAR_MIME,
         XZ_MIME,
         ZST_MIME,
     },
 };
 use std::path::Path;
+#[allow(unused_imports)]
+use tracing::{
+    debug,
+    error,
+    info,
+    warn,
+};
 
 pub fn is_supported_format(src: &Path) -> Result<SupportedFormat, UnsupportedFormat>
 {
@@ -33,6 +41,7 @@ pub fn is_supported_format(src: &Path) -> Result<SupportedFormat, UnsupportedFor
     {
         if let Some(known) = identified_src
         {
+            debug!(?known);
             if SUPPORTED_MIME_TYPES.contains(&known.mime_type())
             {
                 return if known.mime_type().eq(GZ_MIME)
@@ -51,8 +60,13 @@ pub fn is_supported_format(src: &Path) -> Result<SupportedFormat, UnsupportedFor
                 {
                     Ok(SupportedFormat::Compressed(Compression::Bz2, src.to_path_buf()))
                 }
+                else if known.mime_type().eq(TAR_MIME)
+                {
+                    Ok(SupportedFormat::Compressed(Compression::Not, src.to_path_buf()))
+                }
                 else
                 {
+                    error!("Should not be able to reach here!");
                     unreachable!()
                 };
             }

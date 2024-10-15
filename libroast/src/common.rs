@@ -6,6 +6,13 @@ use std::{
     },
     path::PathBuf,
 };
+#[allow(unused_imports)]
+use tracing::{
+    debug,
+    error,
+    info,
+    warn,
+};
 
 #[derive(ValueEnum, Default, Debug, Clone, Copy)]
 pub enum Compression
@@ -15,6 +22,7 @@ pub enum Compression
     #[default]
     Zst,
     Bz2,
+    Not,
 }
 
 impl Display for Compression
@@ -27,6 +35,7 @@ impl Display for Compression
             Compression::Xz => "xz",
             Compression::Zst => "zst",
             Compression::Bz2 => "bz2",
+            Compression::Not => "tar (uncompressed)",
         };
         write!(f, "{}", msg)
     }

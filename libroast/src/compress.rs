@@ -197,3 +197,16 @@ pub fn tarbz2(
     let mut builder = tar::Builder::new(encoder);
     tar_builder(&mut builder, target_dir, archive_files, reproducible)
 }
+
+pub fn vanilla(
+    outpath: impl AsRef<Path>,
+    target_dir: impl AsRef<Path>,
+    archive_files: &[impl AsRef<Path>],
+    reproducible: bool,
+) -> io::Result<()>
+{
+    let outtar = fs::File::create(outpath.as_ref())
+        .inspect_err(|_| error!(outpath = ?outpath.as_ref(), "Unable to create outtar"))?;
+    let mut builder = tar::Builder::new(outtar);
+    tar_builder(&mut builder, target_dir, archive_files, reproducible)
+}

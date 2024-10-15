@@ -2,11 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.3.0] - 2024-10-15
+
+### 🚀 Features
+
+- Support uncompressed tarballs with tar extension
+
+### 🚜 Refactor
+
+- Properly set preserve root
+- Cleanup raw binary log output
+
+### 📚 Documentation
+
+- Update README
+
+### Publish
+
+- Add repository key value
+- Add repository key value
+- Add required keys and prepare to publish
+
 ## [3.2.2] - 2024-10-12
 
 ### 🐛 Bug Fixes
 
 - Properly delete temporary directories
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V3.2.2
 
 ## [3.2.1] - 2024-10-12
 

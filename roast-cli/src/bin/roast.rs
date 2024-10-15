@@ -2,6 +2,7 @@ use clap::Parser;
 use libroast::compress;
 use roast_cli::cli;
 use std::{
+    ffi::OsStr,
     fs,
     io,
     path::{
@@ -174,72 +175,63 @@ fn main() -> io::Result<()>
 
     let reproducible = roast_args.reproducible;
 
-    match outpath.extension()
+    let has_ext = &outpath.extension();
+
+    let result = match has_ext
     {
-        Some(ext) => match ext.to_string_lossy().to_string().as_str()
+        Some(ext) =>
         {
-            "gz" =>
+            let ext_val = &outpath.with_extension("");
+            let ext_val = ext_val.extension();
+            debug!(?ext_val);
+            let is_tar = [Some(OsStr::new("tar")), None].contains(&ext_val);
+            if is_tar
             {
-                compress::targz(&outpath, workdir, &updated_paths, reproducible).map_err(
-                    |err| {
-                        error!(?err);
-                        err
-                    },
-                )?;
+                let bind_ft = ext.to_string_lossy().to_string();
+                let some_ft = bind_ft.as_str();
+                match some_ft
+                {
+                    "gz" => compress::targz(&outpath, workdir, &updated_paths, reproducible),
+                    "xz" => compress::tarxz(&outpath, workdir, &updated_paths, reproducible),
+                    "bz" => compress::tarbz2(&outpath, workdir, &updated_paths, reproducible),
+                    "zst" | "zstd" =>
+                    {
+                        compress::tarzst(&outpath, workdir, &updated_paths, reproducible)
+                    }
+                    "tar" => compress::vanilla(&outpath, workdir, &updated_paths, reproducible),
+                    _ =>
+                    {
+                        let message = format!("Unsupported file type: {}", ext.to_string_lossy());
+                        Err(io::Error::new(io::ErrorKind::Unsupported, message))
+                    }
+                }
             }
-            "zst" | "zstd" =>
+            else
             {
-                compress::tarzst(&outpath, workdir, &updated_paths, reproducible).map_err(
-                    |err| {
-                        error!(?err);
-                        err
-                    },
-                )?;
+                let message = format!("Unsupported file type: {}", ext.to_string_lossy());
+                Err(io::Error::new(io::ErrorKind::Unsupported, message))
             }
-            "bz" =>
-            {
-                compress::tarbz2(&outpath, workdir, &updated_paths, reproducible).map_err(
-                    |err| {
-                        error!(?err);
-                        err
-                    },
-                )?;
-            }
-            "xz" =>
-            {
-                compress::tarxz(&outpath, workdir, &updated_paths, reproducible).map_err(
-                    |err| {
-                        error!(?err);
-                        err
-                    },
-                )?;
-            }
-            _ =>
-            {
-                let err = io::Error::new(
-                    io::ErrorKind::Unsupported,
-                    "Compression type unsupported. Valid options are xz, zst / zstd, bz, and gz.",
-                );
-                error!(?err);
-                return Err(err);
-            }
-        },
-        None =>
-        {
-            let err = io::Error::new(
-                io::ErrorKind::Unsupported,
-                "Please provide a file extension. Compression type unsupported. Valid options are \
-                 xz, zst / zstd, bz, and gz.",
-            );
-            error!(?err);
-            return Err(err);
         }
+        None => Err(io::Error::new(
+            io::ErrorKind::Unsupported,
+            "Cannot determine compression with no file extension",
+        )),
+    };
+
+    // Do not return the error. Just inform the user.
+    // This will allow us to delete the temporary directory.
+    if let Err(err) = result
+    {
+        error!(?err);
+    }
+    else
+    {
+        info!("Your new tarball is now in {}", &outpath.display());
     }
 
     tmp_binding.close().inspect_err(|e| {
         error!(?e, "Failed to delete temporary directory!");
     })?;
 
-    info!("Your new tarball is now in {}", &outpath.display());
     Ok(())
 }

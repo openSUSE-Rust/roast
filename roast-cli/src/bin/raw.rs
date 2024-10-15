@@ -86,6 +86,10 @@ fn main() -> io::Result<()>
                         {
                             decompress::tarbz2(&outpath, &src)?;
                         }
+                        libroast::common::Compression::Not =>
+                        {
+                            decompress::vanilla(&outpath, &src)?;
+                        }
                     }
                     info!("🥩 You have extracted your source at {}", outpath.display());
                     Ok(())

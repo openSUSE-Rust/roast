@@ -10,7 +10,7 @@ Create archive tarballs and roast them!
 > `vendor.tar.zst` to `vendor2.tar.zst`. **You should expect that they won't have the same
 > sha256 hash**. However, _you should expect that `vendor2.tar.zst` and `vendor3.tar.zst`
 > have the same hash if they came from the same source `vendor.tar.zst`_.
-> The fix could be to match the length of the directory name of the temporary directory
+> The fix could be to try to match the length of the directory name of the temporary directory
 > as obs-service-cargo. I have not tested that yet though ☺️
 
 ## Reason of existence

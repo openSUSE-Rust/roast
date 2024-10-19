@@ -1,4 +1,4 @@
-name: Build OBS Service Cargo
+name: Build Roast
 
 on: [push, pull_request]
 

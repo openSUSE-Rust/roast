@@ -28,4 +28,3 @@ jobs:
     - name: Tests
       run: |
       	cargo test
-

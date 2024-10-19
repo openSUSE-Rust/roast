@@ -27,4 +27,4 @@ jobs:
         cargo clippy
     - name: Tests
       run: |
-      	cargo test
+        cargo test

@@ -101,7 +101,7 @@ pub(crate) fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::R
             debug!(?f);
             PathBuf::from(f.path())
         })
-        .filter(|p| *p != *workdir)
+        .filter(|p| p.canonicalize().unwrap_or(p.clone())  != workdir.canonicalize().unwrap_or(workdir.to_path_buf()) )
         .collect();
 
     debug!("Workdir is now in {}", &workdir.display());

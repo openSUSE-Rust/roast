@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.3.1] - 2024-10-19
+
+### 🐛 Bug Fixes
+
+- Ci yaml config fix. best format
+- Ci yaml config fix. best format x2
+
+### 🧪 Testing
+
+- Add library tests + ci tests
+- This should be two separate files
+
+### ⚙️ Miscellaneous Tasks
+
+- Rename workflow
+- Install a c compiler. clang preferred
+- Release v3.3.1
+
 ## [3.3.0] - 2024-10-15
 
 ### 🚀 Features

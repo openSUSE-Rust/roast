@@ -75,10 +75,16 @@ pub(crate) fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
         libroast::common::Compression::Not => "tar",
     };
 
+    let roast_outpath = match recomprizz_args.outpath
+    {
+        Some(v) => v,
+        None => std::env::current_dir()?,
+    };
+
     let roast_args = RoastArgs {
         target: outpath_for_raw.to_path_buf(),
         additional_paths: None,
-        outpath: out_filename.with_extension(file_extension),
+        outpath: roast_outpath.join(out_filename.with_extension(file_extension)),
         preserve_root: false,
         reproducible: recomprizz_args.reproducible,
     };

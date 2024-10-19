@@ -8,10 +8,6 @@ use libroast::{
     is_supported_format,
 };
 use std::io;
-use terminfo::{
-    capability as cap,
-    Database,
-};
 #[allow(unused_imports)]
 use tracing::{
     debug,
@@ -21,7 +17,6 @@ use tracing::{
     warn,
     Level,
 };
-use tracing_subscriber::EnvFilter;
 
 pub fn raw_cli_stub() -> io::Result<()>
 {

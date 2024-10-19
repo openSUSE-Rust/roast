@@ -13,10 +13,6 @@ use std::{
     io,
     path::PathBuf,
 };
-use terminfo::{
-    capability as cap,
-    Database,
-};
 #[allow(unused_imports)]
 use tracing::{
     debug,
@@ -26,7 +22,6 @@ use tracing::{
     warn,
     Level,
 };
-use tracing_subscriber::EnvFilter;
 use walkdir::WalkDir;
 pub fn roast_cli_stub() -> io::Result<()>
 {

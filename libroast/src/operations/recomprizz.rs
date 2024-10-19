@@ -42,7 +42,7 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
 
     let raw_args = RawArgs {
         target: recomprizz_args.target.clone(),
-        outpath: Some(outpath_for_raw.to_path_buf()),
+        outdir: Some(outpath_for_raw.to_path_buf()),
     };
 
     raw_opts(raw_args, start_trace)?;
@@ -70,7 +70,7 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
         crate::common::Compression::Not => "tar",
     };
 
-    let roast_outpath = match recomprizz_args.outpath
+    let roast_outpath = match recomprizz_args.outdir
     {
         Some(v) => v,
         None => std::env::current_dir()?,
@@ -79,7 +79,7 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
     let roast_args = RoastArgs {
         target: outpath_for_raw.to_path_buf(),
         additional_paths: None,
-        outpath: roast_outpath.join(out_filename.with_extension(file_extension)),
+        outfile: roast_outpath.join(out_filename.with_extension(file_extension)),
         preserve_root: false,
         reproducible: recomprizz_args.reproducible,
     };

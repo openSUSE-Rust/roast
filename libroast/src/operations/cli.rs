@@ -38,19 +38,19 @@ pub struct RoastArgs
                 directory will be put next to the target directory."
     )]
     pub additional_paths: Option<Vec<PathBuf>>,
-    #[arg(long, short = 'o', help = "Output file of the tarball with path.")]
-    pub outpath: PathBuf,
+    #[arg(long, short = 'o', help = "Output file of the generated archive with path.")]
+    pub outfile: PathBuf,
     #[arg(
         long,
         short = 'p',
-        help = "Preserve root directory instead of only archiving relative paths. DEFAULT: false",
+        help = "Preserve root directory instead of only archiving relative paths. DEFAULT: false.",
         default_value_t = false
     )]
     pub preserve_root: bool,
     #[arg(
         long,
         short = 'r',
-        help = "Allow reproducibility for Reproducible Builds. DEFAULT: false",
+        help = "Allow reproducibility for Reproducible Builds. DEFAULT: false.",
         default_value_t = false
     )]
     pub reproducible: bool,
@@ -76,7 +76,7 @@ pub struct RawArgs
         short = 'o',
         help = "Output path of extracted archive. DEFAULT: current directory if omitted."
     )]
-    pub outpath: Option<PathBuf>,
+    pub outdir: Option<PathBuf>,
 }
 
 #[derive(Debug, Parser)]
@@ -97,9 +97,9 @@ pub struct RecomprizzArgs
     #[arg(
         long,
         short = 'o',
-        help = "Output path of recompressed archive. DEFAULT: current directory if omitted."
+        help = "Output directory of recompressed archive. DEFAULT: current directory if omitted."
     )]
-    pub outpath: Option<PathBuf>,
+    pub outdir: Option<PathBuf>,
     #[arg(long, short = 'c', help = "Compression to use.", default_value_t)]
     pub compression: Compression,
     #[arg(
@@ -112,7 +112,7 @@ pub struct RecomprizzArgs
     #[arg(
         long,
         short = 'r',
-        help = "Allow reproducibility for Reproducible Builds. DEFAULT: false",
+        help = "Allow reproducibility for Reproducible Builds. DEFAULT: false.",
         default_value_t = false
     )]
     pub reproducible: bool,

@@ -51,7 +51,7 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
         copy_dir_all(&target_path, workdir)?;
     };
 
-    let outpath = roast_args.outpath;
+    let outpath = roast_args.outfile;
     let outpath = outpath.canonicalize().unwrap_or(outpath);
 
     if let Some(additional_paths) = roast_args.additional_paths

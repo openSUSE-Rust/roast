@@ -33,7 +33,7 @@ pub fn raw_opts(raw_args: cli::RawArgs, start_trace: bool) -> io::Result<()>
                 {
                     info!(?mime_type);
                     let outpath =
-                        raw_args.outpath.unwrap_or(std::env::current_dir().inspect_err(|e| {
+                        raw_args.outdir.unwrap_or(std::env::current_dir().inspect_err(|e| {
                             error!(?e, "Unable to determine current directory!");
                         })?);
                     match mime_type

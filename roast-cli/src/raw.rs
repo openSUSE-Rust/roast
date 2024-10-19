@@ -4,15 +4,6 @@ use crate::{
 };
 use clap::Parser;
 use std::io;
-#[allow(unused_imports)]
-use tracing::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-    Level,
-};
 
 pub fn raw_cli_stub() -> io::Result<()>
 {

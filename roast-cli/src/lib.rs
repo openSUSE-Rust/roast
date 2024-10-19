@@ -11,12 +11,3 @@ pub use libroast::{
     },
     start_tracing,
 };
-#[allow(unused_imports)]
-use tracing::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-    Level,
-};

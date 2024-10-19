@@ -275,9 +275,9 @@ fn repro_vanilla_tarball() -> io::Result<()>
 {
     let mut hasher1 = Keccak256::new();
     let mut hasher2 = Keccak256::new();
-    let outpath1 = Path::new("/tmp/ballsvanillacreampie");
+    let outpath1 = Path::new("/tmp/ballsvanillacreampie1");
     generate_icecream_tarball(outpath1)?;
-    let outpath2 = Path::new("/tmp/ballsvanillacreampie");
+    let outpath2 = Path::new("/tmp/ballsvanillacreampie2");
     generate_icecream_tarball(outpath2)?;
     let buf1 = read(outpath1)?;
     hasher1.update(buf1);

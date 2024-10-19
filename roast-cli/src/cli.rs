@@ -112,8 +112,8 @@ pub struct RecomprizzArgs
     #[arg(
         long,
         short = 'r',
-        help = "Allow reproducibility for Reproducible Builds. DEFAULT: true",
-        default_value_t = true
+        help = "Allow reproducibility for Reproducible Builds. DEFAULT: false",
+        default_value_t = false
     )]
     pub reproducible: bool,
 }

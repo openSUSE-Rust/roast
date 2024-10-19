@@ -1,4 +1,7 @@
-use crate::cli;
+use crate::{
+    cli,
+    start_tracing,
+};
 use clap::Parser;
 use libroast::{
     compress,
@@ -28,42 +31,15 @@ use walkdir::WalkDir;
 pub fn roast_cli_stub() -> io::Result<()>
 {
     let roast_args = cli::RoastArgs::parse();
-    roast_opts(roast_args)
+    roast_opts(roast_args, true)
 }
 
-pub(crate) fn roast_opts(roast_args: cli::RoastArgs) -> io::Result<()>
+pub(crate) fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<()>
 {
-    let terminfodb = Database::from_env().map_err(|e| {
-        error!(err = ?e, "Unable to access terminfo db. This is a bug!");
-        io::Error::new(
-            io::ErrorKind::Other,
-            "Unable to access terminfo db. This is a bug! Setting color option to false!",
-        )
-    });
-
-    let is_termcolorsupported = match terminfodb
+    if start_trace
     {
-        Ok(hasterminfodb) => hasterminfodb.get::<cap::MaxColors>().is_some(),
-        Err(_) => false,
-    };
-    let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
-
-    let builder = tracing_subscriber::fmt()
-        .with_level(true)
-        .with_ansi(is_termcolorsupported)
-        .with_env_filter(filter_layer)
-        .with_level(true);
-
-    let builder = if cfg!(debug_assertions)
-    {
-        builder.with_file(true).with_line_number(true)
+        start_tracing();
     }
-    else
-    {
-        builder
-    };
-
-    builder.init();
 
     info!("❤️‍🔥 Starting Roast.");
     debug!(?roast_args);

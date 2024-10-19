@@ -6,6 +6,7 @@ use crate::{
     },
     raw::raw_opts,
     roast::roast_opts,
+    start_tracing,
 };
 use clap::Parser;
 use std::{
@@ -14,10 +15,6 @@ use std::{
         Path,
         PathBuf,
     },
-};
-use terminfo::{
-    capability as cap,
-    Database,
 };
 #[allow(unused_imports)]
 use tracing::{
@@ -28,7 +25,6 @@ use tracing::{
     warn,
     Level,
 };
-use tracing_subscriber::EnvFilter;
 
 pub fn recomprizz_cli_stub() -> io::Result<()>
 {
@@ -38,37 +34,8 @@ pub fn recomprizz_cli_stub() -> io::Result<()>
 
 pub(crate) fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
 {
-    let terminfodb = Database::from_env().map_err(|e| {
-        error!(err = ?e, "Unable to access terminfo db. This is a bug!");
-        io::Error::new(
-            io::ErrorKind::Other,
-            "Unable to access terminfo db. This is a bug! Setting color option to false!",
-        )
-    });
-
-    let is_termcolorsupported = match terminfodb
-    {
-        Ok(hasterminfodb) => hasterminfodb.get::<cap::MaxColors>().is_some(),
-        Err(_) => false,
-    };
-    let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
-
-    let builder = tracing_subscriber::fmt()
-        .with_level(true)
-        .with_ansi(is_termcolorsupported)
-        .with_env_filter(filter_layer)
-        .with_level(true);
-
-    let builder = if cfg!(debug_assertions)
-    {
-        builder.with_file(true).with_line_number(true)
-    }
-    else
-    {
-        builder
-    };
-
-    builder.init();
+    let start_trace = false;
+    start_tracing();
 
     info!("📤 Starting Recomprizz.");
     debug!(?recomprizz_args);
@@ -83,7 +50,7 @@ pub(crate) fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
         outpath: Some(outpath_for_raw.to_path_buf()),
     };
 
-    raw_opts(raw_args)?;
+    raw_opts(raw_args, start_trace)?;
 
     // Yuck!
     let out_filename = match recomprizz_args.rename
@@ -116,7 +83,7 @@ pub(crate) fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
         reproducible: recomprizz_args.reproducible,
     };
 
-    roast_opts(roast_args)?;
+    roast_opts(roast_args, start_trace)?;
 
     info!("📥 Finished Recomprizz.");
     Ok(())

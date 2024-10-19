@@ -100,6 +100,7 @@ pub struct RecomprizzArgs
         help = "Output path of recompressed archive. DEFAULT: current directory if omitted."
     )]
     pub outpath: Option<PathBuf>,
+    #[arg(long, short = 'c', help = "Compression to use.")]
     pub compression: Compression,
     #[arg(
         long,

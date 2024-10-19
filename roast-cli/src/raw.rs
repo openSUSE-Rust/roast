@@ -1,4 +1,7 @@
-use crate::cli;
+use crate::{
+    cli,
+    start_tracing,
+};
 use clap::Parser;
 use libroast::{
     decompress,
@@ -23,42 +26,15 @@ use tracing_subscriber::EnvFilter;
 pub fn raw_cli_stub() -> io::Result<()>
 {
     let raw_args = cli::RawArgs::parse();
-    raw_opts(raw_args)
+    raw_opts(raw_args, true)
 }
 
-pub(crate) fn raw_opts(raw_args: cli::RawArgs) -> io::Result<()>
+pub(crate) fn raw_opts(raw_args: cli::RawArgs, start_trace: bool) -> io::Result<()>
 {
-    let terminfodb = Database::from_env().map_err(|e| {
-        error!(err = ?e, "Unable to access terminfo db. This is a bug!");
-        io::Error::new(
-            io::ErrorKind::Other,
-            "Unable to access terminfo db. This is a bug! Setting color option to false!",
-        )
-    });
-
-    let is_termcolorsupported = match terminfodb
+    if start_trace
     {
-        Ok(hasterminfodb) => hasterminfodb.get::<cap::MaxColors>().is_some(),
-        Err(_) => false,
-    };
-    let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
-
-    let builder = tracing_subscriber::fmt()
-        .with_level(true)
-        .with_ansi(is_termcolorsupported)
-        .with_env_filter(filter_layer)
-        .with_level(true);
-
-    let builder = if cfg!(debug_assertions)
-    {
-        builder.with_file(true).with_line_number(true)
+        start_tracing();
     }
-    else
-    {
-        builder
-    };
-
-    builder.init();
 
     info!("🥩 Starting Raw.");
     if raw_args.target.is_file()

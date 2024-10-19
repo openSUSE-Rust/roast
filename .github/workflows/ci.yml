@@ -14,17 +14,21 @@ jobs:
       uses: actions/checkout@v4
     - name: Install dependencies and Rust
       run: |
-        zypper --non-interactive in libzstd-devel cargo
+        zypper --non-interactive in libzstd-devel cargo clang
     - name: Build
       run: |
+        export CC=clang
         cargo update
         cargo build --release --all-features
     - name: Check formatting
       run: |
+        export CC=clang
         cargo fmt -- --check || true
     - name: Check clippy
       run: |
+        export CC=clang
         cargo clippy
     - name: Tests
       run: |
+        export CC=clang
         cargo test

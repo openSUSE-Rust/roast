@@ -110,6 +110,7 @@ pub(crate) fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::R
             p.canonicalize().unwrap_or(p.clone())
                 != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
         })
+        .filter(|p| p.is_file())
         .collect();
 
     debug!("Workdir is now in {}", &workdir.display());
@@ -129,6 +130,7 @@ pub(crate) fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::R
             if is_tar
             {
                 let bind_ft = ext.to_string_lossy().to_string();
+                debug!(?bind_ft);
                 let some_ft = bind_ft.as_str();
                 match some_ft
                 {

@@ -49,7 +49,7 @@ pub struct RoastArgs
     #[arg(
         long,
         short = 'r',
-        help = "Allow reproducibility for Reproducible Builds 🥴",
+        help = "Allow reproducibility for Reproducible Builds.",
         default_value_t = false
     )]
     pub reproducible: bool,

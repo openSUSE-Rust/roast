@@ -64,6 +64,7 @@ fn main() -> io::Result<()>
             {
                 libroast::common::SupportedFormat::Compressed(mime_type, src) =>
                 {
+                    info!(?mime_type);
                     let outpath =
                         raw_args.outpath.unwrap_or(std::env::current_dir().inspect_err(|e| {
                             error!(?e, "Unable to determine current directory!");

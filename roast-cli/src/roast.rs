@@ -39,6 +39,7 @@ pub(crate) fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::R
     info!("❤️‍🔥 Starting Roast.");
     debug!(?roast_args);
     let target_path = roast_args.target;
+    let target_path = target_path.canonicalize().unwrap_or(target_path);
     let tmp_binding = tempfile::TempDir::new().map_err(|err| {
         error!(?err, "Failed to create temporary directory");
         err
@@ -56,15 +57,18 @@ pub(crate) fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::R
     };
 
     let outpath = roast_args.outpath;
+    let outpath = outpath.canonicalize().unwrap_or(outpath);
 
     if let Some(additional_paths) = roast_args.additional_paths
     {
         for path in additional_paths
         {
+            let path = path.canonicalize().unwrap_or(path);
             if path.is_file()
             {
                 debug!(?path, "Additional file");
                 let dst = &workdir.join(path.file_name().unwrap_or(path.as_os_str()));
+                let dst = dst.canonicalize().unwrap_or(dst.to_path_buf());
                 if dst.exists()
                 {
                     warn!(
@@ -80,6 +84,7 @@ pub(crate) fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::R
             {
                 debug!(?path, "Additional directory");
                 let dst = &workdir.join(path.file_name().unwrap_or(path.as_os_str()));
+                let dst = dst.canonicalize().unwrap_or(dst.to_path_buf());
                 if dst.exists()
                 {
                     warn!(
@@ -89,7 +94,7 @@ pub(crate) fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::R
                     );
                 }
                 debug!(?dst, "Destination path");
-                copy_dir_all(&path, dst)?;
+                copy_dir_all(&path, &dst)?;
             }
         }
     }
@@ -99,9 +104,12 @@ pub(crate) fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::R
         .filter_map(|entry| entry.ok())
         .map(|f| {
             debug!(?f);
-            PathBuf::from(f.path())
+            f.path().canonicalize().unwrap_or(f.path().to_path_buf())
         })
-        .filter(|p| p.canonicalize().unwrap_or(p.clone())  != workdir.canonicalize().unwrap_or(workdir.to_path_buf()) )
+        .filter(|p| {
+            p.canonicalize().unwrap_or(p.clone())
+                != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
+        })
         .collect();
 
     debug!("Workdir is now in {}", &workdir.display());

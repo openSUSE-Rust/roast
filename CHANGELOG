@@ -1,3 +1,8 @@
-Soc Virnyl Estela (1):
-      fix: filename should leave out version part alone
-
+Soc Virnyl Estela (7):
+      docs: update README and include instructions regarding renaming
+      add cool badges
+      minor: update tests and update paths code
+      fix link
+      feat: add glob support
+      fix: actually implement the fix for ef1e6f857e48821198d720d092bc7087af762f2a
+      feat: add glob support to all

@@ -19,6 +19,7 @@ use walkdir::WalkDir;
 
 const MANIFEST_DIR: &str = std::env!("CARGO_MANIFEST_DIR", "No such manifest dir");
 
+#[traced_test]
 #[test]
 fn is_gz_tarball() -> io::Result<()>
 {
@@ -36,7 +37,11 @@ fn is_gz_tarball() -> io::Result<()>
             debug!(?f);
             PathBuf::from(f.path())
         })
-        .filter(|p| *p != *workdir)
+        .filter(|p| {
+            p.canonicalize().unwrap_or(p.to_path_buf())
+                != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
+        })
+        .filter(|p| p.is_file())
         .collect();
     let out = Path::new("/tmp/ballsofDeezNuts");
     libroast::compress::targz(out, workdir, &updated_paths, true)?;
@@ -64,7 +69,11 @@ fn is_xz_tarball() -> io::Result<()>
             debug!(?f);
             PathBuf::from(f.path())
         })
-        .filter(|p| *p != *workdir)
+        .filter(|p| {
+            p.canonicalize().unwrap_or(p.to_path_buf())
+                != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
+        })
+        .filter(|p| p.is_file())
         .collect();
     let out = Path::new("/tmp/ballsofJiaTan");
     libroast::compress::tarxz(out, workdir, &updated_paths, true)?;
@@ -92,7 +101,11 @@ fn is_zst_tarball() -> io::Result<()>
             debug!(?f);
             PathBuf::from(f.path())
         })
-        .filter(|p| *p != *workdir)
+        .filter(|p| {
+            p.canonicalize().unwrap_or(p.to_path_buf())
+                != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
+        })
+        .filter(|p| p.is_file())
         .collect();
     let out = Path::new("/tmp/ballsfacebook");
     libroast::compress::tarzst(out, workdir, &updated_paths, true)?;
@@ -120,7 +133,11 @@ fn is_bz2_tarball() -> io::Result<()>
             debug!(?f);
             PathBuf::from(f.path())
         })
-        .filter(|p| *p != *workdir)
+        .filter(|p| {
+            p.canonicalize().unwrap_or(p.to_path_buf())
+                != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
+        })
+        .filter(|p| p.is_file())
         .collect();
     let out = Path::new("/tmp/ballswhatsbz");
     libroast::compress::tarbz2(out, workdir, &updated_paths, true)?;
@@ -148,7 +165,11 @@ fn is_vanilla_tarball() -> io::Result<()>
             debug!(?f);
             PathBuf::from(f.path())
         })
-        .filter(|p| *p != *workdir)
+        .filter(|p| {
+            p.canonicalize().unwrap_or(p.to_path_buf())
+                != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
+        })
+        .filter(|p| p.is_file())
         .collect();
     let out = Path::new("/tmp/ballsvanillacreampie");
     libroast::compress::vanilla(out, workdir, &updated_paths, true)?;

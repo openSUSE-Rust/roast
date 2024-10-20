@@ -40,7 +40,11 @@ fn generate_gz_tarball(outpath: &Path) -> io::Result<()>
             debug!(?f);
             PathBuf::from(f.path())
         })
-        .filter(|p| *p != *workdir)
+        .filter(|p| {
+            p.canonicalize().unwrap_or(p.to_path_buf())
+                != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
+        })
+        .filter(|p| p.is_file())
         .collect();
     libroast::compress::targz(outpath, workdir, &updated_paths, true)?;
     let res = libroast::is_supported_format(outpath).inspect_err(|err| error!(?err));
@@ -65,7 +69,11 @@ fn generate_xz_tarball(outpath: &Path) -> io::Result<()>
             debug!(?f);
             PathBuf::from(f.path())
         })
-        .filter(|p| *p != *workdir)
+        .filter(|p| {
+            p.canonicalize().unwrap_or(p.to_path_buf())
+                != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
+        })
+        .filter(|p| p.is_file())
         .collect();
     libroast::compress::tarxz(outpath, workdir, &updated_paths, true)?;
     let res = libroast::is_supported_format(outpath).inspect_err(|err| error!(?err));
@@ -90,7 +98,11 @@ fn generate_zst_tarball(outpath: &Path) -> io::Result<()>
             debug!(?f);
             PathBuf::from(f.path())
         })
-        .filter(|p| *p != *workdir)
+        .filter(|p| {
+            p.canonicalize().unwrap_or(p.to_path_buf())
+                != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
+        })
+        .filter(|p| p.is_file())
         .collect();
     libroast::compress::tarzst(outpath, workdir, &updated_paths, true)?;
     let res = libroast::is_supported_format(outpath).inspect_err(|err| error!(?err));
@@ -115,7 +127,11 @@ fn generate_bz2_tarball(outpath: &Path) -> io::Result<()>
             debug!(?f);
             PathBuf::from(f.path())
         })
-        .filter(|p| *p != *workdir)
+        .filter(|p| {
+            p.canonicalize().unwrap_or(p.to_path_buf())
+                != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
+        })
+        .filter(|p| p.is_file())
         .collect();
     libroast::compress::tarbz2(outpath, workdir, &updated_paths, true)?;
     let res = libroast::is_supported_format(outpath).inspect_err(|err| error!(?err));
@@ -140,7 +156,11 @@ fn generate_icecream_tarball(outpath: &Path) -> io::Result<()>
             debug!(?f);
             PathBuf::from(f.path())
         })
-        .filter(|p| *p != *workdir)
+        .filter(|p| {
+            p.canonicalize().unwrap_or(p.to_path_buf())
+                != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
+        })
+        .filter(|p| p.is_file())
         .collect();
     libroast::compress::vanilla(outpath, workdir, &updated_paths, true)?;
     let res = libroast::is_supported_format(outpath).inspect_err(|err| error!(?err));
@@ -148,6 +168,7 @@ fn generate_icecream_tarball(outpath: &Path) -> io::Result<()>
     assert!(res.is_ok());
     Ok(())
 }
+
 #[traced_test]
 #[test]
 fn repro_gz_tarball() -> io::Result<()>

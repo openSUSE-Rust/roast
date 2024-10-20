@@ -99,10 +99,10 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
         .filter_map(|entry| entry.ok())
         .map(|f| {
             debug!(?f);
-            f.path().canonicalize().unwrap_or(f.path().to_path_buf())
+            PathBuf::from(f.path())
         })
         .filter(|p| {
-            p.canonicalize().unwrap_or(p.clone())
+            p.canonicalize().unwrap_or(p.to_path_buf())
                 != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
         })
         .filter(|p| p.is_file())

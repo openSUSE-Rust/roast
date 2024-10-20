@@ -297,9 +297,9 @@ checksum = "6fe2267d4ed49bc07b63801559be28c718ea06c4738b7a03c94df7386d2cde46"
 
 [[package]]
 name = "hybrid-array"
-version = "0.2.0-rc.11"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5a41e5b0754cae5aaf7915f1df1147ba8d316fc6e019cfcc00fbaba96d5e030"
+checksum = "dfc04956b94a6cec9b5cb24661fc7979ab65d0607a85b43ea3cbbc95d10255a9"
 dependencies = [
  "typenum",
 ]
@@ -362,7 +362,7 @@ dependencies = [
 
 [[package]]
 name = "libroast"
-version = "3.3.1"
+version = "4.0.0"
 dependencies = [
  "bzip2",
  "clap",
@@ -607,7 +607,7 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
 name = "roast-cli"
-version = "3.3.1"
+version = "4.0.0"
 dependencies = [
  "clap",
  "libroast",
@@ -685,9 +685,9 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "syn"
-version = "2.0.79"
+version = "2.0.80"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89132cd0bf050864e1d38dc3bbc07a0eb8e7530af26344d3d2bbbef83499f590"
+checksum = "e6e185e337f816bc8da115b8afcb3324006ccc82eeaddf35113888d3bd8e44ac"
 dependencies = [
  "proc-macro2",
  "quote",

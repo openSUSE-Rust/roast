@@ -1,5 +1,3 @@
-Soc Virnyl Estela (4):
-      prepare justfile for publishing
-      change it to a text file
-      cli: allow to explicitly tell "true" or "false" using ArgAction::Set and add our service file
-      release: v4.1.0
+Soc Virnyl Estela (1):
+      fix: filename should leave out version part alone
+

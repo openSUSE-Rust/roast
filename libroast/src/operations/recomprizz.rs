@@ -34,10 +34,13 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
 
     info!("📤 Starting Recomprizz.");
     debug!(?recomprizz_args);
-    let tmp_binding_for_raw = tempfile::TempDir::new().map_err(|err| {
-        error!(?err, "Failed to create temporary directory");
-        err
-    })?;
+    let tmp_binding_for_raw = tempfile::Builder::new()
+        .prefix(".raaaaaaaaaaaaaaaaawwwwww")
+        .rand_bytes(8)
+        .tempdir()
+        .inspect_err(|err| {
+            error!(?err, "Failed to create temporary directory");
+        })?;
     let outpath_for_raw = &tmp_binding_for_raw.path();
 
     let raw_args = RawArgs {

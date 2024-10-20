@@ -73,6 +73,8 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
         crate::common::Compression::Not => "tar",
     };
 
+    let out_filename = format!("{}.{}", out_filename.display(), file_extension);
+
     let roast_outpath = match recomprizz_args.outdir
     {
         Some(v) => v,
@@ -82,7 +84,7 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
     let roast_args = RoastArgs {
         target: outpath_for_raw.to_path_buf(),
         additional_paths: None,
-        outfile: roast_outpath.join(out_filename.with_extension(file_extension)),
+        outfile: roast_outpath.join(out_filename),
         preserve_root: false,
         reproducible: recomprizz_args.reproducible,
     };

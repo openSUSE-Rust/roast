@@ -26,6 +26,7 @@ Plus, it has the comfort of being a simple `tar` alternative.
 Roast contains to binaries
 - `roast`
 - `raw`
+- `recomprizz`
 
 ## Cargo
 
@@ -42,22 +43,24 @@ cargo install roast-cli
 Both commands pull from source. The only difference is that the first one
 obviously relies on git.
 
-## CLI
+## CLI Help
 
 ```
-roast [OPTIONS] --target <TARGET> --outpath <OUTPATH>
+roast 3.3.1 - Archiver with high-level compression
+
+roast [OPTIONS] --target <TARGET> --outfile <OUTFILE>
 
 Options:
   -t, --target <TARGET>
           Target directory to archive. This will be set as the root directory of the archive.
   -a, --additional-paths <ADDITIONAL_PATHS>
           Additional paths such as files or directories to add to the archive. Their parent directory will be put next to the target directory.
-  -o, --outpath <OUTPATH>
-          Output file of the tarball with path.
+  -o, --outfile <OUTFILE>
+          Output file of the generated archive with path.
   -p, --preserve-root
-          Preserve root directory instead of only archiving relative paths.
+          Preserve root directory instead of only archiving relative paths. DEFAULT: false.
   -r, --reproducible
-          Allow reproducibility for Reproducible Builds 🥴
+          Allow reproducibility for Reproducible Builds. DEFAULT: false.
   -h, --help
           Print help (see more with '--help')
   -V, --version
@@ -65,26 +68,28 @@ Options:
 ```
 
 ```
+raw 3.3.1 - Raw extractor and decompressor
+
 raw [OPTIONS] --target <TARGET>
 
 Options:
-  -t, --target <TARGET>    Target tarball file to extract and decompress.
-  -o, --outpath <OUTPATH>  Output path of extracted archive. DEFAULT is current directory if omitted.
-  -h, --help               Print help (see more with '--help')
-  -V, --version            Print version
+  -t, --target <TARGET>  Target tarball file to extract and decompress.
+  -o, --outdir <OUTDIR>  Output path of extracted archive. DEFAULT: current directory if omitted.
+  -h, --help             Print help (see more with '--help')
+  -V, --version          Print version
 ```
 
 ```
-roast-cli 3.3.1 - Recompress to other compression formats
+recomprizz 3.3.1 - Recompress to other compression formats
 
-recomprizz [OPTIONS] --target <TARGET> --compression <COMPRESSION>
+recomprizz [OPTIONS] --target <TARGET>
 
 Options:
   -t, --target <TARGET>            Target tarball file to extract and recompress.
-  -o, --outpath <OUTPATH>          Output path of recompressed archive. DEFAULT: current directory if omitted.
-  -c, --compression <COMPRESSION>  Compression to use. [possible values: gz, xz, zst, bz2, not]
+  -o, --outdir <OUTDIR>            Output directory of recompressed archive. DEFAULT: current directory if omitted.
+  -c, --compression <COMPRESSION>  Compression to use. [default: zst] [possible values: gz, xz, zst, bz2, not]
   -R, --rename <RENAME>            Use this flag if you want a new filename to use ignoring the new file extension. Omitting this flag will just fallback to basename.
-  -r, --reproducible               Allow reproducibility for Reproducible Builds. DEFAULT: false
+  -r, --reproducible               Allow reproducibility for Reproducible Builds. DEFAULT: false.
   -h, --help                       Print help (see more with '--help')
   -V, --version                    Print version
 ```

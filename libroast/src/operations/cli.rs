@@ -13,6 +13,7 @@ use tracing::{
 
 #[derive(Debug, Parser)]
 #[command(
+    name = "roast",
     author = "Soc Virnyl Estela",
     about = "Archiver with high-level compression",
     after_long_help = "Set verbosity and tracing through `RUST_LOG` environmental variable e.g. \
@@ -58,6 +59,7 @@ pub struct RoastArgs
 
 #[derive(Debug, Parser)]
 #[command(
+    name = "raw",
     author = "Soc Virnyl Estela",
     about = "Raw extractor and decompressor",
     after_long_help = "Set verbosity and tracing through `RUST_LOG` environmental variable e.g. \
@@ -81,6 +83,7 @@ pub struct RawArgs
 
 #[derive(Debug, Parser)]
 #[command(
+    name = "recomprizz",
     author = "Soc Virnyl Estela",
     about = "Recompress to other compression formats",
     after_long_help = "Set verbosity and tracing through `RUST_LOG` environmental variable e.g. \

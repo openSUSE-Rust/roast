@@ -1,34 +1,21 @@
 use crate::{
     operations::{
-        cli::{
-            RawArgs,
-            RecomprizzArgs,
-            RoastArgs,
-        },
+        cli::{RawArgs, RecomprizzArgs, RoastArgs},
         raw::raw_opts,
         roast::roast_opts,
     },
     start_tracing,
+    utils::process_globs,
 };
 use std::{
     io,
-    path::{
-        Path,
-        PathBuf,
-    },
+    os::unix::ffi::OsStrExt,
+    path::{Path, PathBuf},
 };
 #[allow(unused_imports)]
-use tracing::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-    Level,
-};
+use tracing::{debug, error, info, trace, warn, Level};
 
-pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
-{
+pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()> {
     let start_trace = false;
     start_tracing();
 
@@ -43,29 +30,31 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
         })?;
     let outpath_for_raw = &tmp_binding_for_raw.path();
 
-    let raw_args = RawArgs {
-        target: recomprizz_args.target.clone(),
-        outdir: Some(outpath_for_raw.to_path_buf()),
-    };
+    let target = process_globs(&recomprizz_args.target)?;
+    let raw_args = RawArgs { target: target.clone(), outdir: Some(outpath_for_raw.to_path_buf()) };
 
     raw_opts(raw_args, start_trace)?;
 
     // Yuck!
-    let out_filename = match recomprizz_args.rename
-    {
+    let out_filename = match recomprizz_args.rename {
         Some(ref v) => &Path::new(v).to_path_buf(),
         None => &{
-            let mut filename = recomprizz_args.target.clone();
-            while let Some(file_prefix) = &mut filename.file_stem()
-            {
+            let mut filename = target.clone();
+            while let Some(file_prefix) = &mut filename.file_stem() {
+                let file_prefix_str_bytes = file_prefix.as_bytes();
+                if let Some(last_byte) = file_prefix_str_bytes.last() {
+                    if last_byte.is_ascii_digit() {
+                        filename = PathBuf::from(&file_prefix);
+                        break;
+                    }
+                }
                 filename = PathBuf::from(&file_prefix);
             }
             filename
         },
     };
 
-    let file_extension = match recomprizz_args.compression
-    {
+    let file_extension = match recomprizz_args.compression {
         crate::common::Compression::Gz => "tar.gz",
         crate::common::Compression::Xz => "tar.xz",
         crate::common::Compression::Zst => "tar.zst",
@@ -75,8 +64,7 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
 
     let out_filename = format!("{}.{}", out_filename.display(), file_extension);
 
-    let roast_outpath = match recomprizz_args.outdir
-    {
+    let roast_outpath = match recomprizz_args.outdir {
         Some(v) => v,
         None => std::env::current_dir()?,
     };

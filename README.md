@@ -13,6 +13,18 @@ Create archive tarballs and roast them!
 > The fix could be to try to match the length of the directory name of the temporary directory
 > as obs-service-cargo. I have not tested that yet though ☺️
 
+> [!NOTE]
+> When using `recomprizz`, files with filenames like `package-1.2.3.tar.gz` will have
+> the number parts of their names preserved i.e. `package-1.2.3.tar.gz` -> `package-1.2.3.tar.zst`.
+> However, filenames with letters after the numbers will be removed especially for version part
+> of the filenames are tagged as `alpha` or `beta`. For example, `package-1.2.3.alpha.tar.gz` will
+> turn into `package-1.2.3.tar.zst`. This is a limitation with the renaming logic. The solution is
+> to use the `-R` or `--rename` flag to hardcode the new name. So a command like
+> ```
+> recomprizz -t package-1.2.3.alpha.tar.gz -R package-1.2.3.alpha
+> ```
+> should fix the issue.
+
 ## Reason of existence
 
 I am trying to split the logic from [obs-service-cargo](https://github.com/openSUSE-Rust/obs-service-cargo).

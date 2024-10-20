@@ -45,14 +45,16 @@ pub struct RoastArgs
         long,
         short = 'p',
         help = "Preserve root directory instead of only archiving relative paths. DEFAULT: false.",
-        default_value_t = false
+        default_value_t = false,
+        action = clap::ArgAction::Set
     )]
     pub preserve_root: bool,
     #[arg(
         long,
         short = 'r',
         help = "Allow reproducibility for Reproducible Builds. DEFAULT: false.",
-        default_value_t = false
+        default_value_t = false,
+        action = clap::ArgAction::Set
     )]
     pub reproducible: bool,
 }
@@ -116,7 +118,8 @@ pub struct RecomprizzArgs
         long,
         short = 'r',
         help = "Allow reproducibility for Reproducible Builds. DEFAULT: false.",
-        default_value_t = false
+        default_value_t = false,
+        action = clap::ArgAction::Set
     )]
     pub reproducible: bool,
 }

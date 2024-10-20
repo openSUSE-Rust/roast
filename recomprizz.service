@@ -1,0 +1,29 @@
+<service name="recomprizz">
+  <summary>OBS Service to recomprizz (recompress) archived tarballs</summary>
+  <description>
+  <![CDATA[
+  This service recompresses archived tarballs with highest level of
+  compression available. Alternative to obs-service-recompress.
+  ]]></description>
+  <parameter name="strategy">
+    <description>Legacy argument, no longer used. Values: vendor. Default: vendor</description>
+  </parameter>
+  <parameter name="target">
+    <description>Target tarball file to extract and recompress.</description>
+  </parameter>
+  <parameter name="outdir">
+    <description>utput directory of recompressed archive. DEFAULT: current directory if omitted.</description>
+  </parameter>
+  <parameter name="reproducible">
+    <description>Allow reproducibility for Reproducible Builds. DEFAULT: false.</description>
+    <allowedvalue>false</allowedvalue>
+    <allowedvalue>true</allowedvalue>
+  </parameter>
+  <parameter name="rename">
+    <description>Use this flag if you want a new filename to use ignoring the new file extension. Omitting this flag will just fallback to basename.</description>
+  </parameter>
+  <parameter name="compression">
+    <description>Compression to use. [default: zst] [possible values: gz, xz, zst, bz2, not]</description>
+  </parameter>
+</service>
+

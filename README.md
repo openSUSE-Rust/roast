@@ -1,5 +1,13 @@
 # Roast
 
+<p align="center>
+  <a href="https://github.com/openSUSE-Rust/roast/actions/workflows/ci.yml"><img src="https://github.com/openSUSE-Rust/roast/actions/workflows/ci.yml/badge.svg" /></a>
+  <a href="https://build.opensuse.org/package/show/Archiving/roast" target="_blank"><img src="https://build.opensuse.org/projects/Archiving/packages/roast/badge.svg?type=default" /></a>
+  <br />
+  <a href="https://crates.io/crates/roast-cli/"><img src="https://img.shields.io/crates/v/roast-cli?style=flat&logo=Rust&label=roast-cli"></a>
+  <a href="https://crates.io/crates/libroast/"><img src="https://img.shields.io/crates/v/libroast?style=flat&logo=Rust&label=libroast"></a>
+</p>
+
 Create archive tarballs and roast them!
 
 > [!WARNING]

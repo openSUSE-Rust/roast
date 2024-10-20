@@ -39,12 +39,20 @@ pub struct RoastArgs
                 directory will be put next to the target directory."
     )]
     pub additional_paths: Option<Vec<PathBuf>>,
+    #[arg(
+        long,
+        short = 'I',
+        help = "Additional paths such as files or directories to exclude to the archive."
+    )]
+    pub ignore_paths: Option<Vec<PathBuf>>,
     #[arg(long, short = 'o', help = "Output file of the generated archive with path.")]
     pub outfile: PathBuf,
+    #[arg(long, short = 'o', help = "Output path of extracted archive.")]
+    pub outdir: Option<PathBuf>,
     #[arg(
         long,
         short = 'p',
-        help = "Preserve root directory instead of only archiving relative paths. DEFAULT: false.",
+        help = "Preserve root directory instead of only archiving relative paths.",
         default_value_t = false,
         action = clap::ArgAction::Set
     )]
@@ -52,11 +60,25 @@ pub struct RoastArgs
     #[arg(
         long,
         short = 'r',
-        help = "Allow reproducibility for Reproducible Builds. DEFAULT: false.",
+        help = "Allow reproducibility for Reproducible Builds.",
         default_value_t = false,
         action = clap::ArgAction::Set
     )]
     pub reproducible: bool,
+    #[arg(
+        long,
+        help = "Whether to ignore git related metadata, files and directories.",
+        default_value_t = true,
+        action = clap::ArgAction::Set
+    )]
+    pub ignore_git: bool,
+    #[arg(
+        long,
+        help = "Whether to ignore hidden directories and files or what we call dotfiles. Does not affect `--ignore-git`.",
+        default_value_t = false,
+        action = clap::ArgAction::Set
+    )]
+    pub hidden: bool,
 }
 
 #[derive(Debug, Parser)]
@@ -73,13 +95,13 @@ pub struct RoastArgs
 )]
 pub struct RawArgs
 {
-    #[arg(long, short = 't', help = "Target tarball file to extract and decompress. Supports globbing.")]
-    pub target: PathBuf,
     #[arg(
         long,
-        short = 'o',
-        help = "Output path of extracted archive. DEFAULT: current directory if omitted."
+        short = 't',
+        help = "Target tarball file to extract and decompress. Supports globbing."
     )]
+    pub target: PathBuf,
+    #[arg(long, short = 'o', help = "Output path of extracted archive.")]
     pub outdir: Option<PathBuf>,
 }
 
@@ -97,13 +119,19 @@ pub struct RawArgs
 )]
 pub struct RecomprizzArgs
 {
-    #[arg(long, short = 't', help = "Target tarball file to extract and recompress. Supports globbing.")]
+    #[arg(
+        long,
+        short = 't',
+        help = "Target tarball file to extract and recompress. Supports globbing."
+    )]
     pub target: PathBuf,
     #[arg(
         long,
-        short = 'o',
-        help = "Output directory of recompressed archive. DEFAULT: current directory if omitted."
+        short = 'I',
+        help = "Additional paths such as files or directories to exclude to the archive."
     )]
+    pub ignore_paths: Option<Vec<PathBuf>>,
+    #[arg(long, short = 'o', help = "Output directory of recompressed archive.")]
     pub outdir: Option<PathBuf>,
     #[arg(long, short = 'c', help = "Compression to use.", default_value_t)]
     pub compression: Compression,
@@ -117,9 +145,23 @@ pub struct RecomprizzArgs
     #[arg(
         long,
         short = 'r',
-        help = "Allow reproducibility for Reproducible Builds. DEFAULT: false.",
+        help = "Allow reproducibility for Reproducible Builds.",
         default_value_t = false,
         action = clap::ArgAction::Set
     )]
     pub reproducible: bool,
+    #[arg(
+        long,
+        help = "Whether to ignore git related metadata, files and directories.",
+        default_value_t = true,
+        action = clap::ArgAction::Set
+    )]
+    pub ignore_git: bool,
+    #[arg(
+        long,
+        help = "Whether to ignore hidden directories and files or what we call dotfiles. Does not affect `--ignore-git`.",
+        default_value_t = false,
+        action = clap::ArgAction::Set
+    )]
+    pub hidden: bool,
 }

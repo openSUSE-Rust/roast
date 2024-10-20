@@ -29,7 +29,7 @@ pub struct RoastArgs
         long,
         short = 't',
         help = "Target directory to archive. This will be set as the root directory of the \
-                archive."
+                archive. Supports globbing."
     )]
     pub target: PathBuf,
     #[arg(
@@ -73,7 +73,7 @@ pub struct RoastArgs
 )]
 pub struct RawArgs
 {
-    #[arg(long, short = 't', help = "Target tarball file to extract and decompress.")]
+    #[arg(long, short = 't', help = "Target tarball file to extract and decompress. Supports globbing.")]
     pub target: PathBuf,
     #[arg(
         long,
@@ -97,7 +97,7 @@ pub struct RawArgs
 )]
 pub struct RecomprizzArgs
 {
-    #[arg(long, short = 't', help = "Target tarball file to extract and recompress.")]
+    #[arg(long, short = 't', help = "Target tarball file to extract and recompress. Supports globbing.")]
     pub target: PathBuf,
     #[arg(
         long,

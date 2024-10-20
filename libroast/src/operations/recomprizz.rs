@@ -31,6 +31,7 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()> {
     let outpath_for_raw = &tmp_binding_for_raw.path();
 
     let target = process_globs(&recomprizz_args.target)?;
+    let target = target.canonicalize().unwrap_or(target);
     let raw_args = RawArgs { target: target.clone(), outdir: Some(outpath_for_raw.to_path_buf()) };
 
     raw_opts(raw_args, start_trace)?;

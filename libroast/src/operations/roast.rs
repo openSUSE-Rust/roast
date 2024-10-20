@@ -2,7 +2,7 @@ use crate::{
     compress,
     copy_dir_all,
     operations::cli,
-    start_tracing,
+    start_tracing, utils::process_globs,
 };
 use std::{
     ffi::OsStr,
@@ -30,7 +30,7 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
 
     info!("❤️‍🔥 Starting Roast.");
     debug!(?roast_args);
-    let target_path = roast_args.target;
+    let target_path = process_globs(&roast_args.target)?;
     let target_path = target_path.canonicalize().unwrap_or(target_path);
     let tmp_binding = tempfile::Builder::new()
         .prefix(".rooooooooooaaaaaaaasssst")

@@ -2,7 +2,7 @@ use crate::{
     decompress,
     is_supported_format,
     operations::cli,
-    start_tracing,
+    start_tracing, utils::process_globs,
 };
 use std::io;
 #[allow(unused_imports)]
@@ -23,7 +23,10 @@ pub fn raw_opts(raw_args: cli::RawArgs, start_trace: bool) -> io::Result<()>
     }
 
     info!("🥩 Starting Raw.");
-    if raw_args.target.is_file()
+
+    let target_path = process_globs(&raw_args.target)?;
+    let target_path = target_path.canonicalize().unwrap_or(target_path);
+    if target_path.is_file()
     {
         match is_supported_format(&raw_args.target)
         {

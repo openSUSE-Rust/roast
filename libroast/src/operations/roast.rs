@@ -117,7 +117,7 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
     let target_path = process_globs(&roast_args.target)?;
     let target_path = target_path.canonicalize().unwrap_or(target_path);
     let tmp_binding = tempfile::Builder::new()
-        .prefix("rooooooooooaaaaaaaasssst")
+        .prefix(".rooooooooooaaaaaaaasssst")
         .rand_bytes(8)
         .tempdir()
         .inspect_err(|err| {

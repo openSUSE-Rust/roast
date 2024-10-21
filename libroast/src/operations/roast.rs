@@ -1,5 +1,6 @@
 use crate::{
     compress,
+    copy_dir_all,
     operations::cli,
     start_tracing,
     utils::process_globs,
@@ -34,51 +35,57 @@ fn filter_paths(
     ignore_paths: &[PathBuf],
 ) -> io::Result<()>
 {
-    let walker = WalkDir::new(target_path).into_iter();
-    for entry in walker.filter_entry(|e| !is_hidden(e, hidden, ignore_git, root)).flatten()
+    let target_canonicalized = target_path.canonicalize().unwrap_or(target_path.to_path_buf());
+    let root_canonicalized = root.canonicalize().unwrap_or(root.to_path_buf());
+    if target_canonicalized != root_canonicalized
     {
-        debug!(?entry, "entry to copy");
-        let p_path = &entry.clone().into_path().canonicalize().unwrap_or(entry.into_path());
-        debug!(?p_path, "Path to copy");
-        debug!("PATH EXISTS? {}", p_path.exists());
-        let w_path = p_path
-            .strip_prefix(target_path)
-            .unwrap_or(&PathBuf::from(&p_path.file_name().unwrap_or(p_path.as_os_str())))
-            .to_path_buf();
-        debug!(?w_path);
-        if !ignore_paths.contains(p_path)
+        let walker = WalkDir::new(target_path).into_iter();
+        for entry in walker.filter_entry(|e| !is_hidden(e, hidden, ignore_git, root)).flatten()
         {
-            if p_path.is_file()
+            debug!(?entry, "entry to copy");
+            let p_path = &entry.clone().into_path().canonicalize().unwrap_or(entry.into_path());
+            debug!(?p_path, "Path to copy");
+            debug!("PATH EXISTS? {}", p_path.exists());
+            let w_path = p_path
+                .strip_prefix(target_path)
+                .unwrap_or(&PathBuf::from(&p_path.file_name().unwrap_or(p_path.as_os_str())))
+                .to_path_buf();
+            debug!(?w_path);
+            if !ignore_paths.contains(p_path)
             {
-                let dst = &root.join(&w_path);
-                debug!(?dst, "destination");
-                if dst.exists()
+                if p_path.is_file()
                 {
-                    warn!(
-                        "Additional file will overwrite existing file at path `{}`. Consider \
-                         adding `-p` to mitigate this.",
-                        dst.display()
-                    );
-                }
-                fs::copy(p_path, dst)?;
-            }
-            else if p_path.is_dir()
-            {
-                let dst = &root.join(&w_path);
-                debug!(?dst, "destination");
-                // Avoid the setup workdir the same as dst
-                if dst.canonicalize().unwrap_or(dst.to_path_buf())
-                    != root.canonicalize().unwrap_or(root.to_path_buf())
-                {
+                    let dst = &root.join(&w_path);
+                    debug!(?dst, "destination");
                     if dst.exists()
                     {
                         warn!(
-                            "Additional file will overwrite existing file at path `{}`. Consider \
-                             adding `-p` to mitigate this.",
+                            "⚠️ Additional file will overwrite existing file at path `{}`.",
                             dst.display()
                         );
                     }
-                    fs::create_dir_all(dst)?;
+                    fs::copy(p_path, dst)?;
+                }
+                else if p_path.is_dir()
+                {
+                    let dst = &root.join(&w_path);
+                    debug!(?root, "WHAT THE FUCK IS ROOT! GROOT!");
+                    debug!(?dst, "destination");
+                    // Avoid the setup workdir the same as dst
+                    if dst.canonicalize().unwrap_or(dst.to_path_buf())
+                        != root.canonicalize().unwrap_or(root.to_path_buf())
+                    {
+                        if dst.exists()
+                        {
+                            warn!(
+                                "⚠️ Additional directory will overwrite existing directory at \
+                                 path `{}`.",
+                                dst.display()
+                            );
+                        }
+                        debug!(?dst, "final destination");
+                        fs::create_dir_all(dst)?;
+                    }
                 }
             }
         }
@@ -89,6 +96,7 @@ fn filter_paths(
 fn is_hidden(entry: &DirEntry, hidden: bool, ignore_git: bool, root: &Path) -> bool
 {
     let entry_str = &entry.file_name().to_string_lossy();
+    debug!(?entry_str, ?root);
     let entry = &entry.clone().into_path();
     let entry_canonicalized = entry.canonicalize().unwrap_or(entry.to_path_buf());
     let root_canonicalized = root.canonicalize().unwrap_or(root.to_path_buf());
@@ -96,15 +104,13 @@ fn is_hidden(entry: &DirEntry, hidden: bool, ignore_git: bool, root: &Path) -> b
     {
         return false;
     }
-    if hidden
-    {
-        let h = entry_str.starts_with(".");
-        let g = if ignore_git { true } else { !entry_str.starts_with(".git") };
-        h && g
-    }
     else if ignore_git
     {
         entry_str.starts_with(".git")
+    }
+    else if hidden
+    {
+        entry_str.starts_with(".")
     }
     else
     {
@@ -166,71 +172,151 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
 
     if let Some(additional_paths) = roast_args.additional_paths
     {
-        // TODO: Set this before everything so we won't have to do it again and again.
+        info!("⏫ Adding extra paths to source!");
         for path in additional_paths
         {
-            if ignore_paths.contains(&path)
+            let path_canonicalized = path.canonicalize().unwrap_or(path.to_path_buf());
+            let target_canonicalized =
+                target_path.canonicalize().unwrap_or(target_path.to_path_buf());
+            let is_stripped = path_canonicalized.strip_prefix(&target_canonicalized);
+            if is_stripped.is_ok()
             {
-                warn!(
-                    "⚠️ You are adding a path that's also been declared to be ignored. Excluding \
-                     paths takes higher precendence. Path to be ignored: {}",
-                    path.display()
+                info!(
+                    "ℹ️ Added path `{}` is within target path `{}`",
+                    path_canonicalized.display(),
+                    target_canonicalized.display()
                 );
-            }
-            else
-            {
-                debug!(?path, "Additional directory");
-                let dst = &setup_workdir.join(path.file_name().unwrap_or(path.as_os_str()));
-                if dst.is_dir()
+                if ignore_paths.contains(&path)
                 {
-                    warn!(
-                        "⚠️ Additional directory may overwrite contents of existing directory at \
-                         path `{}`.",
-                        dst.display()
-                    );
+                    if path.is_file()
+                    {
+                        warn!(
+                            "⚠️ You are adding a file path that's also been declared to be \
+                             ignored. Excluding file paths takes higher precendence. File to be \
+                             ignored: {}",
+                            path.display()
+                        );
+                    }
+                    else if path.is_dir()
+                    {
+                        warn!(
+                            "⚠️ You are adding a directory path that's also been declared to be \
+                             ignored. Excluding paths takes higher precendence. Directory to be \
+                             ignored: {}",
+                            path.display()
+                        );
+                        warn!(
+                            "⚠️ Files that are explictly added that are within this directory \
+                             will be added as we believe ignoring the directory and its contents \
+                             are intentional except explicitly added files. If you think this \
+                             behaviour is not the desired behaviour, please file an issue! 🙏",
+                        );
+                    }
                 }
-                else if dst.is_file()
+                else
                 {
-                    warn!(
-                        "⚠️ Additional file may overwrite contents of existing file at path `{}`.",
-                        dst.display()
-                    );
-                };
-                if path.is_dir()
-                {
-                    fs::create_dir_all(dst)?;
-                    debug!(?dst, "Destination path");
-                    filter_paths(
-                        &path,
-                        dst,
-                        roast_args.hidden,
-                        roast_args.ignore_git,
-                        &ignore_paths,
-                    )?;
-                }
-                else if path.is_file()
-                {
-                    let parent = path.parent().unwrap_or(Path::new("/"));
-                    let dst_parent =
-                        &setup_workdir.join(parent.file_name().unwrap_or(parent.as_os_str()));
-                    if dst_parent.exists()
+                    debug!(?path, "Additional directory");
+                    let dst = &setup_workdir.join(path.file_name().unwrap_or_default());
+                    if dst.is_dir()
                     {
                         warn!(
                             "⚠️ Additional directory may overwrite contents of existing directory \
                              at path `{}`.",
-                            dst_parent.display()
+                            dst.display()
                         );
                     }
-                    fs::create_dir_all(dst_parent)?;
-                    debug!(?dst, "Destination path");
-                    filter_paths(
-                        &path,
-                        dst_parent,
-                        roast_args.hidden,
-                        roast_args.ignore_git,
-                        &ignore_paths,
-                    )?;
+                    else if dst.is_file()
+                    {
+                        warn!(
+                            "⚠️ Additional file may overwrite contents of existing file at path \
+                             `{}`.",
+                            dst.display()
+                        );
+                    };
+                    if path.is_dir()
+                    {
+                        fs::create_dir_all(dst)?;
+                        debug!(?dst, "Destination path");
+                        filter_paths(
+                            &path,
+                            dst,
+                            roast_args.hidden,
+                            roast_args.ignore_git,
+                            &ignore_paths,
+                        )?;
+                    }
+                    else if path.is_file()
+                    {
+                        let parent = path.parent().unwrap_or(Path::new("/"));
+                        for ig_path in &ignore_paths
+                        {
+                            let ig_path_canonicalized =
+                                ig_path.canonicalize().unwrap_or(ig_path.to_path_buf());
+                            let path_canonicalized =
+                                &path.canonicalize().unwrap_or(path.to_path_buf());
+                            let is_stripped =
+                                path_canonicalized.strip_prefix(ig_path_canonicalized);
+                            if is_stripped.is_ok()
+                            {
+                                warn!(
+                                    "⚠️ File `{}` is within an ignored directory `{}`.",
+                                    &path.display(),
+                                    &path_canonicalized.display()
+                                );
+                                warn!(
+                                    "⚠️ Files that are added that are within this directory will \
+                                     be added as we believe ignoring the directory and its \
+                                     contents are intentional except explicitly added files. If \
+                                     you think this behaviour is not the desired behaviour, \
+                                     please file an issue! 🙏",
+                                );
+                                warn!("⚠️ File to be added: {}", &path.display());
+                                break;
+                            }
+                        }
+                        let dst_parent =
+                            &setup_workdir.join(parent.file_name().unwrap_or(parent.as_os_str()));
+                        fs::create_dir_all(dst_parent)?;
+                        debug!(?path, "Destination path");
+                        filter_paths(
+                            &path,
+                            dst_parent,
+                            roast_args.hidden,
+                            roast_args.ignore_git,
+                            &ignore_paths,
+                        )?;
+                    }
                 }
+            }
+            else
+            {
+                info!("ℹ️ You are adding paths outside the target path!");
+                let dst = &setup_workdir.join(path.file_name().unwrap_or_default());
+                if path.is_dir()
+                {
+                    if dst.exists()
+                    {
+                        warn!(
+                            "⚠️ Additional directory may overwrite contents of existing directory \
+                             at path `{}`.",
+                            dst.display()
+                        );
+                    }
+                    copy_dir_all(&path, dst)?;
+                }
+                else if path.is_file()
+                {
+                    if dst.exists()
+                    {
+                        warn!(
+                            "⚠️ Additional file may overwrite contents of existing file at path \
+                             `{}`.",
+                            dst.display()
+                        );
+                    }
+                    fs::copy(&path, dst)?;
+                }
+                info!("ℹ️ Added path `{}`", path_canonicalized.display(),);
             }
         }
     }

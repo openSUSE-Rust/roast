@@ -56,10 +56,12 @@ fn filter_paths(
                 if p_path.is_file()
                 {
                     let dst = &root.join(&w_path);
+                    let parent = dst.parent().unwrap_or(Path::new("/"));
+                    fs::create_dir_all(parent)?;
                     debug!(?dst, "destination");
                     if dst.exists()
                     {
-                        warn!(
+                        trace!(
                             "⚠️ Additional file will overwrite existing file at path `{}`.",
                             dst.display()
                         );
@@ -77,7 +79,7 @@ fn filter_paths(
                     {
                         if dst.exists()
                         {
-                            warn!(
+                            trace!(
                                 "⚠️ Additional directory will overwrite existing directory at \
                                  path `{}`.",
                                 dst.display()
@@ -102,7 +104,7 @@ fn is_hidden(entry: &DirEntry, hidden: bool, ignore_git: bool, root: &Path) -> b
     let root_canonicalized = root.canonicalize().unwrap_or(root.to_path_buf());
     if entry_canonicalized == root_canonicalized
     {
-        return false;
+        false
     }
     else if ignore_git
     {
@@ -248,6 +250,7 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                     else if path.is_file()
                     {
                         let parent = path.parent().unwrap_or(Path::new("/"));
+                        fs::create_dir_all(parent)?;
                         for ig_path in &ignore_paths
                         {
                             let ig_path_canonicalized =
@@ -274,13 +277,14 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                                 break;
                             }
                         }
+                        let parent = dst.parent().unwrap_or(Path::new("/"));
                         let dst_parent =
                             &setup_workdir.join(parent.file_name().unwrap_or(parent.as_os_str()));
                         fs::create_dir_all(dst_parent)?;
                         debug!(?path, "Destination path");
                         filter_paths(
                             &path,
-                            dst_parent,
+                            parent,
                             roast_args.hidden,
                             roast_args.ignore_git,
                             &ignore_paths,
@@ -306,6 +310,8 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                 }
                 else if path.is_file()
                 {
+                    let parent = dst.parent().unwrap_or(Path::new("/"));
+                    fs::create_dir_all(parent)?;
                     if dst.exists()
                     {
                         warn!(

@@ -1,6 +1,5 @@
 use crate::{
     compress,
-    copy_dir_all,
     operations::cli,
     start_tracing,
     utils::process_globs,
@@ -9,7 +8,10 @@ use std::{
     ffi::OsStr,
     fs,
     io,
-    path::PathBuf,
+    path::{
+        Path,
+        PathBuf,
+    },
 };
 #[allow(unused_imports)]
 use tracing::{
@@ -24,6 +26,66 @@ use walkdir::{
     DirEntry,
     WalkDir,
 };
+
+fn filter_paths(
+    target_path: &Path,
+    root: &Path,
+    hidden: bool,
+    ignore_git: bool,
+    ignore_paths: &[PathBuf],
+) -> io::Result<()>
+{
+    let walker = WalkDir::new(target_path).into_iter();
+    for entry in walker.filter_entry(|e| !is_hidden(e, hidden, ignore_git)).flatten()
+    {
+        debug!(?entry, "entry to copy");
+        let p_path = &entry.clone().into_path().canonicalize().unwrap_or(entry.into_path());
+        debug!(?p_path, "Path to copy");
+        debug!("PATH EXISTS? {}", p_path.exists());
+        let w_path = p_path
+            .strip_prefix(target_path)
+            .unwrap_or(&PathBuf::from(&p_path.file_name().unwrap_or(p_path.as_os_str())))
+            .to_path_buf();
+        debug!(?w_path);
+        if !ignore_paths.contains(p_path)
+        {
+            if p_path.is_file()
+            {
+                let dst = &root.join(&w_path);
+                debug!(?dst, "destination");
+                if dst.exists()
+                {
+                    warn!(
+                        "Additional file will overwrite existing file at path `{}`. Consider \
+                         adding `-p` to mitigate this.",
+                        dst.display()
+                    );
+                }
+                fs::copy(p_path, dst)?;
+            }
+            else if p_path.is_dir()
+            {
+                let dst = &root.join(&w_path);
+                debug!(?dst, "destination");
+                // Avoid the setup workdir the same as dst
+                if dst.canonicalize().unwrap_or(dst.to_path_buf())
+                    != root.canonicalize().unwrap_or(root.to_path_buf())
+                {
+                    if dst.exists()
+                    {
+                        warn!(
+                            "Additional file will overwrite existing file at path `{}`. Consider \
+                             adding `-p` to mitigate this.",
+                            dst.display()
+                        );
+                    }
+                    fs::create_dir_all(dst)?;
+                }
+            }
+        }
+    }
+    Ok(())
+}
 
 fn is_hidden(entry: &DirEntry, hidden: bool, ignore_git: bool) -> bool
 {
@@ -82,58 +144,19 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
     let outpath = outdir.join(roast_args.outfile);
     let outpath = outpath.canonicalize().unwrap_or(outpath);
 
-    let ignore_paths: Vec<PathBuf> = roast_args.ignore_paths.unwrap_or_default();
+    let mut ignore_paths: Vec<PathBuf> = roast_args.ignore_paths.unwrap_or_default();
+    ignore_paths =
+        ignore_paths.iter().map(|p| p.canonicalize().unwrap_or(p.to_path_buf())).collect();
 
     debug!(?ignore_paths, "IGNORED");
 
-    let walker = WalkDir::new(&target_path).into_iter();
-
-    for entry in
-        walker.filter_entry(|e| !is_hidden(e, roast_args.hidden, roast_args.ignore_git)).flatten()
-    {
-        debug!(?entry, "entry to copy");
-        let p_path = &entry.clone().into_path().canonicalize().unwrap_or(entry.into_path());
-        debug!(?p_path, "Path to copy");
-        debug!("PATH EXISTS? {}", p_path.exists());
-        let w_path = p_path
-            .strip_prefix(&target_path)
-            .unwrap_or(&PathBuf::from(&p_path.file_name().unwrap_or(p_path.as_os_str())))
-            .to_path_buf();
-        debug!(?w_path);
-        if p_path.is_file()
-        {
-            let dst = &setup_workdir.join(&w_path);
-            debug!(?dst, "destination");
-            if dst.exists()
-            {
-                warn!(
-                    "Additional file will overwrite existing file at path `{}`. Consider adding \
-                     `-p` to mitigate this.",
-                    dst.display()
-                );
-            }
-            fs::copy(p_path, dst)?;
-        }
-        else if p_path.is_dir()
-        {
-            let dst = &setup_workdir.join(&w_path);
-            debug!(?dst, "destination");
-            // Avoid the setup workdir the same as dst
-            if dst.canonicalize().unwrap_or(dst.to_path_buf())
-                != setup_workdir.canonicalize().unwrap_or(setup_workdir.to_path_buf())
-            {
-                if dst.exists()
-                {
-                    warn!(
-                        "Additional file will overwrite existing file at path `{}`. Consider \
-                         adding `-p` to mitigate this.",
-                        dst.display()
-                    );
-                }
-                fs::create_dir_all(dst)?;
-            }
-        }
-    }
+    filter_paths(
+        &target_path,
+        &setup_workdir,
+        roast_args.hidden,
+        roast_args.ignore_git,
+        &ignore_paths,
+    )?;
 
     if let Some(additional_paths) = roast_args.additional_paths
     {
@@ -148,25 +171,11 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                     path.display()
                 );
             }
-            else if path.is_file()
-            {
-                debug!(?path, "Additional file");
-                let dst = &setup_workdir.join(path.file_name().unwrap_or(path.as_os_str()));
-                if dst.exists()
-                {
-                    warn!(
-                        "⚠️ Additional file will overwrite existing file at path `{}`.",
-                        dst.display()
-                    );
-                }
-                debug!(?dst, "Destination path");
-                fs::copy(&path, dst)?;
-            }
-            else if path.is_dir()
+            else
             {
                 debug!(?path, "Additional directory");
                 let dst = &setup_workdir.join(path.file_name().unwrap_or(path.as_os_str()));
-                if dst.exists()
+                if dst.is_dir()
                 {
                     warn!(
                         "⚠️ Additional directory may overwrite contents of existing directory at \
@@ -174,8 +183,48 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                         dst.display()
                     );
                 }
-                debug!(?dst, "Destination path");
-                copy_dir_all(&path, dst)?;
+                else if dst.is_file()
+                {
+                    warn!(
+                        "⚠️ Additional file may overwrite contents of existing file at path `{}`.",
+                        dst.display()
+                    );
+                };
+                if path.is_dir()
+                {
+                    fs::create_dir_all(dst)?;
+                    debug!(?dst, "Destination path");
+                    filter_paths(
+                        &path,
+                        dst,
+                        roast_args.hidden,
+                        roast_args.ignore_git,
+                        &ignore_paths,
+                    )?;
+                }
+                else if path.is_file()
+                {
+                    let parent = path.parent().unwrap_or(Path::new("/"));
+                    let dst_parent =
+                        &setup_workdir.join(parent.file_name().unwrap_or(parent.as_os_str()));
+                    if dst_parent.exists()
+                    {
+                        warn!(
+                            "⚠️ Additional directory may overwrite contents of existing directory \
+                             at path `{}`.",
+                            dst_parent.display()
+                        );
+                    }
+                    fs::create_dir_all(dst_parent)?;
+                    debug!(?dst, "Destination path");
+                    filter_paths(
+                        &path,
+                        dst_parent,
+                        roast_args.hidden,
+                        roast_args.ignore_git,
+                        &ignore_paths,
+                    )?;
+                }
             }
         }
     }

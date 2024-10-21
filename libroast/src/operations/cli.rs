@@ -1,6 +1,12 @@
 use crate::common::Compression;
 use clap::Parser;
-use std::path::PathBuf;
+use std::{
+    env::current_dir,
+    path::{
+        Path,
+        PathBuf,
+    },
+};
 #[allow(unused_imports)]
 use tracing::{
     debug,
@@ -34,20 +40,30 @@ pub struct RoastArgs
     pub target: PathBuf,
     #[arg(
         long,
-        short = 'a',
-        help = "Additional paths such as files or directories to add to the archive. Their parent \
-                directory will be put next to the target directory."
+        short = 'i',
+        help = "Additional paths such as files or directories in the target directory to include \
+                to the archive. Their parent directory will be put next to the target directory. \
+                This is different from `--additional_paths`. Useful to override excluded paths."
     )]
-    pub additional_paths: Option<Vec<PathBuf>>,
+    pub include: Option<Vec<PathBuf>>,
     #[arg(
         long,
-        short = 'I',
-        help = "Additional paths such as files or directories to exclude to the archive."
+        short = 'E',
+        help = "Additional paths such as files or directories from within target directory to \
+                exclude when generating the archive."
     )]
-    pub ignore_paths: Option<Vec<PathBuf>>,
-    #[arg(long, short = 'o', help = "Output file of the generated archive with path.")]
+    pub exclude: Option<Vec<PathBuf>>,
+    #[arg(
+        long,
+        short = 'A',
+        help = "Additional paths such as files or directories to add to the archive. Their parent \
+                directory will be put next to the target directory. This is different from \
+                `--include`."
+    )]
+    pub additional_paths: Option<Vec<PathBuf>>,
+    #[arg(long, short = 'f', help = "Output file of the generated archive with path.")]
     pub outfile: PathBuf,
-    #[arg(long, short = 'o', help = "Output path of extracted archive.")]
+    #[arg(long, short = 'd', help = "Output path of extracted archive.")]
     pub outdir: Option<PathBuf>,
     #[arg(
         long,
@@ -67,6 +83,7 @@ pub struct RoastArgs
     pub reproducible: bool,
     #[arg(
         long,
+        short = 'g',
         help = "Whether to ignore git related metadata, files and directories.",
         default_value_t = true,
         action = clap::ArgAction::Set
@@ -74,11 +91,12 @@ pub struct RoastArgs
     pub ignore_git: bool,
     #[arg(
         long,
+        short = 'I',
         help = "Whether to ignore hidden directories and files or what we call dotfiles. Does not affect `--ignore-git`.",
         default_value_t = false,
         action = clap::ArgAction::Set
     )]
-    pub hidden: bool,
+    pub ignore_hidden: bool,
 }
 
 #[derive(Debug, Parser)]
@@ -101,7 +119,7 @@ pub struct RawArgs
         help = "Target tarball file to extract and decompress. Supports globbing."
     )]
     pub target: PathBuf,
-    #[arg(long, short = 'o', help = "Output path of extracted archive.")]
+    #[arg(long, short = 'd', help = "Output directory of extracted archive.")]
     pub outdir: Option<PathBuf>,
 }
 
@@ -127,11 +145,22 @@ pub struct RecomprizzArgs
     pub target: PathBuf,
     #[arg(
         long,
-        short = 'I',
-        help = "Additional paths such as files or directories to exclude to the archive."
+        short = 'i',
+        help = "Additional paths such as files or directories in the target directory to include \
+                to the archive. Their parent directory will be put next to the target directory. \
+                This is different from `--additional_paths`. Useful to override excluded paths. \
+                ⚠️ Careful if the archive has whether preserved root set when it was created."
     )]
-    pub ignore_paths: Option<Vec<PathBuf>>,
-    #[arg(long, short = 'o', help = "Output directory of recompressed archive.")]
+    pub include: Option<Vec<PathBuf>>,
+    #[arg(
+        long,
+        short = 'E',
+        help = "Additional paths such as files or directories from within target directory to \
+                exclude when generating the archive. ⚠️ Careful if the archive has whether \
+                preserved root set when it was created."
+    )]
+    pub exclude: Option<Vec<PathBuf>>,
+    #[arg(long, short = 'd', help = "Output directory of recompressed archive.")]
     pub outdir: Option<PathBuf>,
     #[arg(long, short = 'c', help = "Compression to use.", default_value_t)]
     pub compression: Compression,
@@ -152,6 +181,7 @@ pub struct RecomprizzArgs
     pub reproducible: bool,
     #[arg(
         long,
+        short = 'g',
         help = "Whether to ignore git related metadata, files and directories.",
         default_value_t = true,
         action = clap::ArgAction::Set
@@ -159,9 +189,10 @@ pub struct RecomprizzArgs
     pub ignore_git: bool,
     #[arg(
         long,
+        short = 'I',
         help = "Whether to ignore hidden directories and files or what we call dotfiles. Does not affect `--ignore-git`.",
         default_value_t = false,
         action = clap::ArgAction::Set
     )]
-    pub hidden: bool,
+    pub ignore_hidden: bool,
 }

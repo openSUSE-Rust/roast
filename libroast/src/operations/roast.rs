@@ -37,27 +37,30 @@ fn filter_paths(
 {
     let target_canonicalized = target_path.canonicalize().unwrap_or(target_path.to_path_buf());
     let root_canonicalized = root.canonicalize().unwrap_or(root.to_path_buf());
+    debug!(?target_canonicalized);
+    debug!(?root_canonicalized);
     if target_canonicalized != root_canonicalized
     {
         let walker = WalkDir::new(target_path).into_iter();
-        for entry in walker.filter_entry(|e| !is_hidden(e, hidden, ignore_git, root)).flatten()
+        for entry in
+            walker.filter_entry(|e| !is_hidden(e, hidden, ignore_git, target_path)).flatten()
         {
             debug!(?entry, "entry to copy");
             let p_path = &entry.clone().into_path().canonicalize().unwrap_or(entry.into_path());
             debug!(?p_path, "Path to copy");
             debug!("PATH EXISTS? {}", p_path.exists());
             let w_path = p_path
-                .strip_prefix(target_path)
+                .strip_prefix(&target_canonicalized)
                 .unwrap_or(&PathBuf::from(&p_path.file_name().unwrap_or(p_path.as_os_str())))
                 .to_path_buf();
             debug!(?w_path);
-            if !ignore_paths.contains(p_path)
+            if !ignore_paths.contains(p_path) && !(w_path.as_os_str().is_empty())
             {
                 if p_path.is_file()
                 {
                     let dst = &root.join(&w_path);
-                    let parent = dst.parent().unwrap_or(Path::new("/"));
-                    fs::create_dir_all(parent)?;
+                    let dst_parent = dst.parent().unwrap_or(Path::new("/"));
+                    fs::create_dir_all(dst_parent)?;
                     debug!(?dst, "destination");
                     if dst.exists()
                     {
@@ -70,13 +73,11 @@ fn filter_paths(
                 }
                 else if p_path.is_dir()
                 {
-                    let dst = &root.join(&w_path);
-                    debug!(?root, "WHAT THE FUCK IS ROOT! GROOT!");
-                    debug!(?dst, "destination");
                     // Avoid the setup workdir the same as dst
-                    if dst.canonicalize().unwrap_or(dst.to_path_buf())
-                        != root.canonicalize().unwrap_or(root.to_path_buf())
+                    if *p_path != root_canonicalized
                     {
+                        let dst = &root.join(w_path); // FIXME: PLEASE FIX ME
+                        debug!(?dst, "destination");
                         if dst.exists()
                         {
                             trace!(
@@ -106,13 +107,13 @@ fn is_hidden(entry: &DirEntry, hidden: bool, ignore_git: bool, root: &Path) -> b
     {
         false
     }
-    else if ignore_git
+    else if entry_str.starts_with(".git")
     {
-        entry_str.starts_with(".git")
+        ignore_git
     }
-    else if hidden
+    else if entry_str.starts_with(".")
     {
-        entry_str.starts_with(".")
+        hidden
     }
     else
     {
@@ -180,6 +181,7 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
             let path_canonicalized = path.canonicalize().unwrap_or(path.to_path_buf());
             let target_canonicalized =
                 target_path.canonicalize().unwrap_or(target_path.to_path_buf());
+            debug!(?path_canonicalized, ?target_canonicalized);
             let is_stripped = path_canonicalized.strip_prefix(&target_canonicalized);
             if is_stripped.is_ok()
             {
@@ -249,8 +251,6 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                     }
                     else if path.is_file()
                     {
-                        let parent = path.parent().unwrap_or(Path::new("/"));
-                        fs::create_dir_all(parent)?;
                         for ig_path in &ignore_paths
                         {
                             let ig_path_canonicalized =
@@ -277,18 +277,10 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                                 break;
                             }
                         }
-                        let parent = dst.parent().unwrap_or(Path::new("/"));
-                        let dst_parent =
-                            &setup_workdir.join(parent.file_name().unwrap_or(parent.as_os_str()));
+                        let dst_parent = dst.parent().unwrap_or(Path::new("/"));
                         fs::create_dir_all(dst_parent)?;
                         debug!(?path, "Destination path");
-                        filter_paths(
-                            &path,
-                            parent,
-                            roast_args.hidden,
-                            roast_args.ignore_git,
-                            &ignore_paths,
-                        )?;
+                        filter_paths(&path, dst_parent, false, false, &ignore_paths)?;
                     }
                 }
             }
@@ -306,12 +298,11 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                             dst.display()
                         );
                     }
-                    copy_dir_all(&path, dst)?;
+                    fs::create_dir_all(dst)?;
+                    filter_paths(&path, dst, false, false, &ignore_paths)?;
                 }
                 else if path.is_file()
                 {
-                    let parent = dst.parent().unwrap_or(Path::new("/"));
-                    fs::create_dir_all(parent)?;
                     if dst.exists()
                     {
                         warn!(

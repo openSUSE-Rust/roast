@@ -35,7 +35,7 @@ fn filter_paths(
 ) -> io::Result<()>
 {
     let walker = WalkDir::new(target_path).into_iter();
-    for entry in walker.filter_entry(|e| !is_hidden(e, hidden, ignore_git)).flatten()
+    for entry in walker.filter_entry(|e| !is_hidden(e, hidden, ignore_git, root)).flatten()
     {
         debug!(?entry, "entry to copy");
         let p_path = &entry.clone().into_path().canonicalize().unwrap_or(entry.into_path());
@@ -86,18 +86,25 @@ fn filter_paths(
     Ok(())
 }
 
-fn is_hidden(entry: &DirEntry, hidden: bool, ignore_git: bool) -> bool
+fn is_hidden(entry: &DirEntry, hidden: bool, ignore_git: bool, root: &Path) -> bool
 {
-    let entry = entry.file_name().to_string_lossy();
+    let entry_str = &entry.file_name().to_string_lossy();
+    let entry = &entry.clone().into_path();
+    let entry_canonicalized = entry.canonicalize().unwrap_or(entry.to_path_buf());
+    let root_canonicalized = root.canonicalize().unwrap_or(root.to_path_buf());
+    if entry_canonicalized == root_canonicalized
+    {
+        return false;
+    }
     if hidden
     {
-        let h = entry.starts_with(".");
-        let g = if ignore_git { true } else { !entry.starts_with(".git") };
+        let h = entry_str.starts_with(".");
+        let g = if ignore_git { true } else { !entry_str.starts_with(".git") };
         h && g
     }
     else if ignore_git
     {
-        entry.starts_with(".git")
+        entry_str.starts_with(".git")
     }
     else
     {

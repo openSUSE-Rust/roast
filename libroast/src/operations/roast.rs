@@ -245,48 +245,31 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
 
     let reproducible = roast_args.reproducible;
 
-    let has_ext = &outpath.extension();
-
-    let result = match has_ext
+    let outpath_str = outpath.as_os_str().to_string_lossy();
+    let result = if outpath_str.ends_with("tar.gz")
     {
-        Some(ext) =>
-        {
-            let ext_val = &outpath.with_extension("");
-            let ext_val = ext_val.extension();
-            debug!(?ext_val);
-            let is_tar = [Some(OsStr::new("tar")), None].contains(&ext_val);
-            if is_tar
-            {
-                let bind_ft = ext.to_string_lossy().to_string();
-                debug!(?bind_ft);
-                let some_ft = bind_ft.as_str();
-                match some_ft
-                {
-                    "gz" => compress::targz(&outpath, workdir, &updated_paths, reproducible),
-                    "xz" => compress::tarxz(&outpath, workdir, &updated_paths, reproducible),
-                    "bz" => compress::tarbz2(&outpath, workdir, &updated_paths, reproducible),
-                    "zst" | "zstd" =>
-                    {
-                        compress::tarzst(&outpath, workdir, &updated_paths, reproducible)
-                    }
-                    "tar" => compress::vanilla(&outpath, workdir, &updated_paths, reproducible),
-                    _ =>
-                    {
-                        let message = format!("Unsupported file type: {}", ext.to_string_lossy());
-                        Err(io::Error::new(io::ErrorKind::Unsupported, message))
-                    }
-                }
-            }
-            else
-            {
-                let message = format!("Unsupported file type: {}", ext.to_string_lossy());
-                Err(io::Error::new(io::ErrorKind::Unsupported, message))
-            }
-        }
-        None => Err(io::Error::new(
-            io::ErrorKind::Unsupported,
-            "Cannot determine compression with no file extension",
-        )),
+        compress::targz(&outpath, workdir, &updated_paths, reproducible)
+    }
+    else if outpath_str.ends_with("tar.xz")
+    {
+        compress::tarxz(&outpath, workdir, &updated_paths, reproducible)
+    }
+    else if outpath_str.ends_with("tar.zst") | outpath_str.ends_with("tar.zstd")
+    {
+        compress::tarzst(&outpath, workdir, &updated_paths, reproducible)
+    }
+    else if outpath_str.ends_with("tar.bz")
+    {
+        compress::tarbz2(&outpath, workdir, &updated_paths, reproducible)
+    }
+    else if outpath_str.ends_with("tar")
+    {
+        compress::vanilla(&outpath, workdir, &updated_paths, reproducible)
+    }
+    else
+    {
+        let msg = format!("Unsupported file: {}", outpath_str);
+        Err(io::Error::new(io::ErrorKind::Unsupported, msg))
     };
 
     // Do not return the error. Just inform the user.

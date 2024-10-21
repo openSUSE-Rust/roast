@@ -5,7 +5,6 @@ use crate::{
     utils::process_globs,
 };
 use std::{
-    ffi::OsStr,
     fs,
     io,
     path::{

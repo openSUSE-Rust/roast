@@ -42,15 +42,17 @@ pub struct RoastArgs
         long,
         short = 'i',
         help = "Additional paths such as files or directories in the target directory to include \
-                to the archive. Their parent directory will be put next to the target directory. \
-                This is different from `--additional_paths`. Useful to override excluded paths."
+                to the archive. Their parent directory will be put next to the target directory's \
+                work directory. The work directory is based on the preserve root option. This is \
+                different from `--additional_paths`. Useful to override excluded directories. ⚠️ \
+                Careful if the archive has whether preserved root set when it was created."
     )]
     pub include: Option<Vec<PathBuf>>,
     #[arg(
         long,
         short = 'E',
-        help = "Additional paths such as files or directories from within target directory to \
-                exclude when generating the archive."
+        help = "Additional paths such as files or directories from within target directory's work \
+                directory to exclude when generating the archive."
     )]
     pub exclude: Option<Vec<PathBuf>>,
     #[arg(
@@ -58,9 +60,11 @@ pub struct RoastArgs
         short = 'A',
         help = "Additional paths such as files or directories to add to the archive. Their parent \
                 directory will be put next to the target directory. This is different from \
-                `--include`."
+                `--include`. Optionally, one can add a path to a directory inside the archive \
+                e.g. `-A some/file/to/archive,put/where/in/archive`. If directory does not exist, \
+                it will be created."
     )]
-    pub additional_paths: Option<Vec<PathBuf>>,
+    pub additional_paths: Option<Vec<String>>,
     #[arg(long, short = 'f', help = "Output file of the generated archive with path.")]
     pub outfile: PathBuf,
     #[arg(long, short = 'd', help = "Output path of extracted archive.")]
@@ -147,19 +151,29 @@ pub struct RecomprizzArgs
         long,
         short = 'i',
         help = "Additional paths such as files or directories in the target directory to include \
-                to the archive. Their parent directory will be put next to the target directory. \
-                This is different from `--additional_paths`. Useful to override excluded paths. \
-                ⚠️ Careful if the archive has whether preserved root set when it was created."
+                to the archive. Their parent directory will be put next to the target directory's \
+                work directory. The work directory is based on the preserve root option. This is \
+                different from `--additional_paths`. Useful to override excluded directories."
     )]
     pub include: Option<Vec<PathBuf>>,
     #[arg(
         long,
         short = 'E',
-        help = "Additional paths such as files or directories from within target directory to \
-                exclude when generating the archive. ⚠️ Careful if the archive has whether \
-                preserved root set when it was created."
+        help = "Additional paths such as files or directories from within target directory's work \
+                directory to exclude when generating the archive. ⚠️ Careful if the archive has \
+                whether preserved root set when it was created."
     )]
     pub exclude: Option<Vec<PathBuf>>,
+    #[arg(
+        long,
+        short = 'A',
+        help = "Additional paths such as files or directories to add to the archive. Their parent \
+                directory will be put next to the target directory. This is different from \
+                `--include`. Optionally, one can add a path to a directory inside the archive \
+                e.g. `-A some/file/to/archive,put/where/in/archive`. If directory does not exist, \
+                it will be created."
+    )]
+    pub additional_paths: Option<Vec<String>>,
     #[arg(long, short = 'd', help = "Output directory of recompressed archive.")]
     pub outdir: Option<PathBuf>,
     #[arg(long, short = 'c', help = "Compression to use.", default_value_t)]

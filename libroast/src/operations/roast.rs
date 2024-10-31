@@ -234,7 +234,10 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
         {
             debug!(?adtnlp);
             let (src, tgt) = process_additional_paths(&adtnlp, &setup_workdir);
-            if src.is_file()
+            debug!(?src, ?tgt);
+            let src_canonicalized = src.canonicalize().unwrap_or(src.to_path_buf());
+            debug!(?src_canonicalized);
+            if src_canonicalized.is_file()
             {
                 let tgt_stripped = tgt.strip_prefix(&setup_workdir).unwrap_or(Path::new("/"));
                 let target_with_tgt = &target_path.join(tgt_stripped);
@@ -244,15 +247,15 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                         "Excluded path `{}` has added a file OUTSIDE of target directory. Added \
                          file: {}",
                         &target_with_tgt.display(),
-                        &src.display()
+                        &src_canonicalized.display()
                     );
                 }
                 // create directory and warn if it's an excluded directory
                 fs::create_dir_all(&tgt)?;
                 // Copy file to target path
-                fs::copy(&src, tgt.join(&src))?;
+                fs::copy(&src_canonicalized, tgt.join(src.file_name().unwrap_or_default()))?;
             }
-            else if src.is_dir()
+            else if src_canonicalized.is_dir()
             {
                 let tgt_stripped = tgt.strip_prefix(&setup_workdir).unwrap_or(Path::new("/"));
                 let target_with_tgt = &target_path.join(tgt_stripped);
@@ -265,8 +268,9 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                 }
                 else
                 {
+                    fs::create_dir_all(&tgt)?;
                     filter_paths(
-                        &src,
+                        &src_canonicalized,
                         &tgt,
                         roast_args.ignore_hidden,
                         roast_args.ignore_git,
@@ -281,12 +285,25 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
     {
         for include_path in include_paths
         {
-            debug!(?include_path);
-            let include_to_path = &setup_workdir.join(&include_path);
             let include_from_path = &target_path.join(&include_path);
+            let include_from_path =
+                include_from_path.canonicalize().unwrap_or(include_from_path.to_path_buf());
+            if !include_from_path.exists()
+            {
+                let err = io::Error::new(
+                    io::ErrorKind::NotFound,
+                    "Path does not exist. This means that this path is not WITHIN the target \
+                     directory.",
+                );
+                error!(?err);
+                return Err(err);
+            }
+
+            let include_to_path = &setup_workdir.join(&include_path);
+            debug!(?include_path, ?include_from_path, ?include_to_path);
             if include_from_path.is_dir()
             {
-                if exclude_canonicalized_path.contains(include_from_path)
+                if exclude_canonicalized_path.contains(&include_from_path)
                 {
                     warn!(
                         "Added directory that is excluded will be ignored. Ignored directory: {}",
@@ -294,11 +311,11 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                     );
                 }
                 filter_paths(
-                    include_from_path,
+                    &include_from_path,
                     include_to_path,
                     roast_args.ignore_hidden,
                     roast_args.ignore_git,
-                    &exclude_canonicalized_path,
+                    &[],
                 )?;
             }
             else if include_from_path.is_file()
@@ -307,18 +324,18 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                     include_from_path.parent().unwrap_or(&target_path.to_path_buf()).to_path_buf();
                 let include_to_path_parent =
                     include_to_path.parent().unwrap_or(&setup_workdir.to_path_buf()).to_path_buf();
-                if !exclude_canonicalized_path.contains(&include_from_path_parent)
+                if exclude_canonicalized_path.contains(&include_from_path_parent)
                 {
-                    // create directory and warn if it's an excluded directory
-                    fs::create_dir_all(&include_to_path_parent)?;
-                    // Copy file to target path
-                    fs::copy(include_from_path, include_to_path)?;
+                    warn!(
+                        "Excluded path `{}` has added a file IN target directory. Added file: {}",
+                        &include_from_path_parent.display(),
+                        &include_from_path.display()
+                    );
                 }
-                warn!(
-                    "Excluded path `{}` has added a file IN target directory. Added file: {}",
-                    &include_from_path_parent.display(),
-                    &include_from_path.display()
-                );
+                // create directory and warn if it's an excluded directory
+                fs::create_dir_all(&include_to_path_parent)?;
+                // Copy file to target path
+                fs::copy(include_from_path, include_to_path)?;
             }
         }
     }

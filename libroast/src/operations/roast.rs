@@ -244,8 +244,8 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                 if exclude_canonicalized_path.contains(target_with_tgt)
                 {
                     warn!(
-                        "Excluded path `{}` has added a file OUTSIDE of target directory. Added \
-                         file: {}",
+                        "⚠️ Excluded path `{}` has added a file OUTSIDE of target directory. \
+                         Added file: {}",
                         &target_with_tgt.display(),
                         &src_canonicalized.display()
                     );
@@ -262,7 +262,8 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                 if exclude_canonicalized_path.contains(target_with_tgt)
                 {
                     warn!(
-                        "Added directory that is excluded will be ignored. Ignored directory: {}",
+                        "⚠️ Added directory that is excluded will be ignored. Ignored directory: \
+                         {}",
                         &target_with_tgt.display()
                     );
                 }
@@ -306,7 +307,8 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                 if exclude_canonicalized_path.contains(&include_from_path)
                 {
                     warn!(
-                        "Added directory that is excluded will be ignored. Ignored directory: {}",
+                        "⚠️ Added directory that is excluded will be ignored. Ignored directory: \
+                         {}",
                         &include_from_path.display()
                     );
                 }
@@ -324,11 +326,22 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
                     include_from_path.parent().unwrap_or(&target_path.to_path_buf()).to_path_buf();
                 let include_to_path_parent =
                     include_to_path.parent().unwrap_or(&setup_workdir.to_path_buf()).to_path_buf();
+                // TODO: write another helper function that just loops over the excluded paths
                 if exclude_canonicalized_path.contains(&include_from_path_parent)
                 {
                     warn!(
-                        "Excluded path `{}` has added a file IN target directory. Added file: {}",
+                        "⚠️ Excluded path `{}` has added a file IN target directory. Added file: \
+                         {}",
                         &include_from_path_parent.display(),
+                        &include_from_path.display()
+                    );
+                }
+                if exclude_canonicalized_path.contains(&include_from_path)
+                {
+                    warn!(
+                        "⚠️ Excluded file `{}` has also been declared included. Adding file takes \
+                         precedence. Added file: {}",
+                        &include_from_path.display(),
                         &include_from_path.display()
                     );
                 }
@@ -397,7 +410,7 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
     }
     else
     {
-        info!("Your new tarball is now in {}", &outpath.display());
+        info!("🧑‍🍳 Your new tarball is now in {}", &outpath.display());
     }
 
     tmp_binding.close().inspect_err(|e| {

@@ -1,12 +1,6 @@
 use crate::common::Compression;
 use clap::Parser;
-use std::{
-    env::current_dir,
-    path::{
-        Path,
-        PathBuf,
-    },
-};
+use std::path::PathBuf;
 #[allow(unused_imports)]
 use tracing::{
     debug,

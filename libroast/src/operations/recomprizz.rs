@@ -88,13 +88,14 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
     let roast_args = RoastArgs {
         target: outpath_for_raw.to_path_buf(),
         additional_paths: None,
-        ignore_paths: recomprizz_args.ignore_paths,
+        exclude: recomprizz_args.exclude,
         outfile: PathBuf::from(&out_filename),
         outdir: recomprizz_args.outdir,
         preserve_root: false,
         reproducible: recomprizz_args.reproducible,
         ignore_git: recomprizz_args.ignore_git,
-        hidden: recomprizz_args.hidden,
+        ignore_hidden: recomprizz_args.ignore_hidden,
+        include: recomprizz_args.include,
     };
 
     roast_opts(roast_args, start_trace)?;

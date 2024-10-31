@@ -15,7 +15,6 @@ use std::{
         PathBuf,
     },
 };
-use tar::Entry;
 #[allow(unused_imports)]
 use tracing::{
     debug,
@@ -25,10 +24,7 @@ use tracing::{
     warn,
     Level,
 };
-use walkdir::{
-    DirEntry,
-    WalkDir,
-};
+use walkdir::WalkDir;
 
 fn is_hidden(entry: &Path, hidden: bool, ignore_git: bool, root: &Path) -> bool
 {

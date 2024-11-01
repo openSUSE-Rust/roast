@@ -11,6 +11,7 @@ use helpers::{
     filter_paths,
     is_excluded,
 };
+use rayon::prelude::*;
 use std::{
     fs::{
         self,
@@ -54,8 +55,7 @@ pub fn process_additional_paths(
     roast_args: &cli::RoastArgs,
 ) -> io::Result<()>
 {
-    for adtnlp in additional_paths
-    {
+    additional_paths.par_iter().try_for_each(|adtnlp| {
         debug!(?adtnlp);
         let (additional_from_path, additional_to_path) =
             get_additional_paths(adtnlp, setup_workdir);
@@ -63,7 +63,7 @@ pub fn process_additional_paths(
         let src_canonicalized =
             additional_from_path.canonicalize().unwrap_or(additional_from_path.to_path_buf());
         debug!(?src_canonicalized);
-        if src_canonicalized.is_file()
+        let res = if src_canonicalized.is_file()
         {
             let tgt_stripped =
                 additional_to_path.strip_prefix(setup_workdir).unwrap_or(Path::new("/"));
@@ -84,6 +84,7 @@ pub fn process_additional_paths(
                 &src_canonicalized,
                 additional_to_path.join(additional_from_path.file_name().unwrap_or_default()),
             )?;
+            Ok(())
         }
         else if src_canonicalized.is_dir()
         {
@@ -108,9 +109,14 @@ pub fn process_additional_paths(
                 roast_args.ignore_hidden,
                 roast_args.ignore_git,
                 &[],
-            )?;
+            )
         }
-    }
+        else
+        {
+            Ok(())
+        };
+        res
+    })?;
     Ok(())
 }
 
@@ -122,8 +128,7 @@ pub fn process_include_paths(
     roast_args: &cli::RoastArgs,
 ) -> io::Result<()>
 {
-    for include_path in include_paths
-    {
+    include_paths.par_iter().try_for_each(|include_path| {
         let include_from_path = &target_path.join(include_path);
         let include_from_path =
             include_from_path.canonicalize().unwrap_or(include_from_path.to_path_buf());
@@ -189,7 +194,8 @@ pub fn process_include_paths(
             // Copy file to target path
             fs::copy(include_from_path, include_to_path)?;
         }
-    }
+        Ok(())
+    })?;
     Ok(())
 }
 

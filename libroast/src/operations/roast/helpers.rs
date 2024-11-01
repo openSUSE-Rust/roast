@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use std::{
     fs,
     io,
@@ -15,6 +16,7 @@ use tracing::{
     warn,
     Level,
 };
+
 pub fn is_hidden(entry: &Path, hidden: bool, ignore_git: bool, root: &Path) -> bool
 {
     let entry_str = entry.file_name().unwrap_or(entry.as_os_str());
@@ -124,8 +126,7 @@ pub fn filter_paths(
 ) -> io::Result<()>
 {
     let target_dir = fs::read_dir(target_path)?.flatten();
-    for entry in target_dir
-    {
+    target_dir.par_bridge().into_par_iter().try_for_each(|entry| {
         let entry_as_path = &entry.path();
         let entry_as_path_canonicalized =
             &entry_as_path.canonicalize().unwrap_or(entry_as_path.to_path_buf());
@@ -138,23 +139,23 @@ pub fn filter_paths(
                 ignore_git,
                 root,
                 exclude_paths,
-            )?;
-        }
-        if !is_excluded(entry_as_path_canonicalized, exclude_paths)
-        {
-            helper_archiver(
-                entry_as_path_canonicalized,
-                target_path,
-                hidden,
-                ignore_git,
-                root,
-                exclude_paths,
-            )?;
+            )
         }
         else
         {
-            debug!("Path was not included: {}", &entry_as_path_canonicalized.display());
+            if !is_excluded(entry_as_path_canonicalized, exclude_paths)
+            {
+                helper_archiver(
+                    entry_as_path_canonicalized,
+                    target_path,
+                    hidden,
+                    ignore_git,
+                    root,
+                    exclude_paths,
+                )?;
+            }
+            Ok(())
         }
-    }
+    })?;
     Ok(())
 }

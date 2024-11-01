@@ -14,6 +14,7 @@ use crate::{
     },
 };
 use glob::glob;
+use rayon::prelude::*;
 use std::{
     fs,
     io,
@@ -124,8 +125,8 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: &Path) -> Result<(), io::Error>
     debug!("Copying sources");
     debug!(?dst);
     fs::create_dir_all(dst)?;
-    for entry in fs::read_dir(src)?
-    {
+    let custom_walker = fs::read_dir(src)?;
+    custom_walker.par_bridge().into_par_iter().try_for_each(|entry| {
         let entry = entry?;
         let ty = entry.file_type()?;
         trace!(?entry);
@@ -133,7 +134,7 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: &Path) -> Result<(), io::Error>
         if ty.is_dir()
         {
             trace!(?ty, "Is directory?");
-            copy_dir_all(entry.path(), &dst.join(entry.file_name()))?;
+            copy_dir_all(entry.path(), &dst.join(entry.file_name()))
 
         // Should we respect symlinks?
         // } else if ty.is_symlink() {
@@ -154,8 +155,13 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: &Path) -> Result<(), io::Error>
         {
             trace!(?ty, "Is file?");
             fs::copy(entry.path(), dst.join(entry.file_name()))?;
-        };
-    }
+            Ok(())
+        }
+        else
+        {
+            Ok(())
+        }
+    })?;
     Ok(())
 }
 

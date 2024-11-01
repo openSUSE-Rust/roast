@@ -8,8 +8,10 @@ use crate::{
         raw::raw_opts,
         roast::roast_opts,
     },
-    start_tracing,
-    utils::process_globs,
+    utils::{
+        process_globs,
+        start_tracing,
+    },
 };
 use std::{
     io,

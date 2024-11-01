@@ -29,7 +29,7 @@ fn is_gz_tarball() -> io::Result<()>
         err
     })?;
     let workdir = &tmp_binding.path();
-    libroast::copy_dir_all(src, workdir)?;
+    libroast::utils::copy_dir_all(src, workdir)?;
     let updated_paths: Vec<PathBuf> = WalkDir::new(workdir)
         .into_iter()
         .filter_map(|entry| entry.ok())
@@ -45,7 +45,7 @@ fn is_gz_tarball() -> io::Result<()>
         .collect();
     let out = Path::new("/tmp/ballsofDeezNuts");
     libroast::compress::targz(out, workdir, &updated_paths, true)?;
-    let res = libroast::is_supported_format(out).inspect_err(|err| error!(?err));
+    let res = libroast::utils::is_supported_format(out).inspect_err(|err| error!(?err));
     info!(?res);
     assert!(res.is_ok());
     Ok(())
@@ -61,7 +61,7 @@ fn is_xz_tarball() -> io::Result<()>
         err
     })?;
     let workdir = &tmp_binding.path();
-    libroast::copy_dir_all(src, workdir)?;
+    libroast::utils::copy_dir_all(src, workdir)?;
     let updated_paths: Vec<PathBuf> = WalkDir::new(workdir)
         .into_iter()
         .filter_map(|entry| entry.ok())
@@ -77,7 +77,7 @@ fn is_xz_tarball() -> io::Result<()>
         .collect();
     let out = Path::new("/tmp/ballsofJiaTan");
     libroast::compress::tarxz(out, workdir, &updated_paths, true)?;
-    let res = libroast::is_supported_format(out).inspect_err(|err| error!(?err));
+    let res = libroast::utils::is_supported_format(out).inspect_err(|err| error!(?err));
     info!(?res);
     assert!(res.is_ok());
     Ok(())
@@ -93,7 +93,7 @@ fn is_zst_tarball() -> io::Result<()>
         err
     })?;
     let workdir = &tmp_binding.path();
-    libroast::copy_dir_all(src, workdir)?;
+    libroast::utils::copy_dir_all(src, workdir)?;
     let updated_paths: Vec<PathBuf> = WalkDir::new(workdir)
         .into_iter()
         .filter_map(|entry| entry.ok())
@@ -109,7 +109,7 @@ fn is_zst_tarball() -> io::Result<()>
         .collect();
     let out = Path::new("/tmp/ballsfacebook");
     libroast::compress::tarzst(out, workdir, &updated_paths, true)?;
-    let res = libroast::is_supported_format(out).inspect_err(|err| error!(?err));
+    let res = libroast::utils::is_supported_format(out).inspect_err(|err| error!(?err));
     info!(?res);
     assert!(res.is_ok());
     Ok(())
@@ -125,7 +125,7 @@ fn is_bz2_tarball() -> io::Result<()>
         err
     })?;
     let workdir = &tmp_binding.path();
-    libroast::copy_dir_all(src, workdir)?;
+    libroast::utils::copy_dir_all(src, workdir)?;
     let updated_paths: Vec<PathBuf> = WalkDir::new(workdir)
         .into_iter()
         .filter_map(|entry| entry.ok())
@@ -141,7 +141,7 @@ fn is_bz2_tarball() -> io::Result<()>
         .collect();
     let out = Path::new("/tmp/ballswhatsbz");
     libroast::compress::tarbz2(out, workdir, &updated_paths, true)?;
-    let res = libroast::is_supported_format(out).inspect_err(|err| error!(?err));
+    let res = libroast::utils::is_supported_format(out).inspect_err(|err| error!(?err));
     info!(?res);
     assert!(res.is_ok());
     Ok(())
@@ -157,7 +157,7 @@ fn is_vanilla_tarball() -> io::Result<()>
         err
     })?;
     let workdir = &tmp_binding.path();
-    libroast::copy_dir_all(src, workdir)?;
+    libroast::utils::copy_dir_all(src, workdir)?;
     let updated_paths: Vec<PathBuf> = WalkDir::new(workdir)
         .into_iter()
         .filter_map(|entry| entry.ok())
@@ -173,7 +173,7 @@ fn is_vanilla_tarball() -> io::Result<()>
         .collect();
     let out = Path::new("/tmp/ballsvanillacreampie");
     libroast::compress::vanilla(out, workdir, &updated_paths, true)?;
-    let res = libroast::is_supported_format(out).inspect_err(|err| error!(?err));
+    let res = libroast::utils::is_supported_format(out).inspect_err(|err| error!(?err));
     info!(?res);
     assert!(res.is_ok());
     Ok(())

@@ -1,9 +1,11 @@
 use crate::{
     decompress,
-    is_supported_format,
     operations::cli,
-    start_tracing,
-    utils::process_globs,
+    utils::{
+        is_supported_format,
+        process_globs,
+        start_tracing,
+    },
 };
 use std::io;
 #[allow(unused_imports)]

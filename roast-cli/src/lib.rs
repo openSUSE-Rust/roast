@@ -9,5 +9,5 @@ pub use libroast::{
         recomprizz::recomprizz_opts,
         roast::roast_opts,
     },
-    start_tracing,
+    utils::start_tracing,
 };

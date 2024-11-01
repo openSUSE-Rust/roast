@@ -1,19 +1,7 @@
-Soc Virnyl Estela (17):
-      feat: hidden file and gitignore finally correctly implemented
-      improvement: also filter_paths for each element in additional_paths
-      fix: just use ends_with to check if it's a valid file extension
-      remove unused import
-      add a leading dot
-      fix: do not consider temporary directory as hidden
-      fix: avoid duplicating entries
-      logging: set to trace level for filter_paths
-      major: begin refactor cycle [ci skip]
-      cli: finalise flags. begin cycle
-      feat and fix: properly implement exclude and include
-      doc: update README on CLI help
-      fix: reimplement adding of archive files
-      clippy: remove unused imports
-      fix: resolved some edge-cases with additional paths and included paths
-      improve message logs
-      refactor: improve the logic handling for adding, excluding and including
+Soc Virnyl Estela (5):
+      docs: explain how the path behaviour works
+      docs: fix grammar [ci skip]
+      docs: improve wording [ci skip]
+      docs: add important difference between ADDED and INCLUDED [ci skip]
+      performance: add rayon to parallelise copying operations
 

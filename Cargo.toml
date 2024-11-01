@@ -1,6 +1,6 @@
 [workspace.package]
 authors = ["Soc Virnyl Estela"]
-version = "5.1.2"
+version = "5.1.3-dev"
 edition = "2021"
 license = "MPL-2.0"
 repository = "https://github.com/openSUSE-Rust/roast"
@@ -14,7 +14,7 @@ default-members = ["libroast"]
 resolver = "1"
 
 [workspace.dependencies]
-
+clap = "*"
 [profile.release]
 lto = true        # Enable Link Time Optimization.
 debug = true      # Include debug symbols. If you are going to complain for big binary sizes, there is a release-stripped option :P

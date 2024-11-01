@@ -282,6 +282,7 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
         &exclude_canonicalized_paths,
     )?;
 
+    // Deterministic order should start here
     let archive_files: Vec<PathBuf> = WalkDir::new(workdir)
         .into_iter()
         .par_bridge()

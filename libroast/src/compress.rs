@@ -7,9 +7,14 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 use std::{
     fs,
-    io,
-    io::Write,
-    path::Path,
+    io::{
+        self,
+        Write,
+    },
+    path::{
+        Path,
+        PathBuf,
+    },
 };
 use tar;
 #[allow(unused_imports)]
@@ -97,8 +102,12 @@ pub fn tar_builder<T: Write>(
     // Only metadata that is directly relevant to the identity of a file will be
     // included. In particular, ownership and mod/access times are excluded.
     builder.mode(tar::HeaderMode::Deterministic);
-    for f in archive_files.iter().map(|p| p.as_ref())
-    {
+    let mut archive_files: Vec<PathBuf> =
+        archive_files.iter().map(|p| p.as_ref().to_path_buf()).collect();
+    archive_files.sort();
+    archive_files.iter().try_for_each(|f| {
+        let f = PathBuf::from(f);
+        debug!(?f);
         if f.exists()
         {
             // Using walkdir for deterministic ordering of the files
@@ -107,13 +116,14 @@ pub fn tar_builder<T: Write>(
                 let entry = entry?;
                 add_path_to_archive(builder, entry.path(), target_dir.as_ref(), reproducible)?;
             }
+            Ok(())
         }
         else
         {
             error!("THIS IS A BUG. Unable to proceed. {} does not exist.", f.to_string_lossy());
-            return Err(io::Error::new(io::ErrorKind::Other, f.to_string_lossy()));
+            Err(io::Error::new(io::ErrorKind::Other, f.to_string_lossy()))
         }
-    }
+    })?;
 
     builder.finish()
 }

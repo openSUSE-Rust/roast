@@ -85,6 +85,10 @@ the file) does not exist**.
 - If a **directory is ADDED i.e. from outside but resulting destination should
 be EXCLUDED**, it is, therefore, **ADDED**.
 
+> [!IMPORTANT]
+> ADDED != INCLUDED. ADDED can either point to any path. INCLUDED always points WITHIN
+> the top-most level directory of the source or target directory.
+
 > [!NOTE]
 > The reasoning behind the **third point** is that the user may have intended to
 use a different source or to include only a specific set of files, thereby

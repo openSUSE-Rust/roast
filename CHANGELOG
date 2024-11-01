@@ -1,7 +1,19 @@
-Soc Virnyl Estela (5):
-      docs: explain how the path behaviour works
-      docs: fix grammar [ci skip]
-      docs: improve wording [ci skip]
-      docs: add important difference between ADDED and INCLUDED [ci skip]
-      performance: add rayon to parallelise copying operations
+commit 037aa626e656df2c888ad04f5dc00daba41bcdd1
+Author: Soc Virnyl Estela <contact@uncomfyhalomacro.pl>
+Date:   Fri Nov 1 17:39:32 2024 +0800
 
+    minor: improvements on how we sort files and directories
+    
+    seems we should have sort first the vector then sort then the elements by filenames.
+    
+    it's a weird hack but whatever.
+    
+    Signed-off-by: Soc Virnyl Estela <contact@uncomfyhalomacro.pl>
+
+commit 784931ca124c84222198264ba0b91911e0213a66
+Author: Soc Virnyl Estela <contact@uncomfyhalomacro.pl>
+Date:   Fri Nov 1 17:02:13 2024 +0800
+
+    use rayon while you can
+    
+    Signed-off-by: Soc Virnyl Estela <contact@uncomfyhalomacro.pl>

@@ -1,8 +1,19 @@
-Soc Virnyl Estela (7):
-      docs: update README and include instructions regarding renaming
-      add cool badges
-      minor: update tests and update paths code
-      fix link
-      feat: add glob support
-      fix: actually implement the fix for ef1e6f857e48821198d720d092bc7087af762f2a
-      feat: add glob support to all
+Soc Virnyl Estela (17):
+      feat: hidden file and gitignore finally correctly implemented
+      improvement: also filter_paths for each element in additional_paths
+      fix: just use ends_with to check if it's a valid file extension
+      remove unused import
+      add a leading dot
+      fix: do not consider temporary directory as hidden
+      fix: avoid duplicating entries
+      logging: set to trace level for filter_paths
+      major: begin refactor cycle [ci skip]
+      cli: finalise flags. begin cycle
+      feat and fix: properly implement exclude and include
+      doc: update README on CLI help
+      fix: reimplement adding of archive files
+      clippy: remove unused imports
+      fix: resolved some edge-cases with additional paths and included paths
+      improve message logs
+      refactor: improve the logic handling for adding, excluding and including
+

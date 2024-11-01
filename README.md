@@ -86,9 +86,9 @@ the file) does not exist**.
 be EXCLUDED**, it is, therefore, **ADDED**.
 
 > [!NOTE]
-> The rationale for this is the user might intended to do this i.e. use another
-source instead or add only a set of number of files i.e. ignoring the
-top-level most directory of the source itself!
+> The reasoning behind the **third point** is that the user may have intended to
+use a different source or to include only a specific set of files, thereby
+ignoring the top-level directory of the original source.
 
 ## CLI Help
 

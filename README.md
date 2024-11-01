@@ -76,7 +76,7 @@ here, declared paths in the `--exclude` and `--include` paths are relative
 to the top-most level directory of the source or target directory e.g. `src/bin/roast.rs`
 points to `roast-cli/src/bin/roast.rs`.
 
-One thing to note about the path behaviours is there higher precedence over files than directories.
+One thing to note about the path behaviours is the higher precedence over files than directories.
 
 - If a **directory is INCLUDED while EXCLUDED**, it is, therefore, **IGNORED**.
 - If a **file is INCLUDED but it is WITHIN an EXCLUDED directory**, it is,

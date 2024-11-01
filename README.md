@@ -63,6 +63,33 @@ cargo install roast-cli
 Both commands pull from source. The only difference is that the first one
 obviously relies on git.
 
+## Roast - How it works
+
+There are three path behaviours in Roast.
+- excluded paths
+- additional paths
+- included paths
+
+Excluded paths and included paths are **within** the source or target
+directory. For example. If we are going to archive the `roast-cli` directory
+here, declared paths in the `--exclude` and `--include` paths are relative
+to the top-most level directory of the source or target directory e.g. `src/bin/roast.rs`
+points to `roast-cli/src/bin/roast.rs`.
+
+One thing to note about the path behaviours is there higher precedence over files than directories.
+
+- If a **directory is INCLUDED while EXCLUDED**, it is, therefore, **IGNORED**.
+- If a **file is INCLUDED but it is WITHIN an EXCLUDED directory**, it is,
+therefore, **ADDED with the directory created if directory (new parent of
+the file) does not exist**.
+- If a **directory is ADDED i.e. from outside but resulting destination should
+be EXCLUDED**, it is, therefore, **ADDED**.
+
+> [!NOTE]
+> The rationale for this is the user might intended to do this i.e. use another
+source instead or add only a set of number of files i.e. ignoring the
+top-level most directory of the source itself!
+
 ## CLI Help
 
 ```

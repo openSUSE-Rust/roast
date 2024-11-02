@@ -78,9 +78,8 @@ pub fn helper_archiver(
     {
         if !is_hidden(entry_as_path_canonicalized, hidden, ignore_git, root)
         {
-            let entry_stripped_by_target_path = entry_as_path_canonicalized
-                .strip_prefix(target_path)
-                .unwrap_or(entry_as_path_canonicalized);
+            let entry_stripped_by_target_path =
+                entry_as_path_canonicalized.strip_prefix(target_path).unwrap_or(Path::new(""));
             let genesis_dir = &root.join(entry_stripped_by_target_path);
             fs::create_dir_all(genesis_dir)?;
             filter_paths(
@@ -95,9 +94,8 @@ pub fn helper_archiver(
     else if entry_as_path_canonicalized.is_file()
         && !is_hidden(entry_as_path_canonicalized, hidden, ignore_git, root)
     {
-        let entry_stripped_by_target_path = entry_as_path_canonicalized
-            .strip_prefix(target_path)
-            .unwrap_or(entry_as_path_canonicalized);
+        let entry_stripped_by_target_path =
+            entry_as_path_canonicalized.strip_prefix(target_path).unwrap_or(Path::new(""));
         let entry_as_path_canonicalized_parent =
             entry_as_path_canonicalized.parent().unwrap_or(target_path);
         let genesis_path = &root.join(entry_stripped_by_target_path);

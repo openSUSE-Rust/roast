@@ -1,19 +1,16 @@
-commit 037aa626e656df2c888ad04f5dc00daba41bcdd1
-Author: Soc Virnyl Estela <contact@uncomfyhalomacro.pl>
-Date:   Fri Nov 1 17:39:32 2024 +0800
+Pi-Cla (1):
+      Bump zstd and infer
 
-    minor: improvements on how we sort files and directories
-    
-    seems we should have sort first the vector then sort then the elements by filenames.
-    
-    it's a weird hack but whatever.
-    
-    Signed-off-by: Soc Virnyl Estela <contact@uncomfyhalomacro.pl>
+Soc Virnyl Estela (8):
+      docs: removed warning. ensured reproducibility.
+      remove comment for 037aa626e656df2c888ad04f5dc00daba41bcdd1
+      cleanup deps and begin cycle
+      add COC and CONTRIBUTING
+      fix: just use an empty "" if strip fails
+      chore: set resolver to 2 and enforce strict linting rules
+      clippy: rectify the needless pass by value
+      use percent badge for OBS [ci skip]
 
-commit 784931ca124c84222198264ba0b91911e0213a66
-Author: Soc Virnyl Estela <contact@uncomfyhalomacro.pl>
-Date:   Fri Nov 1 17:02:13 2024 +0800
+Soc Virnyl S. Estela (1):
+      Merge pull request #2 from Pi-Cla/bump-deps
 
-    use rayon while you can
-    
-    Signed-off-by: Soc Virnyl Estela <contact@uncomfyhalomacro.pl>

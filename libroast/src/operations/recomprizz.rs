@@ -100,7 +100,7 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
         include: recomprizz_args.include,
     };
 
-    roast_opts(roast_args, start_trace)?;
+    roast_opts(&roast_args, start_trace)?;
 
     info!("📥 Finished Recomprizz.");
     Ok(())

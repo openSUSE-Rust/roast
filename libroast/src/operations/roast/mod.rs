@@ -199,7 +199,7 @@ pub fn process_include_paths(
     Ok(())
 }
 
-pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<()>
+pub fn roast_opts(roast_args: &cli::RoastArgs, start_trace: bool) -> io::Result<()>
 {
     if start_trace
     {
@@ -259,7 +259,7 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
             &target_path,
             &exclude_canonicalized_paths,
             &setup_workdir,
-            &roast_args,
+            roast_args,
         )?;
     }
 
@@ -270,7 +270,7 @@ pub fn roast_opts(roast_args: cli::RoastArgs, start_trace: bool) -> io::Result<(
             &exclude_canonicalized_paths,
             &target_path,
             &setup_workdir,
-            &roast_args,
+            roast_args,
         )?;
     }
 

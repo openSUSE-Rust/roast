@@ -1,18 +1,3 @@
-Pi-Cla (1):
-      Bump zstd and infer
-
-Soc Virnyl Estela (10):
-      docs: removed warning. ensured reproducibility.
-      remove comment for 037aa626e656df2c888ad04f5dc00daba41bcdd1
-      cleanup deps and begin cycle
-      add COC and CONTRIBUTING
-      fix: just use an empty "" if strip fails
-      chore: set resolver to 2 and enforce strict linting rules
-      clippy: rectify the needless pass by value
-      use percent badge for OBS [ci skip]
-      chore: release v5.1.3
-      fix mismatched types in roast-cli
-
-Soc Virnyl S. Estela (1):
-      Merge pull request #2 from Pi-Cla/bump-deps
+Soc Virnyl Estela (1):
+      add service files. they serve as documentation [ci skip]
 

@@ -1,6 +1,6 @@
 [workspace.package]
 authors = ["Soc Virnyl Estela"]
-version = "5.1.4"
+version = "5.1.5"
 edition = "2021"
 license = "MPL-2.0"
 repository = "https://github.com/openSUSE-Rust/roast"

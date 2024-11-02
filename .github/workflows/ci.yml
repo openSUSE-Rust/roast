@@ -31,4 +31,4 @@ jobs:
     - name: Tests
       run: |
         export CC=clang
-        cargo test
+        cargo test -- --nocapture

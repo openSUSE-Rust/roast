@@ -5,6 +5,7 @@ use std::{
         PathBuf,
     },
 };
+use test_log::test;
 #[allow(unused_imports)]
 use tracing::{
     debug,
@@ -14,12 +15,10 @@ use tracing::{
     warn,
     Level,
 };
-use tracing_test::traced_test;
 use walkdir::WalkDir;
 
 const MANIFEST_DIR: &str = std::env!("CARGO_MANIFEST_DIR", "No such manifest dir");
 
-#[traced_test]
 #[test]
 fn is_gz_tarball() -> io::Result<()>
 {
@@ -51,7 +50,6 @@ fn is_gz_tarball() -> io::Result<()>
     Ok(())
 }
 
-#[traced_test]
 #[test]
 fn is_xz_tarball() -> io::Result<()>
 {
@@ -83,7 +81,6 @@ fn is_xz_tarball() -> io::Result<()>
     Ok(())
 }
 
-#[traced_test]
 #[test]
 fn is_zst_tarball() -> io::Result<()>
 {
@@ -115,7 +112,6 @@ fn is_zst_tarball() -> io::Result<()>
     Ok(())
 }
 
-#[traced_test]
 #[test]
 fn is_bz2_tarball() -> io::Result<()>
 {
@@ -147,7 +143,6 @@ fn is_bz2_tarball() -> io::Result<()>
     Ok(())
 }
 
-#[traced_test]
 #[test]
 fn is_vanilla_tarball() -> io::Result<()>
 {

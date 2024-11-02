@@ -1,0 +1,22 @@
+<service name="raw">
+  <summary>OBS Service to raw sources</summary>
+  <description>
+  <![CDATA[
+  Raw extractor and decompresso
+  ]]></description>
+  <parameter name="strategy">
+    <description>Legacy argument, no longer used. Values: raw. Default: raw</description>
+  </parameter>
+  <parameter name="target">
+      <description>Target tarball file to extract and decompress. Supports globbing.</description>
+  </parameter>
+  <parameter name="outdir">
+      <description>Output directory of extracted archive.</description>
+  </parameter>
+  <parameter name="help">
+      <description>Print help (see more with '--help')</description>
+  </parameter>
+  <parameter name="version">
+      <description>Print version</description>
+  </parameter>
+</service>

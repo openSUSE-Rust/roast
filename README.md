@@ -83,87 +83,13 @@ be EXCLUDED**, it is, therefore, **ADDED**.
 use a different source or to include only a specific set of files, thereby
 ignoring the top-level directory of the original source.
 
-## CLI Help
+# Service files are in the following with descriptions.
 
-```
-roast 4.7.0 - Archiver with high-level compression
+- [recomprizz.service](./recomprizz.service)
+- [roast.service](./roast.service)
+- [raw.service](./raw.service)
 
-roast [OPTIONS] --target <TARGET> --outfile <OUTFILE>
-
-Options:
-  -t, --target <TARGET>
-          Target directory to archive. This will be set as the root directory of the archive. Supports globbing.
-  -i, --include <INCLUDE>
-          Additional paths such as files or directories in the target directory to include to the archive. Their parent directory will be put next to the target directory's work directory. The work directory is based on the preserve root option. This is different from `--additional_paths`. Useful to override excluded directories. ⚠️ Careful if the archive has whether preserved root set when it was created.
-  -E, --exclude <EXCLUDE>
-          Additional paths such as files or directories from within target directory's work directory to exclude when generating the archive.
-  -A, --additional-paths <ADDITIONAL_PATHS>
-          Additional paths such as files or directories to add to the archive. Their parent directory will be put next to the target directory. This is different from `--include`. Optionally, one can add a path to a directory inside the archive e.g. `-A some/file/to/archive,put/where/in/archive`. If directory does not exist, it will be created.
-  -f, --outfile <OUTFILE>
-          Output file of the generated archive with path.
-  -d, --outdir <OUTDIR>
-          Output path of extracted archive.
-  -p, --preserve-root <PRESERVE_ROOT>
-          Preserve root directory instead of only archiving relative paths. [default: false] [possible values: true, false]
-  -r, --reproducible <REPRODUCIBLE>
-          Allow reproducibility for Reproducible Builds. [default: false] [possible values: true, false]
-  -g, --ignore-git <IGNORE_GIT>
-          Whether to ignore git related metadata, files and directories. [default: true] [possible values: true, false]
-  -I, --ignore-hidden <IGNORE_HIDDEN>
-          Whether to ignore hidden directories and files or what we call dotfiles. Does not affect `--ignore-git`. [default: false] [possible values: true, false]
-  -h, --help
-          Print help (see more with '--help')
-  -V, --version
-          Print version
-
-Maintained by Soc Virnyl Estela <contact@uncomfyhalomacro.pl>.
-```
-
-```
-raw 4.7.0 - Raw extractor and decompressor
-
-raw [OPTIONS] --target <TARGET>
-
-Options:
-  -t, --target <TARGET>  Target tarball file to extract and decompress. Supports globbing.
-  -d, --outdir <OUTDIR>  Output directory of extracted archive.
-  -h, --help             Print help (see more with '--help')
-  -V, --version          Print version
-
-Maintained by Soc Virnyl Estela <contact@uncomfyhalomacro.pl>.
-```
-
-```
-recomprizz 4.7.0 - Recompress to other compression formats
-
-recomprizz [OPTIONS] --target <TARGET>
-
-Options:
-  -t, --target <TARGET>
-          Target tarball file to extract and recompress. Supports globbing.
-  -i, --include <INCLUDE>
-          Additional paths such as files or directories in the target directory to include to the archive. Their parent directory will be put next to the target directory's work directory. The work directory is based on the preserve root option. This is different from `--additional_paths`. Useful to override excluded directories.
-  -E, --exclude <EXCLUDE>
-          Additional paths such as files or directories from within target directory's work directory to exclude when generating the archive. ⚠️ Careful if the archive has whether preserved root set when it was created.
-  -A, --additional-paths <ADDITIONAL_PATHS>
-          Additional paths such as files or directories to add to the archive. Their parent directory will be put next to the target directory. This is different from `--include`. Optionally, one can add a path to a directory inside the archive e.g. `-A some/file/to/archive,put/where/in/archive`. If directory does not exist, it will be created.
-  -d, --outdir <OUTDIR>
-          Output directory of recompressed archive.
-  -c, --compression <COMPRESSION>
-          Compression to use. [default: zst] [possible values: gz, xz, zst, bz2, not]
-  -R, --rename <RENAME>
-          Use this flag if you want a new filename to use ignoring the new file extension. Omitting this flag will just fallback to basename.
-  -r, --reproducible <REPRODUCIBLE>
-          Allow reproducibility for Reproducible Builds. [default: false] [possible values: true, false]
-  -g, --ignore-git <IGNORE_GIT>
-          Whether to ignore git related metadata, files and directories. [default: true] [possible values: true, false]
-  -I, --ignore-hidden <IGNORE_HIDDEN>
-          Whether to ignore hidden directories and files or what we call dotfiles. Does not affect `--ignore-git`. [default: false] [possible values: true, false]
-  -h, --help
-          Print help (see more with '--help')
-  -V, --version
-          Print version
-
-Maintained by Soc Virnyl Estela <contact@uncomfyhalomacro.pl>.
-```
-
+It maps when you run the following commands
+- `roast -h`
+- `raw -h`
+- `recomprizz -h`

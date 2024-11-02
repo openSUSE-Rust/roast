@@ -1,32 +1,32 @@
-<service name="recomprizz">
-  <summary>OBS Service to recomprizz (recompress) archived tarballs</summary>
+<service name="roast">
+  <summary>OBS Service to roast sources</summary>
   <description>
   <![CDATA[
-    Recompress to other compression formats using raw and roast internally.
+  Archiver with high-level compression
   ]]></description>
   <parameter name="strategy">
-    <description>Legacy argument, no longer used. Values: recomprizz. Default: recomprizz</description>
+    <description>Legacy argument, no longer used. Values: roast. Default: roast</description>
   </parameter>
   <parameter name="target">
-      <description>Target tarball file to extract and recompress. Supports globbing.</description>
+      <description>Target directory to archive. This will be set as the root directory of the archive. Supports globbing.</description>
   </parameter>
   <parameter name="include">
-      <description>Additional paths such as files or directories in the target directory to include to the archive. Their parent directory will be put next to the target directory's work directory. The work directory is based on the preserve root option. This is different from `--additional_paths`. Useful to override excluded directories.</description>
+      <description>Additional paths such as files or directories in the target directory to include to the archive. Their parent directory will be put next to the target directory's work directory. The work directory is based on the preserve root option. This is different from `--additional_paths`. Useful to override excluded directories. ⚠️ Careful if the archive has whether preserved root set when it was created.</description>
   </parameter>
   <parameter name="exclude">
-      <description>Additional paths such as files or directories from within target directory's work directory to exclude when generating the archive. ⚠️ Careful if the archive has whether preserved root set when it was created.</description>
+      <description>Additional paths such as files or directories from within target directory's work directory to exclude when generating the archive.</description>
   </parameter>
   <parameter name="additional-paths">
       <description>Additional paths such as files or directories to add to the archive. Their parent directory will be put next to the target directory. This is different from `--include`. Optionally, one can add a path to a directory inside the archive e.g. `-A some/file/to/archive,put/where/in/archive`. If directory does not exist, it will be created.</description>
   </parameter>
+  <parameter name="outfile">
+      <description>Output file of the generated archive with path.</description>
+  </parameter>
   <parameter name="outdir">
-      <description>Output directory of recompressed archive.</description>
+      <description>Output path of extracted archive.</description>
   </parameter>
-  <parameter name="compression">
-      <description>Compression to use. [default: zst] [possible values: gz, xz, zst, bz2, not]</description>
-  </parameter>
-  <parameter name="rename">
-      <description>Use this flag if you want a new filename to use ignoring the new file extension. Omitting this flag will just fallback to basename.</description>
+  <parameter name="preserve-root">
+      <description>Preserve root directory instead of only archiving relative paths. [default: false] [possible values: true, false]</description>
   </parameter>
   <parameter name="reproducible">
       <description>Allow reproducibility for Reproducible Builds. [default: false] [possible values: true, false]</description>
@@ -44,4 +44,3 @@
       <description>Print version</description>
   </parameter>
 </service>
-

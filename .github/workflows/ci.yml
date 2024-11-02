@@ -31,4 +31,5 @@ jobs:
     - name: Tests
       run: |
         export CC=clang
+        export RUST_LOG=trace
         cargo test -- --nocapture

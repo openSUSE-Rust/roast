@@ -28,6 +28,7 @@ jobs:
       run: |
         export CC=clang
         cargo clippy
+        cargo clippy --tests
     - name: Tests
       run: |
         export CC=clang

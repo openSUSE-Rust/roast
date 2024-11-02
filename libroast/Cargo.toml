@@ -15,11 +15,11 @@ tracing = { version = "0.1", features = [
 ] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 flate2 = { version = "1.0" }
-infer = "0.15"
+infer = "0.16"
 tar = "0.4"
 tempfile = "3.8"
 xz2 = "0.1"
-zstd = { version = "0.12", features = ["pkg-config", "zstdmt"] }
+zstd = { version = "0.13", features = ["pkg-config", "zstdmt"] }
 bzip2 = { version = "0.4" }
 walkdir = "2.4"
 clap = { workspace = true, features = ["help", "derive"] }

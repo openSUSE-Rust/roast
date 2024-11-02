@@ -10,6 +10,7 @@ use std::{
         PathBuf,
     },
 };
+use test_log::test;
 #[allow(unused_imports)]
 use tracing::{
     debug,
@@ -19,7 +20,6 @@ use tracing::{
     warn,
     Level,
 };
-use tracing_test::traced_test;
 use walkdir::WalkDir;
 
 const MANIFEST_DIR: &str = std::env!("CARGO_MANIFEST_DIR", "No such manifest dir");
@@ -169,7 +169,6 @@ fn generate_icecream_tarball(outpath: &Path) -> io::Result<()>
     Ok(())
 }
 
-#[traced_test]
 #[test]
 fn repro_gz_tarball() -> io::Result<()>
 {
@@ -189,7 +188,6 @@ fn repro_gz_tarball() -> io::Result<()>
     Ok(())
 }
 
-#[traced_test]
 #[test]
 fn repro_xz_tarball() -> io::Result<()>
 {
@@ -209,7 +207,6 @@ fn repro_xz_tarball() -> io::Result<()>
     Ok(())
 }
 
-#[traced_test]
 #[test]
 fn repro_zst_tarball() -> io::Result<()>
 {
@@ -229,7 +226,6 @@ fn repro_zst_tarball() -> io::Result<()>
     Ok(())
 }
 
-#[traced_test]
 #[test]
 fn repro_bz2_tarball() -> io::Result<()>
 {
@@ -249,7 +245,6 @@ fn repro_bz2_tarball() -> io::Result<()>
     Ok(())
 }
 
-#[traced_test]
 #[test]
 fn repro_vanilla_tarball() -> io::Result<()>
 {

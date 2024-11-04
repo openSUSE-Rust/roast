@@ -1,46 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <service name="roast">
-  <summary>OBS Service to roast sources</summary>
-  <description>
-  <![CDATA[
-  Archiver with high-level compression
-  ]]></description>
-  <parameter name="strategy">
-    <description>Legacy argument, no longer used. Values: roast. Default: roast</description>
-  </parameter>
-  <parameter name="target">
+   <summary>OBS Service to roast sources</summary>
+   <description><![CDATA[Archiver with high-level compression]]></description>
+   <parameter name="strategy">
+      <description>Legacy argument, no longer used. Values: roast. Default: roast</description>
+   </parameter>
+   <parameter name="target">
       <description>Target directory to archive. This will be set as the root directory of the archive. Supports globbing.</description>
-  </parameter>
-  <parameter name="include">
+   </parameter>
+   <parameter name="include">
       <description>Additional paths such as files or directories in the target directory to include to the archive. Their parent directory will be put next to the target directory's work directory. The work directory is based on the preserve root option. This is different from `--additional_paths`. Useful to override excluded directories. ⚠️ Careful if the archive has whether preserved root set when it was created.</description>
-  </parameter>
-  <parameter name="exclude">
+   </parameter>
+   <parameter name="exclude">
       <description>Additional paths such as files or directories from within target directory's work directory to exclude when generating the archive.</description>
-  </parameter>
-  <parameter name="additional-paths">
+   </parameter>
+   <parameter name="additional-paths">
       <description>Additional paths such as files or directories to add to the archive. Their parent directory will be put next to the target directory. This is different from `--include`. Optionally, one can add a path to a directory inside the archive e.g. `-A some/file/to/archive,put/where/in/archive`. If directory does not exist, it will be created.</description>
-  </parameter>
-  <parameter name="outfile">
+   </parameter>
+   <parameter name="outfile">
       <description>Output file of the generated archive with path.</description>
-  </parameter>
-  <parameter name="outdir">
+   </parameter>
+   <parameter name="outdir">
       <description>Output path of extracted archive.</description>
-  </parameter>
-  <parameter name="preserve-root">
-      <description>Preserve root directory instead of only archiving relative paths. [default: false] [possible values: true, false]</description>
-  </parameter>
-  <parameter name="reproducible">
-      <description>Allow reproducibility for Reproducible Builds. [default: false] [possible values: true, false]</description>
-  </parameter>
-  <parameter name="ignore-git">
-      <description>Whether to ignore git related metadata, files and directories. [default: true] [possible values: true, false]</description>
-  </parameter>
-  <parameter name="ignore-hidden">
-      <description>Whether to ignore hidden directories and files or what we call dotfiles. Does not affect `--ignore-git`. [default: false] [possible values: true, false]</description>
-  </parameter>
-  <parameter name="help">
-      <description>Print help (see more with '--help')</description>
-  </parameter>
-  <parameter name="version">
-      <description>Print version</description>
-  </parameter>
+   </parameter>
+   <parameter name="preserve-root">
+      <description>Preserve root directory instead of only archiving relative paths. Default: false</description>
+      <allowedvalues>true</allowedvalues>
+      <allowedvalues>false</allowedvalues>
+   </parameter>
+   <parameter name="reproducible">
+      <description>Allow reproducibility for Reproducible Builds. Default: false</description>
+      <allowedvalues>true</allowedvalues>
+      <allowedvalues>false</allowedvalues>
+   </parameter>
+   <parameter name="ignore-git">
+      <description>Whether to ignore git related metadata, files and directories. Default: true</description>
+      <allowedvalues>true</allowedvalues>
+      <allowedvalues>false</allowedvalues>
+   </parameter>
+   <parameter name="ignore-hidden">
+      <description>Whether to ignore hidden directories and files or what we call dotfiles. Does not affect `--ignore-git`. Default: false</description>
+      <allowedvalues>true</allowedvalues>
+      <allowedvalues>false</allowedvalues>
+   </parameter>
 </service>
+

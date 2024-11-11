@@ -125,7 +125,11 @@ pub fn filter_paths(
     exclude_paths: &[PathBuf],
 ) -> io::Result<()>
 {
-    let target_dir = fs::read_dir(target_path)?.flatten();
+    let target_dir = fs::read_dir(target_path)
+        .inspect_err(|err| {
+            error!(?err);
+        })?
+        .flatten();
     target_dir.par_bridge().into_par_iter().try_for_each(|entry| {
         let entry_as_path = &entry.path();
         let entry_as_path_canonicalized =

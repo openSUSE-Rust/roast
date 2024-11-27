@@ -80,7 +80,7 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
     {
         crate::common::Compression::Gz => "tar.gz",
         crate::common::Compression::Xz => "tar.xz",
-        crate::common::Compression::Zst => "tar.zst",
+        crate::common::Compression::Zst | crate::common::Compression::Zstd => "tar.zst",
         crate::common::Compression::Bz2 => "tar.bz",
         crate::common::Compression::Not => "tar",
     };

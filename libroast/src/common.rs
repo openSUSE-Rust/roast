@@ -21,6 +21,7 @@ pub enum Compression
     Xz,
     #[default]
     Zst,
+    Zstd,
     Bz2,
     Not,
 }
@@ -33,7 +34,7 @@ impl Display for Compression
         {
             Compression::Gz => "gz",
             Compression::Xz => "xz",
-            Compression::Zst => "zst",
+            Compression::Zst | Compression::Zstd => "zst",
             Compression::Bz2 => "bz2",
             Compression::Not => "tar (uncompressed)",
         };

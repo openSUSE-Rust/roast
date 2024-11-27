@@ -52,7 +52,7 @@ pub fn raw_opts(raw_args: cli::RawArgs, start_trace: bool) -> io::Result<()>
                         {
                             decompress::tarxz(&outpath, &src)?;
                         }
-                        crate::common::Compression::Zst =>
+                        crate::common::Compression::Zst | crate::common::Compression::Zstd =>
                         {
                             decompress::tarzst(&outpath, &src)?;
                         }

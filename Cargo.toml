@@ -1,6 +1,6 @@
 [workspace.package]
 authors = ["Soc Virnyl Estela"]
-version = "5.1.7"
+version = "5.2.0-dev"
 edition = "2021"
 license = "MPL-2.0"
 repository = "https://github.com/openSUSE-Rust/roast"
@@ -14,6 +14,7 @@ resolver = "2"
 
 [workspace.dependencies]
 clap = "^4"
+libroast = { path = "./libroast" }
 
 [workspace.lints.rust]
 warnings = "deny"

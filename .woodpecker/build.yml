@@ -14,9 +14,10 @@ steps:
     commands:
       - zypper --non-interactive install rustup openssl-devel libzstd-devel
       - rustup default stable
+      - rustup install nightly
       - rustup update
       - cargo update
-      - cargo fmt -- --check
+      - cargo +nightly fmt -- --check
       - cargo clippy --tests
       - cargo test --release -- --test-threads=1
 

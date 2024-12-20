@@ -1,0 +1,24 @@
+matrix:
+  ARCH:
+    - linux/amd64
+    - linux/aarch64
+
+labels:
+  platform: ${ARCH}
+
+steps:
+  build:
+    when:
+      event: [push, tag, pull_request]
+      branch: main
+    image: opensuse/tumbleweed:latest
+    commands:
+      - zypper --non-interactive install rustup openssl-devel libzstd-devel
+      - rustup default stable
+      - rustup update
+      - cargo update
+      - cargo fmt -- --check
+      - cargo clippy --tests
+      - cargo test --release -- --test-threads=1
+
+runs_on: [ success, failure ]

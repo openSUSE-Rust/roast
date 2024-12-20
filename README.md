@@ -1,5 +1,12 @@
 # Roast
 
+Read-only mirrors are available on [GitHub][github] and [sourcehut][sourcehut].
+
+The main repository is on [codeberg][codeberg], which is where the issue tracker is found and where contributions are accepted.
+
+<a href="https://codeberg.org/Rusty-Geckos/roast" target="_blank"><img alt="Join Us Now on Codeberg" src="./advocacy/join-us-now-on-blue-on-white.png" height="60" /></a>
+<a href="https://codeberg.org" target="_blank"><img alt="Support and Promote Codeberg" src="./advocacy/support-and-promote-blue-on-white.png" height="60" /></a>
+
 <p align="center>
   <a href="https://github.com/openSUSE-Rust/roast/actions/workflows/ci.yml"><img src="https://github.com/openSUSE-Rust/roast/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
   <a href="https://build.opensuse.org/package/show/Archiving/roast" target="_blank"><img src="https://build.opensuse.org/projects/Archiving/packages/roast/badge.svg?type=percent" /></a>
@@ -93,3 +100,9 @@ It maps when you run the following commands
 - `roast -h`
 - `raw -h`
 - `recomprizz -h`
+
+[github]: https://github.com/openSUSE-Rust/roast
+[sourcehut]: https://git.sr.ht/~uncomfy/roast
+[codeberg]: https://codeberg.org/Rusty-Geckos/roast
+~
+

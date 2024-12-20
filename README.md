@@ -8,7 +8,7 @@ The main repository is on [codeberg][codeberg], which is where the issue tracker
 <a href="https://codeberg.org" target="_blank"><img alt="Support and Promote Codeberg" src="./advocacy/support-and-promote-blue-on-white.png" height="60" /></a>
 
 <p align="center>
-  <a href="https://github.com/openSUSE-Rust/roast/actions/workflows/ci.yml"><img src="https://github.com/openSUSE-Rust/roast/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
+  <a href="https://ci.codeberg.org/repos/13976"><img src="https://ci.codeberg.org/api/badges/13976/status.svg" /></a>
   <a href="https://build.opensuse.org/package/show/Archiving/roast" target="_blank"><img src="https://build.opensuse.org/projects/Archiving/packages/roast/badge.svg?type=percent" /></a>
   <br />
   <a href="https://crates.io/crates/roast-cli/"><img src="https://img.shields.io/crates/v/roast-cli?style=flat&logo=Rust&label=roast-cli"></a>

@@ -3,8 +3,8 @@ authors = ["Soc Virnyl Estela"]
 version = "5.2.0-dev"
 edition = "2021"
 license = "MPL-2.0"
-repository = "https://github.com/openSUSE-Rust/roast"
-homepage = "https://github.com/openSUSE-Rust/roast"
+repository = "https://codeberg.org/Rusty-Geckos/roast"
+homepage = "https://codeberg.org/Rusty-Geckos/roast"
 readme = true
 
 [workspace]

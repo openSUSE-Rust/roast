@@ -1,7 +1,6 @@
 matrix:
   ARCH:
     - linux/amd64
-    - linux/aarch64
 
 labels:
   platform: ${ARCH}

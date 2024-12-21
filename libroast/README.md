@@ -16,7 +16,7 @@ The main repository is on [codeberg][codeberg], which is where the issue tracker
 </p>
 
 Create archive tarballs and roast them! This is a library that contains all
-the necessary logic for the roast-cli. If you want to use this crate, just
+the necessary logic for the [roast-cli](https://crates.io/crates/roast-cli/). If you want to use this crate, just
 run the following command.
 
 ```bash

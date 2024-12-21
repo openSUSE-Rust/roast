@@ -11,7 +11,7 @@ jobs:
     - uses: superbrothers/close-pull-request@v3
       with:
         comment: |
-          Thanks for your interest in contributing to otap!
+          Thanks for your interest in contributing to roast!
 
           Unfortunately, you are in the wrong place. As stated in the README, this github repo is a read-only mirror and development happens on codeberg: https://codeberg.org/Rusty-Geckos/roast.
 

@@ -104,5 +104,4 @@ It maps when you run the following commands
 [github]: https://github.com/openSUSE-Rust/roast
 [sourcehut]: https://git.sr.ht/~uncomfy/roast
 [codeberg]: https://codeberg.org/Rusty-Geckos/roast
-~
 

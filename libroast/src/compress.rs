@@ -136,8 +136,8 @@ pub fn targz(
 ) -> io::Result<()>
 {
     use flate2::{
-        write::GzEncoder,
         Compression,
+        write::GzEncoder,
     };
     let outtar = fs::File::create(outpath.as_ref())
         .inspect_err(|_| error!(outpath = ?outpath.as_ref(), "Unable to create outtar"))?;
@@ -197,8 +197,8 @@ pub fn tarbz2(
 ) -> io::Result<()>
 {
     use bzip2::{
-        write::BzEncoder,
         Compression,
+        write::BzEncoder,
     };
     let outtar = fs::File::create(outpath.as_ref())
         .inspect_err(|_| error!(outpath = ?outpath.as_ref(), "Unable to create outtar"))?;

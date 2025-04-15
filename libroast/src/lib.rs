@@ -11,5 +11,4 @@ pub mod compress;
 pub mod consts;
 pub mod decompress;
 pub mod operations;
-pub mod scm;
 pub mod utils;

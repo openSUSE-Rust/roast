@@ -8,12 +8,12 @@ use std::{
 use test_log::test;
 #[allow(unused_imports)]
 use tracing::{
+    Level,
     debug,
     error,
     info,
     trace,
     warn,
-    Level,
 };
 use walkdir::WalkDir;
 

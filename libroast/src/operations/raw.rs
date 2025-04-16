@@ -10,12 +10,12 @@ use crate::{
 use std::io;
 #[allow(unused_imports)]
 use tracing::{
+    Level,
     debug,
     error,
     info,
     trace,
     warn,
-    Level,
 };
 
 pub fn raw_opts(raw_args: cli::RawArgs, start_trace: bool) -> io::Result<()>

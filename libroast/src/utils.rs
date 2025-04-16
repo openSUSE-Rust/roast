@@ -24,8 +24,8 @@ use std::{
     },
 };
 use terminfo::{
-    Database,
     capability as cap,
+    Database,
 };
 #[allow(unused_imports)]
 use tracing::{

@@ -23,12 +23,12 @@ use std::{
 };
 #[allow(unused_imports)]
 use tracing::{
-    Level,
     debug,
     error,
     info,
     trace,
     warn,
+    Level,
 };
 
 pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>

@@ -3,8 +3,11 @@ matrix:
     - linux/amd64
 
 when:
-  event: [push, tag, pull_request]
-  branch: main
+  - event: [push, tag, pull_request]
+    branch: [main]
+    path:
+      include: ['.woodpecker/*.yaml', '*.woodpecker/*.yml']
+      exclude: ['*.md', 'docs/**', '*.service', 'advocacy/**']
 
 labels:
   platform: ${ARCH}

@@ -182,7 +182,7 @@ pub fn roast_scm_opts(roast_scm_args: &RoastScmArgs, start_trace: bool) -> io::R
     roast_opts(&roast_args, false)
         .inspect(|ok| {
             info!("⛓️🔥 Finished Roast SCM!");
-            if roast_scm_args.is_temporary
+            if !roast_scm_args.is_temporary
             {
                 info!(
                     "👁️ Locally cloned repository is not deleted and located at `{}`.",

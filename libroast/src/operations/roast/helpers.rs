@@ -9,12 +9,12 @@ use std::{
 };
 #[allow(unused_imports)]
 use tracing::{
+    Level,
     debug,
     error,
     info,
     trace,
     warn,
-    Level,
 };
 
 pub fn is_hidden(entry: &Path, hidden: bool, ignore_git: bool, root: &Path) -> bool

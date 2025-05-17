@@ -3,12 +3,12 @@ use clap::Parser;
 use std::path::PathBuf;
 #[allow(unused_imports)]
 use tracing::{
+    Level,
     debug,
     error,
     info,
     trace,
     warn,
-    Level,
 };
 
 #[derive(Debug, Parser)]
@@ -61,7 +61,7 @@ pub struct RoastArgs
     pub additional_paths: Option<Vec<String>>,
     #[arg(long, short = 'f', help = "Output file of the generated archive with path.")]
     pub outfile: PathBuf,
-    #[arg(long, short = 'd', help = "Output path of extracted archive.")]
+    #[arg(long, short = 'd', help = "Output path of the generated archive.")]
     pub outdir: Option<PathBuf>,
     #[arg(
         long,
@@ -203,4 +203,73 @@ pub struct RecomprizzArgs
         action = clap::ArgAction::Set
     )]
     pub ignore_hidden: bool,
+}
+
+#[derive(Debug, Parser)]
+#[command(
+    name = "roast-scm",
+    author = "Soc Virnyl Estela",
+    about = "Create archive tarballs from remote git repositories.",
+    after_long_help = "Set verbosity and tracing through `RUST_LOG` environmental variable e.g. \
+                       `RUST_LOG=trace`",
+    help_template = "{name} {version} - \
+                     {about}\n\n{usage}\n\n{all-args}\n{after-help}\nMaintained by {author} \
+                     <contact@uncomfyhalomacro.pl>.",
+    version
+)]
+pub struct RoastScmArgs
+{
+    #[arg(long, short = 'g', help = "Remote URL to the git repository.", alias = "url")]
+    pub git_repository_url: String,
+    #[arg(
+        long,
+        short = 'E',
+        help = "Additional paths such as files or directories from within target repository's \
+                work directory to exclude when generating the archive."
+    )]
+    pub exclude: Option<Vec<PathBuf>>,
+    #[arg(long, help = "Revision or tag. It can also be a specific commit hash.")]
+    pub revision: String,
+    #[arg(
+        long, default_value_t = 1,
+        action = clap::ArgAction::Set,
+        help = "The depth of cloning the repository.")]
+    pub depth: i32,
+    #[arg(long, default_value_t = true, help = "If the cloned repository should be temporary.")]
+    pub is_temporary: bool,
+    #[arg(
+        long,
+        short = 'f',
+        help = "Output file of the generated archive with path. If not provided, attempts to \
+                write the filename based on project name and revision."
+    )]
+    pub outfile: Option<PathBuf>,
+    #[arg(long, short = 'd', help = "Output path of the generated archive.")]
+    pub outdir: Option<PathBuf>,
+    #[arg(
+        long,
+        short = 'r',
+        help = "Allow reproducibility for Reproducible Builds.",
+        default_value_t = false,
+        action = clap::ArgAction::Set
+    )]
+    pub reproducible: bool,
+    #[arg(
+        long,
+        short = 'g',
+        help = "Whether to ignore git related metadata, files and directories.",
+        default_value_t = true,
+        action = clap::ArgAction::Set
+    )]
+    pub ignore_git: bool,
+    #[arg(
+        long,
+        short = 'I',
+        help = "Whether to ignore hidden directories and files or what we call dotfiles. Does not affect `--ignore-git`.",
+        default_value_t = false,
+        action = clap::ArgAction::Set
+    )]
+    pub ignore_hidden: bool,
+    #[arg(long, short = 'c', help = "Compression to use.", default_value_t)]
+    pub compression: Compression,
 }

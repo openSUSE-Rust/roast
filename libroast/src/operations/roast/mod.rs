@@ -63,7 +63,7 @@ pub fn process_additional_paths(
         let src_canonicalized =
             additional_from_path.canonicalize().unwrap_or(additional_from_path.to_path_buf());
         debug!(?src_canonicalized);
-        
+
         if src_canonicalized.is_file()
         {
             let tgt_stripped =
@@ -221,7 +221,6 @@ pub fn roast_opts(roast_args: &cli::RoastArgs, start_trace: bool) -> io::Result<
     let workdir = &tmp_binding.path();
     let setup_workdir = if roast_args.preserve_root
     {
-        
         workdir.join(target_path.file_name().unwrap_or_default())
     }
     else

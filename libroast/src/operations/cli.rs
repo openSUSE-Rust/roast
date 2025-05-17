@@ -237,8 +237,13 @@ pub struct RoastScmArgs
     pub depth: i32,
     #[arg(long, default_value_t = true, help = "If the cloned repository should be temporary.")]
     pub is_temporary: bool,
-    #[arg(long, short = 'f', help = "Output file of the generated archive with path.")]
-    pub outfile: PathBuf,
+    #[arg(
+        long,
+        short = 'f',
+        help = "Output file of the generated archive with path. If not provided, attempts to \
+                write the filename based on project name and revision."
+    )]
+    pub outfile: Option<PathBuf>,
     #[arg(long, short = 'd', help = "Output path of the generated archive.")]
     pub outdir: Option<PathBuf>,
     #[arg(

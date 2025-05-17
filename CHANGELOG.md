@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.1.0] - 2025-05-17
+
+### 🚀 Features
+
+- Is-temporary flag now used.
+
+### 🐛 Bug Fixes
+
+- Remove unused key in roast-cli's Cargo.toml
+- Add let binding
+- It should be evaluated if it's false
+
+### 💼 Other
+
+- Apply clippy fixes
+- Run `cargo +nightly fmt`
+- Set the is-temporary with ArgAction::Set
+- Feature is-temporary now have clearer messages if directory was not deleted.
+- Apply clippy fixes
+
+### 📚 Documentation
+
+- Add roast_scm.service
+- Improvements on how everything works
+- Add and improve doc comments
+
+### ⚙️ Miscellaneous Tasks
+
+- We are only using one workflow anyway for everything
+- Only run ci for certain file changes
+- Begin 6.1.0 cycle
+- Version bump dependencies
+
 ## [6.0.0] - 2025-05-17
 
 ### 🚀 Features
@@ -51,6 +84,7 @@ All notable changes to this project will be documented in this file.
 - Prepare woodpecker build
 - Remove aarch64 target for now
 - Add nightly toolchain. for fmt only.
+- *(release)* V6.0.0
 
 ## [5.1.7] - 2024-11-27
 

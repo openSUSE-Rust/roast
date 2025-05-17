@@ -136,7 +136,7 @@ pub fn roast_scm_opts(roast_scm_args: &RoastScmArgs, start_trace: bool) -> io::R
         &roast_scm_args.git_repository_url,
         &roast_scm_args.revision,
     )?;
-    let local_clone_dir = workdir.join(&filename_prefix);
+    let local_clone_dir = workdir.join(&filename_prefix).as_path();
 
     let outfile = match roast_scm_args.outfile.clone()
     {
@@ -166,7 +166,7 @@ pub fn roast_scm_opts(roast_scm_args: &RoastScmArgs, start_trace: bool) -> io::R
     info!("🍄 Cloned to `{}`.", local_clone_dir.display());
 
     let roast_args = RoastArgs {
-        target: local_clone_dir,
+        target: local_clone_dir.to_path_buf(),
         include: None,
         exclude: roast_scm_args.exclude.clone(),
         additional_paths: None,
@@ -181,6 +181,13 @@ pub fn roast_scm_opts(roast_scm_args: &RoastScmArgs, start_trace: bool) -> io::R
     roast_opts(&roast_args, false)
         .inspect(|ok| {
             info!("⛓️🔥 Finished Roast SCM!");
+            if roast_scm_args.is_temporary
+            {
+                info!(
+                    "👁️ Locally cloned repository is not deleted and located at `{}`.",
+                    local_clone_dir.display()
+                );
+            };
             debug!(?ok);
         })
         .inspect_err(|err| {

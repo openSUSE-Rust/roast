@@ -229,11 +229,16 @@ pub struct RoastScmArgs
     )]
     pub exclude: Option<Vec<PathBuf>>,
     #[arg(long, help = "Revision or tag. It can also be a specific commit hash.")]
-    pub revision: Option<String>,
-    #[arg(long, default = 1, help = "The depth of cloning the repository.")]
-    pub depth: usize,
-    #[arg(long, default_t = true, help = "If the cloned repository should be temporary.")]
+    pub revision: String,
+    #[arg(
+        long, default_value_t = 1,
+        action = clap::ArgAction::Set,
+        help = "The depth of cloning the repository.")]
+    pub depth: i32,
+    #[arg(long, default_value_t = true, help = "If the cloned repository should be temporary.")]
     pub is_temporary: bool,
+    #[arg(long, short = 'f', help = "Output file of the generated archive with path.")]
+    pub outfile: PathBuf,
     #[arg(long, short = 'd', help = "Output path of the generated archive.")]
     pub outdir: Option<PathBuf>,
     #[arg(
@@ -261,5 +266,5 @@ pub struct RoastScmArgs
     )]
     pub ignore_hidden: bool,
     #[arg(long, short = 'c', help = "Compression to use.", default_value_t)]
-    pub compression: Option<Compression>,
+    pub compression: Compression,
 }

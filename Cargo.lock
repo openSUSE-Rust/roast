@@ -594,6 +594,7 @@ dependencies = [
  "test-log",
  "tracing",
  "tracing-subscriber",
+ "url",
  "walkdir",
  "xz2",
  "zstd",

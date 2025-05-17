@@ -1,6 +1,6 @@
 [workspace.package]
 authors = ["Soc Virnyl Estela"]
-version = "6.0.0"
+version = "6.1.0-dev"
 edition = "2024"
 license = "MPL-2.0"
 repository = "https://codeberg.org/Rusty-Geckos/roast"
@@ -14,7 +14,7 @@ resolver = "2"
 
 [workspace.dependencies]
 clap = "^4"
-libroast = { path = "./libroast", version = "6.0.0" }
+libroast = { path = "./libroast", version = "6.1.0-dev" }
 
 [workspace.lints.rust]
 warnings = "deny"

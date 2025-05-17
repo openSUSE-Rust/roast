@@ -136,7 +136,8 @@ pub fn roast_scm_opts(roast_scm_args: &RoastScmArgs, start_trace: bool) -> io::R
         &roast_scm_args.git_repository_url,
         &roast_scm_args.revision,
     )?;
-    let local_clone_dir = workdir.join(&filename_prefix).as_path();
+    let local_clone_dir = workdir.join(&filename_prefix);
+    let local_clone_dir = local_clone_dir.as_path();
 
     let outfile = match roast_scm_args.outfile.clone()
     {

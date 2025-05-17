@@ -22,6 +22,7 @@ use std::{
         PathBuf,
     },
 };
+
 #[allow(unused_imports)]
 use tracing::{
     Level,
@@ -31,6 +32,7 @@ use tracing::{
     trace,
     warn,
 };
+
 use walkdir::WalkDir;
 
 pub fn get_additional_paths(adtnl_path: &str, root: &Path) -> (PathBuf, PathBuf)

@@ -130,11 +130,13 @@ pub fn roast_scm_opts(roast_scm_args: &RoastScmArgs, start_trace: bool) -> io::R
     info!("⛓️🔥 Starting Roast SCM!");
     debug!(?roast_scm_args);
     let workdir = tempfile::TempDir::new()?;
+    let workdir = if !roast_scm_args.is_temporary { &workdir.keep() } else { workdir.path() };
+
     let filename_prefix = process_filename_prefix_from_url(
         &roast_scm_args.git_repository_url,
         &roast_scm_args.revision,
     )?;
-    let local_clone_dir = workdir.path().join(&filename_prefix);
+    let local_clone_dir = workdir.join(&filename_prefix);
 
     let outfile = match roast_scm_args.outfile.clone()
     {

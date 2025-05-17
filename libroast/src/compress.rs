@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// Copyright (C) 2024 Soc Virnyl Estela and contributors
+// Copyright (C) 2025 Soc Virnyl Estela and contributors
 
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,7 +26,9 @@ use tracing::{
     warn,
 };
 
-/// Create a deterministic tar-header for creating reproducible tarballs
+/// Create a deterministic tar-header for creating reproducible tarballs. Used
+/// for `super::tar_builder()` for the parameter `reproducible` to generate
+/// deterministic output.
 fn create_deterministic_header(path: impl AsRef<Path>) -> Result<tar::Header, io::Error>
 {
     let metadata = path.as_ref().symlink_metadata()?;
@@ -39,6 +41,8 @@ fn create_deterministic_header(path: impl AsRef<Path>) -> Result<tar::Header, io
     Ok(h)
 }
 
+/// Helper function to help add other paths to the archive for
+/// `super::tar_builder()`.
 fn add_path_to_archive<T: Write>(
     builder: &mut tar::Builder<T>,
     additional_path: &Path,
@@ -92,6 +96,10 @@ fn add_path_to_archive<T: Write>(
     Ok(())
 }
 
+/// Helper function to produce a tarball. `super::targz`, `super::tarbz2`,
+/// `super::tarzst`, `super::vanilla` and `super::tarxz` use this function as a
+/// "tar builder" since all of them have a trait bound for trait
+/// `std::io::Write` and have similar parameters.
 pub fn tar_builder<T: Write>(
     builder: &mut tar::Builder<T>,
     target_dir: impl AsRef<Path>,
@@ -128,6 +136,7 @@ pub fn tar_builder<T: Write>(
     builder.finish()
 }
 
+/// Produces a Gz compressed tarball e.g. `source.tar.gz`.
 pub fn targz(
     outpath: impl AsRef<Path>,
     target_dir: impl AsRef<Path>,
@@ -146,6 +155,8 @@ pub fn targz(
     tar_builder(&mut builder, target_dir, archive_files, reproducible)
 }
 
+/// Produces a Zst compressed tarball e.g. `source.tar.zst` or
+/// `source.tar.zstd`.
 pub fn tarzst(
     outpath: impl AsRef<Path>,
     target_dir: impl AsRef<Path>,
@@ -165,6 +176,7 @@ pub fn tarzst(
     tar_builder(&mut builder, target_dir, archive_files, reproducible)
 }
 
+/// Produces a Xz compressed tarball e.g. `source.tar.xz`.
 pub fn tarxz(
     outpath: impl AsRef<Path>,
     target_dir: impl AsRef<Path>,
@@ -189,6 +201,7 @@ pub fn tarxz(
     tar_builder(&mut builder, target_dir, archive_files, reproducible)
 }
 
+/// Produces a Bz compressed tarball e.g. `source.tar.bz`.
 pub fn tarbz2(
     outpath: impl AsRef<Path>,
     target_dir: impl AsRef<Path>,
@@ -207,6 +220,7 @@ pub fn tarbz2(
     tar_builder(&mut builder, target_dir, archive_files, reproducible)
 }
 
+/// Produces a uncompressed tarball e.g. `source.tar`.
 pub fn vanilla(
     outpath: impl AsRef<Path>,
     target_dir: impl AsRef<Path>,

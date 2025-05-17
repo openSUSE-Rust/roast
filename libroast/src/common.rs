@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: MPL-2.0
+
+// Copyright (C) 2025 Soc Virnyl Estela and contributors
+
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 use clap::ValueEnum;
 use std::{
     fmt::{
@@ -15,6 +22,8 @@ use tracing::{
 };
 
 #[derive(ValueEnum, Default, Debug, Clone, Copy)]
+/// Compression options to choose. `Compression::Zst` is the default. `Zst` and
+/// `Zstd` are the same.
 pub enum Compression
 {
     Gz,
@@ -43,6 +52,7 @@ impl Display for Compression
 }
 
 #[derive(Debug)]
+/// Representation of supported formats. Either an archive or a directory.
 pub enum SupportedFormat
 {
     Compressed(Compression, PathBuf),
@@ -52,6 +62,8 @@ pub enum SupportedFormat
 impl std::error::Error for UnsupportedFormat {}
 
 #[derive(Debug)]
+/// Representation of an unsupported file format. Used for printing
+/// errors.
 pub struct UnsupportedFormat
 {
     pub ext: String,

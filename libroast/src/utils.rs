@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: MPL-2.0
+
+// Copyright (C) 2025 Soc Virnyl Estela and contributors
+
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 use crate::{
     common::{
         Compression,
@@ -37,6 +44,8 @@ use tracing::{
 };
 use tracing_subscriber::EnvFilter;
 
+/// Utility function to start tracing subscriber in the environment for logging.
+/// Supports coloured and no coloured outputs using `terminfo::capability`.
 pub fn start_tracing()
 {
     let terminfodb = Database::from_env().map_err(|e| {
@@ -70,6 +79,10 @@ pub fn start_tracing()
 
     builder.init();
 }
+
+/// Checks if a valid file has a supported filetype regardless of extension
+/// using `infer::get_from_path()`. Fallback uses the file extension if a file
+/// extension is known to be supported and the usual mime-type.
 pub fn is_supported_format(src: &Path) -> Result<SupportedFormat, UnsupportedFormat>
 {
     if let Ok(identified_src) = infer::get_from_path(src)
@@ -165,7 +178,11 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: &Path) -> Result<(), io::Error>
 }
 
 /// Taken from firstyear's code in obs-service-cargo
-/// for libroast adoption/migration
+/// for libroast adoption/migration.
+///
+/// This function processes globs e.g. "*firstyear", "*.tar.gz" to match any
+/// possible file. We only take the last element of the sorted list using the
+/// `core::slice::sort_unstable()` from the `std::core`.
 pub fn process_globs(src: &Path) -> io::Result<PathBuf>
 {
     let glob_iter = match glob(&src.as_os_str().to_string_lossy())

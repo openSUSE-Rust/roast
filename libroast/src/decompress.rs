@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// Copyright (C) 2024 Soc Virnyl Estela and contributors
+// Copyright (C) 2025 Soc Virnyl Estela and contributors
 
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+//! Decompress and extract core utility functions.
 
 use std::{
     fs,
@@ -21,6 +23,7 @@ use tracing::{
     warn,
 };
 
+/// Decompresses and extracts an archive with Gz.
 pub fn targz(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<()>
 {
     use flate2::bufread::GzDecoder;
@@ -37,6 +40,7 @@ pub fn targz(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<
     Ok(())
 }
 
+/// Decompresses and extracts an archive with Zstd.
 pub fn tarzst(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<()>
 {
     use zstd::Decoder;
@@ -53,6 +57,7 @@ pub fn tarzst(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result
     Ok(())
 }
 
+/// Decompresses and extracts an archive with Xz/Lzma.
 pub fn tarxz(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<()>
 {
     use xz2::read::XzDecoder;
@@ -69,6 +74,7 @@ pub fn tarxz(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<
     Ok(())
 }
 
+/// Decompresses and extracts an archive with Bz2.
 pub fn tarbz2(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<()>
 {
     use bzip2::bufread::MultiBzDecoder;
@@ -86,6 +92,7 @@ pub fn tarbz2(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result
     Ok(())
 }
 
+/// Extracts an uncompressed archive.
 pub fn vanilla(outdir: impl AsRef<Path>, srcpath: impl AsRef<Path>) -> io::Result<()>
 {
     let mut src = io::BufReader::new(fs::File::open(srcpath.as_ref())?);

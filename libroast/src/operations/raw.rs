@@ -1,3 +1,11 @@
+// SPDX-License-Identifier: MPL-2.0
+
+// Copyright (C) 2025 Soc Virnyl Estela and contributors
+
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 use crate::{
     decompress,
     operations::cli,
@@ -18,6 +26,8 @@ use tracing::{
     warn,
 };
 
+/// Extracts a tarball as long as it is a supported mime-type. Arguments
+/// passed are based on `crate::cli::RawArgs`.
 pub fn raw_opts(raw_args: cli::RawArgs, start_trace: bool) -> io::Result<()>
 {
     if start_trace

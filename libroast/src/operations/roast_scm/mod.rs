@@ -25,6 +25,10 @@ use tracing::{
 };
 use url::Url;
 
+/// Helper function to clone a repository. Options are self-explanatory.
+///
+/// If a repository has submodules, it will always attempt to update a
+/// repository's submodule that matches at a given commit.
 fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> io::Result<()>
 {
     let mut fetch_options = FetchOptions::new();
@@ -121,6 +125,12 @@ fn process_filename_prefix_from_url(url_string: &str, revision: &str) -> io::Res
     Ok(filename)
 }
 
+/// Creates a tarball from a given URL. URL must be a valid remote git
+/// repository.
+///
+/// It uses `crate::operations::roast` under the hood. Locally cloned
+/// repositories can be not deleted if the `crate::cli::RoastScmArgs` has its
+/// field `is_temporary` set to `false`.
 pub fn roast_scm_opts(roast_scm_args: &RoastScmArgs, start_trace: bool) -> io::Result<()>
 {
     if start_trace

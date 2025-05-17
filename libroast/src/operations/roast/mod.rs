@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: MPL-2.0
+
+// Copyright (C) 2025 Soc Virnyl Estela and contributors
+
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 pub mod helpers;
 use crate::{
     compress,
@@ -33,7 +40,8 @@ use tracing::{
 };
 use walkdir::WalkDir;
 
-pub fn get_additional_paths(adtnl_path: &str, root: &Path) -> (PathBuf, PathBuf)
+/// This function helps process a list of additional paths separated by commas.
+pub(crate) fn get_additional_paths(adtnl_path: &str, root: &Path) -> (PathBuf, PathBuf)
 {
     if let Some((ar, tgt)) = adtnl_path.split_once(",")
     {
@@ -47,7 +55,9 @@ pub fn get_additional_paths(adtnl_path: &str, root: &Path) -> (PathBuf, PathBuf)
     }
 }
 
-pub fn process_additional_paths(
+/// This function helps process additional paths
+/// during the archiving process.
+pub(crate) fn process_additional_paths(
     additional_paths: &[String],
     target_path: &Path,
     exclude_canonicalized_paths: &[PathBuf],
@@ -120,7 +130,10 @@ pub fn process_additional_paths(
     Ok(())
 }
 
-pub fn process_include_paths(
+/// This processes included paths and filters out excluded paths.
+/// Any included paths that are excluded are always excluded only if it matches
+/// equally. Any included path that has an excluded parent path are included.
+pub(crate) fn process_include_paths(
     include_paths: &[PathBuf],
     exclude_canonicalized_paths: &[PathBuf],
     target_path: &Path,
@@ -199,6 +212,12 @@ pub fn process_include_paths(
     Ok(())
 }
 
+/// Processes CLI arguments that matches the fields in the `RoastArgs`
+/// constructor. There is an optional activation of tracing subscriber for logs
+/// as the second parameter which is useful for cases where you need to log the
+/// important values that are passed down in this function. NOTE: Always pass
+/// `false` to the `start_trace` parameter if there is already a global tracing
+/// activated in the environment.
 pub fn roast_opts(roast_args: &cli::RoastArgs, start_trace: bool) -> io::Result<()>
 {
     if start_trace

@@ -1,3 +1,11 @@
+// SPDX-License-Identifier: MPL-2.0
+
+// Copyright (C) 2025 Soc Virnyl Estela and contributors
+
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 use crate::{
     operations::{
         cli::{
@@ -31,6 +39,12 @@ use tracing::{
     warn,
 };
 
+/// A combination of `raw` and `roast`. It extracts a tarball of a supported
+/// mime-type and reproduces another tarball that might be of a different
+/// filename or compression option e.g. `source.tar.gz` -> `source.tar.zst`.
+///
+/// This function relies on the arguments provided by
+/// `crate::cli::RecomprizzArgs`.
 pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
 {
     let start_trace = false;

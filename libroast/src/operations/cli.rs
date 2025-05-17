@@ -1,3 +1,6 @@
+//! Mostly structs that are used for `clap` for CLI arguments.
+//! Also useful for just anything else not CLI.
+
 use crate::common::Compression;
 use clap::Parser;
 use std::path::PathBuf;

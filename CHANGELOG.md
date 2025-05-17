@@ -2,7 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [6.0.0] - 2025-05-17
+
+### 🚀 Features
+
+- *(roast-scm)* Finalise feature and provide improvements
+
+### 💼 Other
+
+- Run cargo +nightly fmt
+- Use git cliff to generate changelog
+- Update to Rust 2024 edition
+- Initial code for roast scm
+- Move over this feature and focus on cloning only
+- Add struct for RoastScmArgs
+- Run cargo +nightly fmt
+- Run `cargo +nightly fmt`
+- Add a bit of spacing
+- Import to operations module
+- Write initial clone logic
+- Improve struct definition for RoastScmArgs
+- Adjust spacing
+- Filenames should be with underscores.
+- Incremental improvements on roast scm logic
+- Start including roast scm to roast cli
+- Filename should be with underscores
+- Allow roast scm to become a binary executable
+- Add url crate
+- RoastScmArgs' outfile field is set to Option<PathBuf>
 
 ### 🚜 Refactor
 
@@ -11,6 +38,8 @@ All notable changes to this project will be documented in this file.
 ### 📚 Documentation
 
 - Update ci badge links in README
+- Add README.md for each crate in the workspace.
+- Add link to roast-cli [CI SKIP]
 
 ### ⚙️ Miscellaneous Tasks
 
@@ -23,10 +52,6 @@ All notable changes to this project will be documented in this file.
 - Remove aarch64 target for now
 - Add nightly toolchain. for fmt only.
 
-### Format
-
-- Run cargo +nightly fmt
-
 ## [5.1.7] - 2024-11-27
 
 ### 🚀 Features
@@ -37,18 +62,15 @@ All notable changes to this project will be documented in this file.
 
 - Added trace feature
 
+### 💼 Other
+
+- Update clap features to use
+- Improve error message here
+
 ### ⚙️ Miscellaneous Tasks
 
 - Add filtering so it only runs when `.rs` and `Cargo.toml` change
 - *(release)* V5.1.7
-
-### Dep
-
-- Update clap features to use
-
-### Minor
-
-- Improve error message here
 
 ## [5.1.6] - 2024-11-02
 
@@ -78,6 +100,10 @@ All notable changes to this project will be documented in this file.
 
 - Just use an empty "" if strip fails
 
+### 💼 Other
+
+- Rectify the needless pass by value
+
 ### 📚 Documentation
 
 - Removed warning. ensured reproducibility.
@@ -87,19 +113,15 @@ All notable changes to this project will be documented in this file.
 - Set resolver to 2 and enforce strict linting rules
 - Release v5.1.3
 
-### Clippy
-
-- Rectify the needless pass by value
-
 ## [5.1.2] - 2024-11-01
+
+### 💼 Other
+
+- Improvements on how we sort files and directories
 
 ### ⚙️ Miscellaneous Tasks
 
 - Release 5.1.2
-
-### Minor
-
-- Improvements on how we sort files and directories
 
 ## [5.1.0] - 2024-11-01
 
@@ -132,6 +154,14 @@ All notable changes to this project will be documented in this file.
 - Reimplement adding of archive files
 - Resolved some edge-cases with additional paths and included paths
 
+### 💼 Other
+
+- Also filter_paths for each element in additional_paths
+- Set to trace level for filter_paths
+- Begin refactor cycle [ci skip]
+- Finalise flags. begin cycle
+- Remove unused imports
+
 ### 🚜 Refactor
 
 - Improve the logic handling for adding, excluding and including
@@ -144,26 +174,6 @@ All notable changes to this project will be documented in this file.
 
 - Release 5.0.0
 
-### Cli
-
-- Finalise flags. begin cycle
-
-### Clippy
-
-- Remove unused imports
-
-### Improvement
-
-- Also filter_paths for each element in additional_paths
-
-### Logging
-
-- Set to trace level for filter_paths
-
-### Major
-
-- Begin refactor cycle [ci skip]
-
 ## [4.5.0] - 2024-10-20
 
 ### 🚀 Features
@@ -175,17 +185,14 @@ All notable changes to this project will be documented in this file.
 
 - Actually implement the fix for ef1e6f857e48821198d720d092bc7087af762f2a
 
+### 💼 Other
+
+- Update tests and update paths code
+- V4.5.0
+
 ### 📚 Documentation
 
 - Update README and include instructions regarding renaming
-
-### Minor
-
-- Update tests and update paths code
-
-### Release
-
-- V4.5.0
 
 ## [4.2.0] - 2024-10-20
 
@@ -193,18 +200,15 @@ All notable changes to this project will be documented in this file.
 
 - Filename should leave out version part alone
 
-### Release
+### 💼 Other
 
 - V4.2.0
 
 ## [4.1.0] - 2024-10-20
 
-### Cli
+### 💼 Other
 
 - Allow to explicitly tell "true" or "false" using ArgAction::Set and add our service file
-
-### Release
-
 - V4.1.0
 
 ## [4.0.0] - 2024-10-20
@@ -213,6 +217,18 @@ All notable changes to this project will be documented in this file.
 
 - Apply clippy lints
 - Additional paths variable should only be a collection of files and not directories
+
+### 💼 Other
+
+- Move over copy_dir_all as a common utility
+- Move logic as cli stubs
+- Add recomprizz args
+- Initial implementation
+- Set logic where and when to start properly
+- Set to false by default
+- Raaaaaaaaaaaaawwwwwwww
+- Cliff.toml and git-cliff is an overengineered changelog generator
+- V4.0.0
 
 ### 🚜 Refactor
 
@@ -231,39 +247,6 @@ All notable changes to this project will be documented in this file.
 ### 🧪 Testing
 
 - Use copy_dir_all as part of lib now instead
-
-### Cli
-
-- Move logic as cli stubs
-- Add recomprizz args
-
-### Lib
-
-- Move over copy_dir_all as a common utility
-
-### Minor
-
-- Raaaaaaaaaaaaawwwwwwww
-
-### Recomprizz
-
-- Initial implementation
-
-### Release
-
-- V4.0.0
-
-### Remove
-
-- Cliff.toml and git-cliff is an overengineered changelog generator
-
-### Reproducibility
-
-- Set to false by default
-
-### Tracing
-
-- Set logic where and when to start properly
 
 ## [3.3.1] - 2024-10-19
 
@@ -289,6 +272,12 @@ All notable changes to this project will be documented in this file.
 
 - Support uncompressed tarballs with tar extension
 
+### 💼 Other
+
+- Add repository key value
+- Add repository key value
+- Add required keys and prepare to publish
+
 ### 🚜 Refactor
 
 - Properly set preserve root
@@ -297,12 +286,6 @@ All notable changes to this project will be documented in this file.
 ### 📚 Documentation
 
 - Update README
-
-### Publish
-
-- Add repository key value
-- Add repository key value
-- Add required keys and prepare to publish
 
 ## [3.2.2] - 2024-10-12
 
@@ -316,23 +299,23 @@ All notable changes to this project will be documented in this file.
 
 ## [3.2.1] - 2024-10-12
 
+### 💼 Other
+
+- Improve description
+
 ### ⚙️ Miscellaneous Tasks
 
 - *(release)* V3.2.1
 
-### Cli
-
-- Improve description
-
 ## [3.2.0] - 2024-10-12
 
-### Cargo
+### 💼 Other
 
 - Update lockfile
 
 ## [3.1.1] - 2024-10-12
 
-### Improvement
+### 💼 Other
 
 - Add Display trait for Compression and Error trait for UnsupportedFormat
 
@@ -355,23 +338,14 @@ All notable changes to this project will be documented in this file.
 - Add is_supported_format function
 - Add ability to extract supported file formats
 
-### Clippy
+### 💼 Other
 
+- Use new format with just format command
 - Use inspect_err when map_err returns the original item
-
-### Consts
-
-- Remove unnecessary consts
-
-### Format
-
-- Use new format with just format command
-- Use new format with just format command
-
-### Minor
-
 - *(refactor)* Use inspect_err instead of map_err
+- Use new format with just format command
 - Add Display trait to namespace and slightly change the error message
+- Remove unnecessary consts
 - Apply trait Debug for UnsupportedFormat
 - Refactor and put only one return keyword for if-else block
 

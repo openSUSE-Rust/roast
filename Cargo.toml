@@ -1,6 +1,6 @@
 [workspace.package]
 authors = ["Soc Virnyl Estela"]
-version = "6.0.0-dev"
+version = "6.0.0"
 edition = "2024"
 license = "MPL-2.0"
 repository = "https://codeberg.org/Rusty-Geckos/roast"

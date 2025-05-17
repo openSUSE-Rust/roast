@@ -172,7 +172,7 @@ pub fn roast_scm_opts(roast_scm_args: &RoastScmArgs, start_trace: bool) -> io::R
 
     info!(?git_url, "🫂 Cloning remote repository.");
     info!(?local_clone_dir, "🏃 Cloning to local directory...");
-    git_clone2(git_url, &local_clone_dir, &roast_scm_args.revision, roast_scm_args.depth)?;
+    git_clone2(git_url, local_clone_dir, &roast_scm_args.revision, roast_scm_args.depth)?;
     info!(?git_url, "🫂 Finished cloning remote repository.");
     info!("🍄 Cloned to `{}`.", local_clone_dir.display());
 

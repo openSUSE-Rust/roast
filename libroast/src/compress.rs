@@ -66,7 +66,7 @@ fn add_path_to_archive<T: Write>(
             additional_path.to_string_lossy(),
             target_dir.to_string_lossy()
         );
-        io::Error::new(io::ErrorKind::Other, additional_path.to_string_lossy())
+        io::Error::other(additional_path.to_string_lossy())
     })?;
 
     if additional_path.is_file()
@@ -121,7 +121,7 @@ pub fn tar_builder<T: Write>(
         else
         {
             error!("THIS IS A BUG. Unable to proceed. {} does not exist.", f.to_string_lossy());
-            Err(io::Error::new(io::ErrorKind::Other, f.to_string_lossy()))
+            Err(io::Error::other(f.to_string_lossy()))
         }
     })?;
 

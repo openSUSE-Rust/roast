@@ -1,15 +1,10 @@
-#![allow(unused_imports)]
-#![allow(dead_code)]
 use crate::{
     operations::{
         cli::{
             RoastArgs,
             RoastScmArgs,
         },
-        roast::{
-            self,
-            roast_opts,
-        },
+        roast::roast_opts,
     },
     utils::start_tracing,
 };
@@ -21,24 +16,14 @@ use git2::{
 };
 use std::{
     io,
-    path::{
-        Path,
-        PathBuf,
-    },
-    str::FromStr,
+    path::Path,
 };
 use tracing::{
-    Level,
     debug,
     error,
     info,
-    trace,
-    warn,
 };
-use url::{
-    ParseError,
-    Url,
-};
+use url::Url;
 
 fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> io::Result<()>
 {
@@ -54,24 +39,24 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
     builder.fetch_options(fetch_options);
     builder.clone(url, local_clone_dir).map_err(|err| {
         error!(?err);
-        io::Error::new(io::ErrorKind::Other, err.to_string())
+        io::Error::other(err.to_string())
     })?;
     let local_repository = Repository::open(local_clone_dir).map_err(|err| {
         error!(?err);
-        io::Error::new(io::ErrorKind::Other, err.to_string())
+        io::Error::other(err.to_string())
     })?;
     local_repository.cleanup_state().map_err(|err| {
         error!(?err);
-        io::Error::new(io::ErrorKind::Other, err.to_string())
+        io::Error::other(err.to_string())
     })?;
 
     let (object, reference) = local_repository.revparse_ext(revision).map_err(|err| {
         error!(?err);
-        io::Error::new(io::ErrorKind::Other, err.to_string())
+        io::Error::other(err.to_string())
     })?;
     local_repository.checkout_tree(&object, None).map_err(|err| {
         error!(?err);
-        io::Error::new(io::ErrorKind::Other, err.to_string())
+        io::Error::other(err.to_string())
     })?;
 
     match reference
@@ -83,23 +68,23 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
     }
     .map_err(|err| {
         error!(?err);
-        io::Error::new(io::ErrorKind::Other, err.to_string())
+        io::Error::other(err.to_string())
     })?;
 
     let submodules = local_repository.submodules().map_err(|err| {
         error!(?err);
-        io::Error::new(io::ErrorKind::Other, err.to_string())
+        io::Error::other(err.to_string())
     })?;
 
     for mut subm in submodules
     {
         subm.update(true, None).map_err(|err| {
             error!(?err);
-            io::Error::new(io::ErrorKind::Other, err.to_string())
+            io::Error::other(err.to_string())
         })?;
         subm.open().map_err(|err| {
             error!(?err);
-            io::Error::new(io::ErrorKind::Other, err.to_string())
+            io::Error::other(err.to_string())
         })?;
     }
 
@@ -174,7 +159,7 @@ pub fn roast_scm_opts(roast_scm_args: &RoastScmArgs, start_trace: bool) -> io::R
 
     info!(?git_url, "🫂 Cloning remote repository.");
     info!(?local_clone_dir, "🏃 Cloning to local directory...");
-    git_clone2(&git_url, &local_clone_dir, &roast_scm_args.revision, roast_scm_args.depth)?;
+    git_clone2(git_url, &local_clone_dir, &roast_scm_args.revision, roast_scm_args.depth)?;
     info!(?git_url, "🫂 Finished cloning remote repository.");
     info!("🍄 Cloned to `{}`.", local_clone_dir.display());
 

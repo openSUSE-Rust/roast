@@ -235,7 +235,11 @@ pub struct RoastScmArgs
         action = clap::ArgAction::Set,
         help = "The depth of cloning the repository.")]
     pub depth: i32,
-    #[arg(long, default_value_t = true, help = "If the cloned repository should be temporary.")]
+    #[arg(
+        long, default_value_t = true,
+        action = clap::ArgAction::Set,
+        help = "If the cloned repository should be temporary."
+    )]
     pub is_temporary: bool,
     #[arg(
         long,

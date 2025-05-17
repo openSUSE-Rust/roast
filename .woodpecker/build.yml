@@ -2,14 +2,15 @@ matrix:
   ARCH:
     - linux/amd64
 
+when:
+  event: [push, tag, pull_request]
+  branch: main
+
 labels:
   platform: ${ARCH}
 
 steps:
   build:
-    when:
-      event: [push, tag, pull_request]
-      branch: main
     image: opensuse/tumbleweed:latest
     commands:
       - zypper --non-interactive install rustup openssl-devel libzstd-devel

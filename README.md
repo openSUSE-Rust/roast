@@ -17,18 +17,6 @@ The main repository is on [codeberg][codeberg], which is where the issue tracker
 
 Create archive tarballs and roast them!
 
-> [!NOTE]
-> When using `recomprizz`, files with filenames like `package-1.2.3.tar.gz` will have
-> the number parts of their names preserved i.e. `package-1.2.3.tar.gz` -> `package-1.2.3.tar.zst`.
-> However, filenames with letters after the numbers will be removed especially for version part
-> of the filenames are tagged as `alpha` or `beta`. For example, `package-1.2.3.alpha.tar.gz` will
-> turn into `package-1.2.3.tar.zst`. This is a limitation with the renaming logic. The solution is
-> to use the `-R` or `--rename` flag to hardcode the new name. So a command like
-> ```
-> recomprizz -t package-1.2.3.alpha.tar.gz -R package-1.2.3.alpha
-> ```
-> should fix the issue.
-
 ## Reason of existence
 
 I am trying to split the logic from [obs-service-cargo](https://github.com/openSUSE-Rust/obs-service-cargo).
@@ -40,6 +28,7 @@ Plus, it has the comfort of being a simple `tar` alternative.
 # How to install the binaries
 
 Roast contains to binaries
+- `roast_scm`
 - `roast`
 - `raw`
 - `recomprizz`
@@ -90,14 +79,54 @@ be EXCLUDED**, it is, therefore, **ADDED**.
 use a different source or to include only a specific set of files, thereby
 ignoring the top-level directory of the original source.
 
+As of now, the output file's filename MUST INCLUDE the extension. We might want to change this behaviour
+in the future where a user will only provide the filename without indicating the extension since
+the extension should be based on the compression option.
+
+## Roast SCM - How it works
+
+`roast_scm` is an extended utility of `roast`. It's purpose is to create tarballs from a
+remote repository. The behaviour is similar to `roast` but only at some point.
+
+As of now, the filename MUST INCLUDE the extension. We might want to change this behaviour since
+`--outfile` has a type `Option<PathBuf>`. Hence, if not provided, it will try to base
+the output file's filename from the project name and the revision (i.e. commit hash or tag).
+
+## Raw - How it works
+
+`raw` is an extractor utility. It detects the mime-type instead of basing it from a file extension
+before it extracts the tarball archive.
+
+## Recomprizz - How it works
+
+`recomprizz` is a recompression utility. It utilises `roast` and `raw` under the hood. It extracts the
+target tarball before it creates a new tarball of a different compression option e.g. `source.tar.gz`
+to `source.tar.zst`. The renaming scheme is too dumb and simple though, and not perfect—see note below.
+
+> [!NOTE]
+> When using `recomprizz`, files with filenames like `package-1.2.3.tar.gz` will have
+> the number parts of their names preserved i.e. `package-1.2.3.tar.gz` -> `package-1.2.3.tar.zst`.
+> However, filenames with letters after the numbers will be removed especially for version part
+> of the filenames are tagged as `alpha` or `beta`. For example, `package-1.2.3.alpha.tar.gz` will
+> turn into `package-1.2.3.tar.zst`. This is a limitation with the renaming logic. The solution is
+> to use the `-R` or `--rename` flag to hardcode the new name. So a command like
+> ```
+> recomprizz -t package-1.2.3.alpha.tar.gz -R package-1.2.3.alpha
+> ```
+> should fix the issue. **However, I think the better option is to just hardcode it, regardless**.
+>
+
+
 # Service files are in the following with descriptions.
 
 - [recomprizz.service](./recomprizz.service)
 - [roast.service](./roast.service)
 - [raw.service](./raw.service)
+- [roast_scm.service](./roast_scm.service)
 
 It maps when you run the following commands
 - `roast -h`
+- `roast_scm -h`
 - `raw -h`
 - `recomprizz -h`
 

@@ -85,7 +85,7 @@ the extension should be based on the compression option.
 
 ## Roast SCM - How it works
 
-`roast_scm` is an extended utility of `roast`. It's purpose is to create tarballs from a
+`roast_scm` is an extended utility of `roast`. Its purpose is to create tarballs from a
 remote repository. The behaviour is similar to `roast` but only at some point.
 
 As of now, the filename MUST INCLUDE the extension. We might want to change this behaviour since

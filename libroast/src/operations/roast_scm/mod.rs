@@ -202,9 +202,9 @@ pub fn roast_scm_opts(
                     "👁️ Locally cloned repository is not deleted and located at `{}`.",
                     local_clone_dir.display()
                 );
-                return Ok(Some(local_clone_dir.to_path_buf()));
+                return Some(local_clone_dir.to_path_buf());
             };
-            return Ok(None);
+            None
         })
         .inspect_err(|err| {
             error!(?err);

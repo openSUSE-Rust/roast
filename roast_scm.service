@@ -3,7 +3,7 @@
    <summary>OBS Service to roast git sources</summary>
    <description><![CDATA[Recompress to other compression formats using raw and roast internally.]]></description>
    <parameter name="strategy">
-      <description>Legacy argument, no longer used. Values: recomprizz. Default: recomprizz</description>
+      <description>Legacy argument, no longer used. Values: roast_scm. Default: roast_scm</description>
    </parameter>
    <parameter name="git-repository-url">
       <description>Remote URL to the git repository.</description>

@@ -131,7 +131,10 @@ fn process_filename_prefix_from_url(url_string: &str, revision: &str) -> io::Res
 /// It uses `crate::operations::roast` under the hood. Locally cloned
 /// repositories can be not deleted if the `crate::cli::RoastScmArgs` has its
 /// field `is_temporary` set to `false`.
-pub fn roast_scm_opts(roast_scm_args: &RoastScmArgs, start_trace: bool) -> io::Result<()>
+pub fn roast_scm_opts(
+    roast_scm_args: &RoastScmArgs,
+    start_trace: bool,
+) -> io::Result<Option<PathBuf>>
 {
     if start_trace
     {
@@ -190,7 +193,8 @@ pub fn roast_scm_opts(roast_scm_args: &RoastScmArgs, start_trace: bool) -> io::R
     };
 
     roast_opts(&roast_args, false)
-        .inspect(|ok| {
+        .map(|ok| {
+            debug!(?ok);
             info!("⛓️🔥 Finished Roast SCM!");
             if !roast_scm_args.is_temporary
             {
@@ -198,8 +202,9 @@ pub fn roast_scm_opts(roast_scm_args: &RoastScmArgs, start_trace: bool) -> io::R
                     "👁️ Locally cloned repository is not deleted and located at `{}`.",
                     local_clone_dir.display()
                 );
+                return Ok(Some(local_clone_dir.to_path_buf()));
             };
-            debug!(?ok);
+            return Ok(None);
         })
         .inspect_err(|err| {
             error!(?err);

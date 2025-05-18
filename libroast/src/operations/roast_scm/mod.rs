@@ -134,7 +134,7 @@ fn process_filename_prefix_from_url(url_string: &str, revision: &str) -> io::Res
 pub fn roast_scm_opts(
     roast_scm_args: &RoastScmArgs,
     start_trace: bool,
-) -> io::Result<Option<PathBuf>>
+) -> io::Result<Option<std::path::PathBuf>>
 {
     if start_trace
     {

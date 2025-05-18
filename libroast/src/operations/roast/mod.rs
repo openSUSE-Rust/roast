@@ -254,6 +254,11 @@ pub fn roast_opts(roast_args: &cli::RoastArgs, start_trace: bool) -> io::Result<
         None => &std::env::current_dir()?,
     };
 
+    if !outdir.is_dir()
+    {
+        std::fs::create_dir_all(&outdir)?;
+    }
+
     let outpath = outdir.join(&roast_args.outfile);
     let outpath = outpath.canonicalize().unwrap_or(outpath);
 

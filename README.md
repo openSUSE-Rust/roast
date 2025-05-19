@@ -17,21 +17,13 @@ The main repository is on [codeberg][codeberg], which is where the issue tracker
 
 Create archive tarballs and roast them!
 
-## Reason of existence
-
-I am trying to split the logic from [obs-service-cargo](https://github.com/openSUSE-Rust/obs-service-cargo).
-Not only is this a library, it also contains binaries that extract and decompress tarballs or create
-tarballs with the available highest level compression for supported compression formats.
-
-Plus, it has the comfort of being a simple `tar` alternative.
-
 # How to install the binaries
 
 Roast contains to binaries
-- `roast_scm`
-- `roast`
 - `raw`
 - `recomprizz`
+- `roast`
+- `roast_scm`
 
 ## Cargo
 
@@ -116,19 +108,18 @@ to `source.tar.zst`. The renaming scheme is too dumb and simple though, and not 
 > should fix the issue. **However, I think the better option is to just hardcode it, regardless**.
 >
 
-
 # Service files are in the following with descriptions.
 
-- [recomprizz.service](./recomprizz.service)
-- [roast.service](./roast.service)
 - [raw.service](./raw.service)
+- [recomprizz.service](./recomprizz.service)
 - [roast_scm.service](./roast_scm.service)
+- [roast.service](./roast.service)
 
 It maps when you run the following commands
-- `roast -h`
-- `roast_scm -h`
 - `raw -h`
 - `recomprizz -h`
+- `roast -h`
+- `roast_scm -h`
 
 [github]: https://github.com/openSUSE-Rust/roast
 [sourcehut]: https://git.sr.ht/~uncomfy/roast

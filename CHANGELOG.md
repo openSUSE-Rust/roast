@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.1.1] - 2025-05-19
+
+### 🐛 Bug Fixes
+
+- Import correctly `std::path::PathBuf`.
+- Use the correct return type inside the map.
+- Ensure that the outdir exists
+- Return type should be Result<Option<PathBuf>>
+- Return type should be Result<Option<PathBuf>>
+- Return Ok(())
+
+### 💼 Other
+
+- Allow returning an `Option<PathBuf>` if is-temporary is set to `false`.
+
+### 📚 Documentation
+
+- This is roast_scm. this file was copied from recomprizz so it was overlooked accidentally
+- Fix typo in README.md
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V6.1.1
+
 ## [6.1.0] - 2025-05-17
 
 ### 🚀 Features
@@ -34,6 +58,7 @@ All notable changes to this project will be documented in this file.
 - Only run ci for certain file changes
 - Begin 6.1.0 cycle
 - Version bump dependencies
+- *(release)* V6.1.0
 
 ## [6.0.0] - 2025-05-17
 

@@ -80,7 +80,7 @@ fn checkout_branch<'a>(
     };
     // NOTE: The branch ref will look like `refs/remotes/<name of remote>/<name of
     // branch>` so we `rsplit_once` just to get the name of the remote branch
-    let final_branchname = if let Some((_rest, last_name)) = branch_shortname.rsplit_once("/")
+    let _final_branchname = if let Some((_rest, last_name)) = branch_shortname.rsplit_once("/")
     {
         local_repository.branch(last_name, &branch_commit, true).map_err(|err| {
             error!(?err);
@@ -103,8 +103,7 @@ fn checkout_branch<'a>(
         error!(?err);
         io::Error::other(err)
     })?;
-    let refs_heads_branch = format!("refs/heads/{}", final_branchname);
-    local_repository.set_head(&refs_heads_branch).map_err(|err| {
+    local_repository.set_head_detached(branch_obj.id()).map_err(|err| {
         error!(?err);
         io::Error::other(err)
     })?;

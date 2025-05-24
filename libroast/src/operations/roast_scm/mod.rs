@@ -173,7 +173,10 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
                 continue;
             }
         }
-        checkout_branch(&local_repository, &branch)?;
+        if !branch.is_head()
+        {
+            checkout_branch(&local_repository, &branch)?;
+        }
     }
 
     // NOTE: First check if `revision` parameter is a branch

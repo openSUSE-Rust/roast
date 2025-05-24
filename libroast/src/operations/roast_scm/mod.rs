@@ -313,8 +313,15 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
     if let Some(commitish) = resulting_git_object.as_commit()
     {
         bad_parenting(commitish, tunc_count, &mut bulk_commit_message)?;
-        info!("✍🏻 Copy the changelog below:");
-        println!("{}", &bulk_commit_message);
+        if !&bulk_commit_message.is_empty()
+        {
+            info!("✍🏻 Copy the changelog below:");
+            println!("{}", &bulk_commit_message);
+        }
+        else
+        {
+            warn!("⚠️📋 No changelog generated.");
+        }
     }
     else
     {
@@ -352,8 +359,15 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
             5
         };
         bad_parenting(&tagged_commit, tunc_count, &mut bulk_commit_message)?;
-        info!("✍🏻 Copy the changelog below:");
-        println!("{}", &bulk_commit_message);
+        if !&bulk_commit_message.is_empty()
+        {
+            info!("✍🏻 Copy the changelog below:");
+            println!("{}", &bulk_commit_message);
+        }
+        else
+        {
+            warn!("⚠️📋 No changelog generated.");
+        }
     }
     Ok(())
 }

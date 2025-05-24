@@ -313,7 +313,7 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
     // Rerun `describe_revision` here for changelog generation.
     let describe_string = describe_revision(&resulting_git_object)?;
     debug!(?describe_string, "Result of `git describe` after ATTEMPTING to remove a tag: ");
-    let tunc_count = if let Some((rest, _hash)) = describe_string.rsplit_once("-")
+    let tunc_count = if let Some((rest, _g_hash)) = describe_string.rsplit_once("-")
     {
         if let Some((_new_rest, new_cunt)) = rest.rsplit_once("-")
         {
@@ -336,15 +336,6 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
     if let Some(commitish) = resulting_git_object.as_commit()
     {
         bad_parenting(commitish, tunc_count, &mut bulk_commit_message)?;
-        if !&bulk_commit_message.is_empty()
-        {
-            info!("✍🏻 Copy the changelog below:");
-            println!("{}", &bulk_commit_message);
-        }
-        else
-        {
-            warn!("⚠️📋 No changelog generated.");
-        }
     }
     else
     {
@@ -382,15 +373,15 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
             5
         };
         bad_parenting(&tagged_commit, tunc_count, &mut bulk_commit_message)?;
-        if !&bulk_commit_message.is_empty()
-        {
-            info!("✍🏻 Copy the changelog below:");
-            println!("{}", &bulk_commit_message);
-        }
-        else
-        {
-            warn!("⚠️📋 No changelog generated.");
-        }
+    }
+    if !&bulk_commit_message.is_empty()
+    {
+        info!("✍🏻 Copy the changelog below:");
+        println!("{}", &bulk_commit_message);
+    }
+    else
+    {
+        warn!("⚠️📋 No changelog generated.");
     }
     Ok(())
 }

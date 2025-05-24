@@ -10,6 +10,8 @@ use crate::{
 };
 use git2::{
     AutotagOption,
+    Branch,
+    BranchType,
     FetchOptions,
     Repository,
     build::RepoBuilder,
@@ -24,6 +26,57 @@ use tracing::{
     info,
 };
 use url::Url;
+
+// NOTE: checkout only remote branches. It does not make sense to checkout local
+// branches
+fn checkout_branch(local_repository: &Repository, branch: &Branch) -> io::Result<()>
+{
+    let branch_ref = branch.get();
+    let branch_commit = branch_ref.peel_to_commit().map_err(|err| {
+        error!(?err);
+        io::Error::other(err)
+    })?;
+    let branch_shortname = if let Some(shortname) = branch_ref.shorthand()
+    {
+        shortname
+    }
+    else
+    {
+        return Err(io::Error::other("No shortname or fullname found!"));
+    };
+    // NOTE: The branch ref will look like `refs/remotes/<name of remote>/<name of
+    // branch>` so we `rsplit_once` just to get the name of the remote branch
+    let final_branchname = if let Some((_rest, last_name)) = branch_shortname.rsplit_once("/")
+    {
+        local_repository.branch(last_name, &branch_commit, false).map_err(|err| {
+            error!(?err);
+            io::Error::other(err)
+        })?;
+        last_name
+    }
+    else
+    {
+        // NOTE: Not sure if this is the best approach
+        local_repository.branch(branch_shortname, &branch_commit, false).map_err(|err| {
+            error!(?err);
+            io::Error::other(err)
+        })?;
+        branch_shortname
+    };
+    let branch_obj = &branch_commit.as_object();
+
+    local_repository.checkout_tree(&branch_obj, None).map_err(|err| {
+        error!(?err);
+        io::Error::other(err)
+    })?;
+    let refs_heads_branch = format!("refs/heads/{}", final_branchname);
+    local_repository.set_head(&refs_heads_branch).map_err(|err| {
+        error!(?err);
+        io::Error::other(err)
+    })?;
+
+    Ok(())
+}
 
 /// Helper function to clone a repository. Options are self-explanatory.
 ///
@@ -41,6 +94,7 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
 
     let mut builder = RepoBuilder::new();
     builder.fetch_options(fetch_options);
+    // builder.branch(revision);
     builder.clone(url, local_clone_dir).map_err(|err| {
         error!(?err);
         io::Error::other(err.to_string())
@@ -49,32 +103,83 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
         error!(?err);
         io::Error::other(err.to_string())
     })?;
+
     local_repository.cleanup_state().map_err(|err| {
         error!(?err);
         io::Error::other(err.to_string())
     })?;
 
-    let (object, reference) = local_repository.revparse_ext(revision).map_err(|err| {
-        error!(?err);
-        io::Error::other(err.to_string())
-    })?;
-    local_repository.checkout_tree(&object, None).map_err(|err| {
-        error!(?err);
-        io::Error::other(err.to_string())
-    })?;
+    // If a reference does not exist, let's check all out remote branches, thus,
+    // creating local copies.
+    let branch_type = BranchType::Remote;
+    let branches = local_repository
+        .branches(Some(branch_type))
+        .map_err(|err| {
+            error!(?err);
+            io::Error::other(err)
+        })?
+        .flatten();
 
-    match reference
+    for (branch, _) in branches
     {
-        Some(gitref) => local_repository.set_head(gitref.name().ok_or_else(|| {
-            io::Error::new(io::ErrorKind::InvalidInput, "No reference name found.")
-        })?),
-        None => local_repository.set_head_detached(object.id()),
+        checkout_branch(&local_repository, &branch)?;
     }
-    .map_err(|err| {
+    // First check if it's a branch
+    let check_ref = local_repository.find_branch(&revision, BranchType::Local).inspect_err(|err| {
         error!(?err);
-        io::Error::other(err.to_string())
-    })?;
+    });
+    if let Ok(found_branch) = check_ref
+    {
+        checkout_branch(&local_repository, &found_branch).map_err(|err| {
+            error!(?err);
+            io::Error::other(err)
+        })?;
+    }
+    else
+    {
+        // Then it's likely a tag or a commitish
+        let object_ref_result = local_repository.revparse_ext(&revision).map_err(|err| {
+            error!(?err);
+            io::Error::other(err)
+        });
 
+        if let Ok((object, reference)) = object_ref_result
+        {
+            let mut describe_options = git2::DescribeOptions::default();
+            let describe = object.describe(&describe_options).map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?;
+            let mut describe_format = git2::DescribeFormatOptions::new();
+            describe_options.describe_all();
+            describe_format.always_use_long_format(true);
+            let describe_string = describe.format(Some(&describe_format)).map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?;
+
+            println!("{}", describe_string);
+
+            local_repository.checkout_tree(&object, None).map_err(|err| {
+                error!(?err);
+                io::Error::other(err.to_string())
+            })?;
+
+            match reference
+            {
+                Some(gitref) => local_repository.set_head(gitref.name().ok_or_else(|| {
+                    io::Error::new(io::ErrorKind::InvalidInput, "No reference name found.")
+                })?),
+                None => local_repository.set_head_detached(object.id()),
+            }
+            .map_err(|err| {
+                error!(?err);
+                io::Error::other(err.to_string())
+            })?;
+        }
+    }
+    // Then recursively just update any submodule of the repository to match
+    // the index and tree.
     let submodules = local_repository.submodules().map_err(|err| {
         error!(?err);
         io::Error::other(err.to_string())
@@ -91,7 +196,6 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
             io::Error::other(err.to_string())
         })?;
     }
-
     Ok(())
 }
 

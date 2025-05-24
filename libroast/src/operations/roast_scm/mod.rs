@@ -158,6 +158,7 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
             "⚠️ Careful when setting depth. You might lose some refs that might affect finding \
              your revision string."
         );
+        warn!("⚠️ Depth is currently set to `{}`", depth);
         fetch_options.depth(depth);
     }
 

@@ -234,7 +234,7 @@ pub struct RoastScmArgs
     #[arg(long, help = "Revision or tag. It can also be a specific commit hash.")]
     pub revision: String,
     #[arg(
-        long, default_value_t = 1,
+        long, default_value_t = 0,
         action = clap::ArgAction::Set,
         help = "The depth of cloning the repository.")]
     pub depth: i32,

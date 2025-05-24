@@ -80,7 +80,7 @@ fn checkout_branch<'a>(
     };
     // NOTE: The branch ref will look like `refs/remotes/<name of remote>/<name of
     // branch>` so we `rsplit_once` just to get the name of the remote branch
-    let _final_branchname = if let Some((_rest, last_name)) = branch_shortname.rsplit_once("/")
+    if let Some((_rest, last_name)) = branch_shortname.rsplit_once("/")
     {
         local_repository.branch(last_name, &branch_commit, true).map_err(|err| {
             error!(?err);
@@ -110,6 +110,34 @@ fn checkout_branch<'a>(
     Ok(branch_obj.to_owned())
 }
 
+fn revision_in_remote_exists(branch: &Branch, revision: &str) -> bool
+{
+    if let Some(name) = &branch.get().name()
+    {
+        // NOTE: For whatever reason, `refs/remotes/<name of remote>/HEAD` is not
+        // a valid branch name 🥴
+        match name.split_once(revision)
+        {
+            Some((refremote, remote_branch)) =>
+            {
+                debug!(?refremote, ?remote_branch);
+                if let Some(should_be_slash) = refremote.chars().last()
+                {
+                    should_be_slash == '/'
+                }
+                else
+                {
+                    false
+                }
+            }
+            _ => false,
+        }
+    }
+    else
+    {
+        false
+    }
+}
 /// Helper function to clone a repository. Options are self-explanatory.
 ///
 /// If a repository has submodules, it will always attempt to update a
@@ -153,7 +181,7 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
     // If a reference does not exist, let's check all out remote branches, thus,
     // creating local copies.
     let branch_type = BranchType::Remote;
-    let branches = local_repository
+    let mut branches = local_repository
         .branches(Some(branch_type))
         .map_err(|err| {
             error!(?err);
@@ -161,34 +189,26 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
         })?
         .flatten();
 
-    for (branch, _) in branches
-    {
-        if let Some(name) = &branch.get().name()
-        {
-            // NOTE: For whatever reason, `refs/remotes/<name of origin>/HEAD` is not
-            // a valid branch name 🥴
-            if name.contains("HEAD")
-            {
-                continue;
-            }
-        }
-        if !branch.is_head()
-        {
-            checkout_branch(&local_repository, &branch)?;
-        }
-    }
+    let remote_branch_to_copy =
+        branches.find(|(branch, _branch_type)| revision_in_remote_exists(branch, revision));
 
-    // NOTE: First check if `revision` parameter is a branch
-    let check_revision =
-        local_repository.find_branch(revision, BranchType::Local).inspect_err(|err| {
-            warn!(?err);
-            warn!(
-                "️‼️ Ensure you passed a valid branch name. Checking if you have passed a tag or \
-                 commit hash..."
-            );
-        });
+    // for (branch, _) in branches {
+    //     if let Some(name) = &branch.get().name() {
+    //         // NOTE: For whatever reason, `refs/remotes/<name of remote>/HEAD` is
+    // not         // a valid branch name 🥴
+    //         if let Some((refremote, remote_branch)) = name.split_once(revision) {
+    //             debug!(?refremote, ?remote_branch);
+    //             if let Some(should_be_slash) = refremote.chars().last() {
+    //                 if should_be_slash == '/' {
+    //                     checkout_branch(&local_repository, &branch)?;
+    //                     break;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
-    let resulting_git_object = if let Ok(ref found_branch) = check_revision
+    let resulting_git_object = if let Some((ref found_branch, _branch_type)) = remote_branch_to_copy
     {
         checkout_branch(&local_repository, found_branch).map_err(|err| {
             error!(?err);

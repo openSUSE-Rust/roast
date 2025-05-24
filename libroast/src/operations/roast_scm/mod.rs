@@ -279,15 +279,12 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
                 })?;
             }
         }
-        else
+        else if let Some((tag_string, _)) = describe_string.split_once("-")
         {
-            if let Some((tag_string, _)) = describe_string.split_once("-")
-            {
-                local_repository.tag_delete(tag_string).map_err(|err| {
-                    error!(?err);
-                    io::Error::other(err)
-                })?;
-            }
+            local_repository.tag_delete(tag_string).map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?;
         }
     }
     // Rerun `describe_revision` here for changelog generation.
@@ -315,19 +312,26 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
     let mut bulk_commit_message = String::new();
     if let Some(commitish) = resulting_git_object.as_commit()
     {
-        bad_parenting(&commitish, tunc_count, &mut bulk_commit_message)?;
+        bad_parenting(commitish, tunc_count, &mut bulk_commit_message)?;
         info!("✍🏻 Copy the changelog below:");
         println!("{}", &bulk_commit_message);
     }
     else
     {
         // NOTE: at this point, it's clearly a tag
-        #[allow(clippy::unwrap_used)]
-        let tag = resulting_git_object.as_tag().unwrap();
-        let tagged_obj = tag.target().unwrap();
+        let tag = resulting_git_object
+            .as_tag()
+            .ok_or_else(|| io::Error::other("Object does not point to a tag."))?;
+        let tagged_obj = tag.target().map_err(|err| {
+            error!(?err);
+            io::Error::other(err)
+        })?;
         let describe_string = describe_revision(&tagged_obj)?;
+        let tagged_commit = tagged_obj.peel_to_commit().map_err(|err| {
+            error!(?err);
+            io::Error::other(err)
+        })?;
 
-        let tagged_commit = tagged_obj.as_commit().unwrap();
         let tunc_count = if let Some((rest, _hash)) = describe_string.rsplit_once("-")
         {
             if let Some((_new_rest, new_cunt)) = rest.rsplit_once("-")

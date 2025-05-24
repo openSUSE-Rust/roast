@@ -12,6 +12,7 @@ use git2::{
     AutotagOption,
     Branch,
     BranchType,
+    Commit,
     FetchOptions,
     Object,
     Repository,
@@ -35,6 +36,7 @@ fn describe_revision(object: &Object) -> io::Result<String>
     let mut describe_format = git2::DescribeFormatOptions::new();
     describe_options.describe_all();
     describe_options.describe_tags();
+    describe_options.show_commit_oid_as_fallback(true);
     describe_format.always_use_long_format(true);
     let describe_string = if let Ok(describe_with_tag) = object.describe(&describe_options)
     {
@@ -246,8 +248,138 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
         })?;
     }
 
+    // NOTE: Delete tag so we can get the previous tag to describe.
+    // NOTE: Run `describe_revision` twice. one for output information and removing
+    // a tag if there is, and the other to generate changelog.
     let describe_string = describe_revision(&resulting_git_object)?;
     info!(?describe_string, "Result of `git describe`: ");
+    if let Some(resulting_tag) = resulting_git_object.as_tag()
+    {
+        let resulting_tag_string = resulting_tag.name().unwrap_or_default();
+        info!("Git object is a tag: {}", &resulting_tag_string);
+        local_repository.tag_delete(resulting_tag_string).map_err(|err| {
+            error!(?err);
+            io::Error::other(err)
+        })?;
+    }
+    else
+    {
+        // NOTE: Let's process if the describe string has a tag.
+        // The format is long-format so if it's just a branch with no tag,
+        // it will be `heads/<name-of-branch>-g<short commit hash>`.
+        // If it has a tag, it will be `<tag>-<number of commits since tag>-g<current
+        // commit hash pointed by HEAD>`
+        if let Some((_prefix, long_name)) = describe_string.split_once("heads/")
+        {
+            if let Some((tag_string, _)) = long_name.split_once("-")
+            {
+                local_repository.tag_delete(tag_string).map_err(|err| {
+                    error!(?err);
+                    io::Error::other(err)
+                })?;
+            }
+        }
+        else
+        {
+            if let Some((tag_string, _)) = describe_string.split_once("-")
+            {
+                local_repository.tag_delete(tag_string).map_err(|err| {
+                    error!(?err);
+                    io::Error::other(err)
+                })?;
+            }
+        }
+    }
+    // Rerun `describe_revision` here for changelog generation.
+    let describe_string = describe_revision(&resulting_git_object)?;
+    debug!(?describe_string, "Result of `git describe` after ATTEMPTING to remove a tag: ");
+    let tunc_count = if let Some((rest, _hash)) = describe_string.rsplit_once("-")
+    {
+        if let Some((_new_rest, new_cunt)) = rest.rsplit_once("-")
+        {
+            let new_tunc = new_cunt.parse::<u32>().map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?;
+            if new_tunc > 0 { new_tunc } else { 5 }
+        }
+        else
+        {
+            5
+        }
+    }
+    else
+    {
+        5
+    };
+    let mut bulk_commit_message = String::new();
+    if let Some(commitish) = resulting_git_object.as_commit()
+    {
+        bad_parenting(&commitish, tunc_count, &mut bulk_commit_message)?;
+        info!("✍🏻 Copy the changelog below:");
+        println!("{}", &bulk_commit_message);
+    }
+    else
+    {
+        // NOTE: at this point, it's clearly a tag
+        #[allow(clippy::unwrap_used)]
+        let tag = resulting_git_object.as_tag().unwrap();
+        let tagged_obj = tag.target().unwrap();
+        let describe_string = describe_revision(&tagged_obj)?;
+
+        let tagged_commit = tagged_obj.as_commit().unwrap();
+        let tunc_count = if let Some((rest, _hash)) = describe_string.rsplit_once("-")
+        {
+            if let Some((_new_rest, new_cunt)) = rest.rsplit_once("-")
+            {
+                let new_cunt = new_cunt.parse::<u32>().map_err(|err| {
+                    error!(?err);
+                    io::Error::other(err)
+                })?;
+                if new_cunt > 0 { new_cunt } else { 5 }
+            }
+            else
+            {
+                5 // TODO: we might want to change this to something else but for now, this should suffice.
+            }
+        }
+        else
+        {
+            5
+        };
+        bad_parenting(&tagged_commit, tunc_count, &mut bulk_commit_message)?;
+        info!("✍🏻 Copy the changelog below:");
+        println!("{}", &bulk_commit_message);
+    }
+    Ok(())
+}
+
+fn bad_parenting(
+    commit: &Commit,
+    countdown: u32,
+    bulk_commit_message: &mut String,
+) -> io::Result<()>
+{
+    if countdown == 0
+    {
+        return Ok(());
+    }
+    let parents = commit.parents();
+    let hash = commit.id().to_string();
+    debug!("Commit hash: {}", hash);
+    let summary = commit.summary().unwrap_or_default();
+    if !summary.is_empty()
+    {
+        debug!("Commit summary: {}", summary);
+        let format_summary = format!("* {}", &summary);
+        bulk_commit_message.push_str(&format_summary);
+        bulk_commit_message.push('\n');
+    }
+    for parent in parents
+    {
+        let new_countdown = countdown - 1;
+        bad_parenting(&parent, new_countdown, bulk_commit_message)?;
+    }
     Ok(())
 }
 
@@ -313,16 +445,8 @@ pub fn roast_scm_opts(
         Some(outfile) => outfile,
         None =>
         {
-            // TODO: Maybe create a function that gives the file extension??
-            let extension = match &roast_scm_args.compression
-            {
-                crate::common::Compression::Gz => "tar.gz",
-                crate::common::Compression::Xz => "tar.xz",
-                crate::common::Compression::Zst | crate::common::Compression::Zstd => "tar.zst",
-                crate::common::Compression::Bz2 => "tar.bz",
-                crate::common::Compression::Not => "tar",
-            };
-            let full_filename = format!("{}.{}", filename_prefix, extension);
+            let extension = &roast_scm_args.compression.to_extension();
+            let full_filename = format!("{}{}", filename_prefix, extension);
             Path::new(&full_filename).to_path_buf()
         }
     };

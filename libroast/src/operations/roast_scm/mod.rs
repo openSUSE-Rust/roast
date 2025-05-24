@@ -13,6 +13,7 @@ use git2::{
     Branch,
     BranchType,
     FetchOptions,
+    Object,
     Repository,
     build::RepoBuilder,
 };
@@ -24,22 +25,53 @@ use tracing::{
     debug,
     error,
     info,
+    warn,
 };
 use url::Url;
 
+fn describe_revision(object: &Object) -> io::Result<String>
+{
+    let mut describe_options = git2::DescribeOptions::default();
+    let mut describe_format = git2::DescribeFormatOptions::new();
+    describe_options.describe_all();
+    describe_options.describe_tags();
+    describe_format.always_use_long_format(true);
+    let describe_string = if let Ok(describe_with_tag) = object.describe(&describe_options)
+    {
+        describe_with_tag.format(Some(&describe_format)).map_err(|err| {
+            warn!(?err);
+            io::Error::other(err)
+        })?
+    }
+    else
+    {
+        let mut new_describe_options = git2::DescribeOptions::default();
+        new_describe_options.describe_all();
+        let new_describe = object.describe(&new_describe_options).map_err(|err| {
+            error!(?err);
+            io::Error::other(err)
+        })?;
+        new_describe.format(Some(&describe_format)).map_err(|err| {
+            error!(?err);
+            io::Error::other(err)
+        })?
+    };
+    Ok(describe_string)
+}
+
 // NOTE: checkout only remote branches. It does not make sense to checkout local
 // branches
-fn checkout_branch(local_repository: &Repository, branch: &Branch) -> io::Result<()>
+fn checkout_branch<'a>(
+    local_repository: &'a Repository,
+    branch: &'a Branch<'a>,
+) -> io::Result<Object<'a>>
 {
     let branch_ref = branch.get();
     let branch_commit = branch_ref.peel_to_commit().map_err(|err| {
         error!(?err);
         io::Error::other(err)
     })?;
-    let branch_shortname = if let Some(shortname) = branch_ref.shorthand()
-    {
-        shortname
-    }
+    let Some(branch_shortname) = branch_ref.shorthand()
     else
     {
         return Err(io::Error::other("No shortname or fullname found!"));
@@ -48,7 +80,7 @@ fn checkout_branch(local_repository: &Repository, branch: &Branch) -> io::Result
     // branch>` so we `rsplit_once` just to get the name of the remote branch
     let final_branchname = if let Some((_rest, last_name)) = branch_shortname.rsplit_once("/")
     {
-        local_repository.branch(last_name, &branch_commit, false).map_err(|err| {
+        local_repository.branch(last_name, &branch_commit, true).map_err(|err| {
             error!(?err);
             io::Error::other(err)
         })?;
@@ -57,15 +89,15 @@ fn checkout_branch(local_repository: &Repository, branch: &Branch) -> io::Result
     else
     {
         // NOTE: Not sure if this is the best approach
-        local_repository.branch(branch_shortname, &branch_commit, false).map_err(|err| {
+        local_repository.branch(branch_shortname, &branch_commit, true).map_err(|err| {
             error!(?err);
             io::Error::other(err)
         })?;
         branch_shortname
     };
-    let branch_obj = &branch_commit.as_object();
+    let branch_obj = branch_commit.as_object();
 
-    local_repository.checkout_tree(&branch_obj, None).map_err(|err| {
+    local_repository.checkout_tree(branch_obj, None).map_err(|err| {
         error!(?err);
         io::Error::other(err)
     })?;
@@ -74,8 +106,7 @@ fn checkout_branch(local_repository: &Repository, branch: &Branch) -> io::Result
         error!(?err);
         io::Error::other(err)
     })?;
-
-    Ok(())
+    Ok(branch_obj.to_owned())
 }
 
 /// Helper function to clone a repository. Options are self-explanatory.
@@ -87,8 +118,17 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
     let mut fetch_options = FetchOptions::new();
     let tag_options = AutotagOption::All;
     fetch_options.download_tags(tag_options);
+
     if depth > 0
     {
+        warn!(
+            "⚠️ Careful when setting depth. You might lose some refs and important information \
+             that might affect `git describe` if set too low."
+        );
+        warn!(
+            "⚠️ Careful when setting depth. You might lose some refs that might affect finding \
+             your revision string."
+        );
         fetch_options.depth(depth);
     }
 
@@ -122,44 +162,47 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
 
     for (branch, _) in branches
     {
+        if let Some(name) = &branch.get().name()
+        {
+            // NOTE: For whatever reason, `refs/remotes/<name of origin>/HEAD` is not
+            // a valid branch name 🥴
+            if name.contains("HEAD")
+            {
+                continue;
+            }
+        }
         checkout_branch(&local_repository, &branch)?;
     }
-    // First check if it's a branch
-    let check_ref = local_repository.find_branch(&revision, BranchType::Local).inspect_err(|err| {
-        error!(?err);
-    });
-    if let Ok(found_branch) = check_ref
+
+    // NOTE: First check if `revision` parameter is a branch
+    let check_revision =
+        local_repository.find_branch(revision, BranchType::Local).inspect_err(|err| {
+            warn!(?err);
+            warn!(
+                "️‼️ Ensure you passed a valid branch name. Checking if you have passed a tag or \
+                 commit hash..."
+            );
+        });
+
+    let resulting_git_object = if let Ok(ref found_branch) = check_revision
     {
-        checkout_branch(&local_repository, &found_branch).map_err(|err| {
+        checkout_branch(&local_repository, found_branch).map_err(|err| {
             error!(?err);
             io::Error::other(err)
-        })?;
+        })?
     }
     else
     {
         // Then it's likely a tag or a commitish
-        let object_ref_result = local_repository.revparse_ext(&revision).map_err(|err| {
+        let object_ref_result = local_repository.revparse_ext(revision).map_err(|err| {
             error!(?err);
             io::Error::other(err)
         });
 
         if let Ok((object, reference)) = object_ref_result
         {
-            let mut describe_options = git2::DescribeOptions::default();
-            let describe = object.describe(&describe_options).map_err(|err| {
-                error!(?err);
-                io::Error::other(err)
-            })?;
-            let mut describe_format = git2::DescribeFormatOptions::new();
-            describe_options.describe_all();
-            describe_format.always_use_long_format(true);
-            let describe_string = describe.format(Some(&describe_format)).map_err(|err| {
-                error!(?err);
-                io::Error::other(err)
-            })?;
-
-            println!("{}", describe_string);
-
+            info!("❤️ Found a valid revision tag or commit.");
+            // TODO: Move this describe logic to another function
             local_repository.checkout_tree(&object, None).map_err(|err| {
                 error!(?err);
                 io::Error::other(err.to_string())
@@ -176,8 +219,14 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
                 error!(?err);
                 io::Error::other(err.to_string())
             })?;
+            object
         }
-    }
+        else
+        {
+            // Otherwise, we'll just return an error here.
+            return Err(io::Error::other(format!("No revision `{}` found!", revision)));
+        }
+    };
     // Then recursively just update any submodule of the repository to match
     // the index and tree.
     let submodules = local_repository.submodules().map_err(|err| {
@@ -196,6 +245,9 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
             io::Error::other(err.to_string())
         })?;
     }
+
+    let describe_string = describe_revision(&resulting_git_object)?;
+    info!(?describe_string, "Result of `git describe`: ");
     Ok(())
 }
 

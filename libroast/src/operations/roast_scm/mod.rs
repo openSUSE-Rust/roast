@@ -422,7 +422,7 @@ fn changelog_generate(
         else
         {
             // Perform a revwalk. This means there were no tags! And we only got a hash
-            commit_hash = commitish.id().to_string();
+            commit_hash = format!("g{}", commitish.id().to_string());
             let mut revwalk = local_repository.revwalk().map_err(|err| {
                 error!(?err);
                 io::Error::other(err)

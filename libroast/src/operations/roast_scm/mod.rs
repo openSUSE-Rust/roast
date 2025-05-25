@@ -6,7 +6,10 @@ use crate::{
         },
         roast::roast_opts,
     },
-    utils::start_tracing,
+    utils::{
+        copy_dir_all,
+        start_tracing,
+    },
 };
 use git2::{
     AutotagOption,
@@ -144,11 +147,30 @@ fn revision_in_remote_exists(branch: &Branch, revision: &str) -> bool
         false
     }
 }
+
+#[allow(dead_code)]
+struct ChangelogDetails
+{
+    pub changelog: String,
+    pub describe_string: String,
+    pub commit_hash: String,
+    pub tag_or_version: String,
+    pub offset_since_current_commit: u32,
+}
 /// Helper function to clone a repository. Options are self-explanatory.
 ///
 /// If a repository has submodules, it will always attempt to update a
 /// repository's submodule that matches at a given commit.
-fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> io::Result<()>
+///
+/// The return type is `io::Result<ChangelogDetails>`. The `Ok` variant will
+/// contain the changelog string. which can be further processed for other
+/// means.
+fn git_clone2(
+    url: &str,
+    local_clone_dir: &Path,
+    revision: &str,
+    depth: i32,
+) -> io::Result<ChangelogDetails>
 {
     let mut fetch_options = FetchOptions::new();
     let tag_options = AutotagOption::All;
@@ -278,19 +300,31 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
         })?;
     }
 
+    changelog_generate(&local_repository, &resulting_git_object)
+}
+
+fn changelog_generate(
+    local_repository: &Repository,
+    git_object: &Object,
+) -> io::Result<ChangelogDetails>
+{
     let mut bulk_commit_message = String::new();
     let mut number_of_refs_since_commit: u32 = 0;
+    let mut commit_hash: String = String::new();
+    let mut tag_or_version: String = String::new();
 
     // NOTE: Delete tag so we can get the previous tag to describe.
     // NOTE: Run `describe_revision` twice. one for output information and removing
     // a tag if there is, and the other to generate changelog.
-    let describe_string = describe_revision(&resulting_git_object)?;
+    let describe_string = describe_revision(git_object)?;
     info!(?describe_string, "Result of `git describe`: ");
-    if let Some(resulting_tag) = resulting_git_object.as_tag()
+    if let Some(resulting_tag) = git_object.as_tag()
     {
         // Since the object directly points to a tag
         // we delete it auto-magically
         let resulting_tag_string = resulting_tag.name().unwrap_or_default();
+        commit_hash = "".to_string();
+        tag_or_version = resulting_tag_string.to_string();
         let tagged_obj = resulting_tag.target().map_err(|err| {
             debug!(?err);
             io::Error::other(err)
@@ -318,7 +352,7 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
         };
         bad_parenting(&tagged_commit, number_of_refs_since_commit, &mut bulk_commit_message)?;
     }
-    else if let Some(commitish) = resulting_git_object.as_commit()
+    else if let Some(commitish) = git_object.as_commit()
     {
         // NOTE: Let's process if the describe string has a tag.
         // The format is long-format so if it's just a branch with no tag,
@@ -331,12 +365,14 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
         {
             if let Some((tag_string, the_rest)) = long_name.split_once("-")
             {
-                if let Some((number_string, _g_hash)) = the_rest.split_once("-")
+                tag_or_version = tag_string.to_string();
+                if let Some((number_string, g_hash)) = the_rest.split_once("-")
                 {
                     number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
                         error!(?err);
                         io::Error::other(err)
                     })?;
+                    commit_hash = g_hash.to_string();
                 }
                 if number_of_refs_since_commit == 0 || the_rest.is_empty()
                 {
@@ -349,12 +385,13 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
         }
         else if let Some((tag_string, the_rest)) = describe_string.split_once("-")
         {
-            if let Some((number_string, _g_hash)) = the_rest.split_once("-")
+            if let Some((number_string, g_hash)) = the_rest.split_once("-")
             {
                 number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
                     error!(?err);
                     io::Error::other(err)
                 })?;
+                commit_hash = g_hash.to_string();
             }
             if number_of_refs_since_commit == 0 || the_rest.is_empty()
             {
@@ -367,6 +404,7 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
         else
         {
             // Perform a revwalk. This means there were no tags! And we only got a hash
+            commit_hash = commitish.id().to_string();
             let mut revwalk = local_repository.revwalk().map_err(|err| {
                 error!(?err);
                 io::Error::other(err)
@@ -408,7 +446,7 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
     }
 
     // Rerun `describe_revision` here for DEBUG
-    let describe_string_for_debug = describe_revision(&resulting_git_object)?;
+    let describe_string_for_debug = describe_revision(git_object)?;
     debug!(
         ?describe_string_for_debug,
         "Result of `git describe` after ATTEMPTING to remove a tag: "
@@ -422,7 +460,14 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
     {
         warn!("⚠️📋 No changelog generated.");
     }
-    Ok(())
+
+    Ok(ChangelogDetails {
+        changelog: bulk_commit_message,
+        describe_string,
+        commit_hash,
+        tag_or_version,
+        offset_since_current_commit: number_of_refs_since_commit,
+    })
 }
 
 fn bad_parenting(
@@ -504,12 +549,47 @@ pub fn roast_scm_opts(
     let workdir = tempfile::TempDir::new()?;
     let workdir = if !roast_scm_args.is_temporary { &workdir.keep() } else { workdir.path() };
 
+    let git_url = &roast_scm_args.git_repository_url.to_string();
+
+    info!(?git_url, "🫂 Cloning remote repository.");
+    info!(?workdir, "🏃 Cloning to local directory...");
+
+    let changelog_details =
+        git_clone2(git_url, workdir, &roast_scm_args.revision, roast_scm_args.depth)?;
+
+    let final_revision_format = {
+        let mut stub_format = String::new();
+        // TODO: Create a function that allows users to
+        // edit the tag or version as desired. For example,
+        // wezterm's version format is a date but separated with dashes:
+        // 20220330-<time>-<gitHash> we need to turn the dashes into `.` ->
+        // 20220330.<time>.<gitHash>
+        if !changelog_details.tag_or_version.is_empty()
+        {
+            stub_format.push_str(&changelog_details.tag_or_version);
+        }
+        if changelog_details.offset_since_current_commit > 0
+        {
+            let git_offset = format!("+git{}", changelog_details.offset_since_current_commit);
+            stub_format.push_str(&git_offset);
+        }
+        if !changelog_details.commit_hash.is_empty()
+        {
+            let git_hash_section = format!(".g{}", changelog_details.commit_hash);
+            stub_format.push_str(&git_hash_section);
+        }
+        stub_format
+    };
+
     let filename_prefix = process_filename_prefix_from_url(
         &roast_scm_args.git_repository_url,
-        &roast_scm_args.revision,
+        &final_revision_format,
     )?;
-    let local_clone_dir = workdir.join(&filename_prefix);
-    let local_clone_dir = local_clone_dir.as_path();
+
+    let new_workdir_for_copy = tempfile::TempDir::new()?;
+    let local_copy_dir = new_workdir_for_copy.path().join(&filename_prefix);
+
+    copy_dir_all(workdir, &local_copy_dir)?;
 
     let outfile = match roast_scm_args.outfile.clone()
     {
@@ -521,17 +601,11 @@ pub fn roast_scm_opts(
             Path::new(&full_filename).to_path_buf()
         }
     };
-
-    let git_url = &roast_scm_args.git_repository_url.to_string();
-
-    info!(?git_url, "🫂 Cloning remote repository.");
-    info!(?local_clone_dir, "🏃 Cloning to local directory...");
-    git_clone2(git_url, local_clone_dir, &roast_scm_args.revision, roast_scm_args.depth)?;
     info!(?git_url, "🫂 Finished cloning remote repository.");
-    info!("🍄 Cloned to `{}`.", local_clone_dir.display());
+    info!("🍄 Cloned to `{}`.", workdir.display());
 
     let roast_args = RoastArgs {
-        target: local_clone_dir.to_path_buf(),
+        target: local_copy_dir,
         include: None,
         exclude: roast_scm_args.exclude.clone(),
         additional_paths: None,
@@ -551,9 +625,9 @@ pub fn roast_scm_opts(
             {
                 info!(
                     "👁️ Locally cloned repository is not deleted and located at `{}`.",
-                    local_clone_dir.display()
+                    workdir.display()
                 );
-                return Some(local_clone_dir.to_path_buf());
+                return Some(workdir.to_path_buf());
             };
             None
         })

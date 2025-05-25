@@ -120,35 +120,6 @@ fn checkout_branch<'a>(
     Ok(branch_obj.to_owned())
 }
 
-fn revision_in_remote_exists(branch: &Branch, revision: &str) -> bool
-{
-    if let Some(name) = &branch.get().name()
-    {
-        // NOTE: For whatever reason, `refs/remotes/<name of remote>/HEAD` is not
-        // a valid branch name 🥴
-        match name.split_once(revision)
-        {
-            Some((refremote, remote_branch)) =>
-            {
-                debug!(?refremote, ?remote_branch);
-                if let Some(should_be_slash) = refremote.chars().last()
-                {
-                    should_be_slash == '/'
-                }
-                else
-                {
-                    false
-                }
-            }
-            _ => false,
-        }
-    }
-    else
-    {
-        false
-    }
-}
-
 #[allow(dead_code)]
 struct ChangelogDetails
 {
@@ -208,78 +179,90 @@ fn git_clone2(
         io::Error::other(err.to_string())
     })?;
 
-    // If a reference does not exist, let's check all out remote branches, thus,
-    // creating local copies.
     let branch_type = BranchType::Remote;
-    let mut branches = local_repository
-        .branches(Some(branch_type))
-        .map_err(|err| {
-            error!(?err);
-            io::Error::other(err)
-        })?
-        .flatten();
+    let repository_config = local_repository.config().map_err(|err| {
+        error!(?err);
+        io::Error::other(err)
+    })?;
 
-    let remote_branch_to_copy =
-        branches.find(|(branch, _branch_type)| revision_in_remote_exists(branch, revision));
+    let mut config_entries = repository_config.entries(None).map_err(|err| {
+        error!(?err);
+        io::Error::other(err)
+    })?;
 
-    // for (branch, _) in branches {
-    //     if let Some(name) = &branch.get().name() {
-    //         // NOTE: For whatever reason, `refs/remotes/<name of remote>/HEAD` is
-    // not         // a valid branch name 🥴
-    //         if let Some((refremote, remote_branch)) = name.split_once(revision) {
-    //             debug!(?refremote, ?remote_branch);
-    //             if let Some(should_be_slash) = refremote.chars().last() {
-    //                 if should_be_slash == '/' {
-    //                     checkout_branch(&local_repository, &branch)?;
-    //                     break;
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-
-    let resulting_git_object = if let Some((ref found_branch, _branch_type)) = remote_branch_to_copy
+    let mut default_remote_name = "origin".to_string();
+    while let Some(entry) = config_entries.next()
     {
-        checkout_branch(&local_repository, found_branch).map_err(|err| {
-            error!(?err);
-            error!("Error happens here?");
-            io::Error::other(err)
-        })?
-    }
-    else
-    {
-        // Then it's likely a tag or a commitish
-        let object_ref_result = local_repository.revparse_ext(revision).map_err(|err| {
+        let entry = entry.map_err(|err| {
             error!(?err);
             io::Error::other(err)
-        });
-
-        if let Ok((object, reference)) = object_ref_result
-        {
-            info!("❤️ Found a valid revision tag or commit.");
-            // TODO: Move this describe logic to another function
-            local_repository.checkout_tree(&object, None).map_err(|err| {
-                error!(?err);
-                io::Error::other(err.to_string())
-            })?;
-
-            match reference
-            {
-                Some(gitref) => local_repository.set_head(gitref.name().ok_or_else(|| {
-                    io::Error::new(io::ErrorKind::InvalidInput, "No reference name found.")
-                })?),
-                None => local_repository.set_head_detached(object.id()),
-            }
-            .map_err(|err| {
-                error!(?err);
-                io::Error::other(err.to_string())
-            })?;
-            object
-        }
+        })?;
+        let Some(entry_name) = entry.name()
         else
         {
-            // Otherwise, we'll just return an error here.
-            return Err(io::Error::other(format!("No revision `{}` found!", revision)));
+            return Err(io::Error::other("No valid entry name!"));
+        };
+
+        let Some(entry_value) = entry.value()
+        else
+        {
+            return Err(io::Error::other("No valid entry value!"));
+        };
+
+        debug!(?entry_name, ?entry_value);
+
+        if *entry_name == *"clone.defaultRemoteName"
+        {
+            default_remote_name = entry_value.to_string();
+        }
+    }
+
+    let remote_branch_name = format!("{}/{}", &default_remote_name, revision);
+    let remote_branch_to_copy =
+        local_repository.find_branch(&remote_branch_name, branch_type).map_err(|err| {
+            debug!(?err);
+            io::Error::other(err)
+        })?;
+
+    let resulting_git_object = match checkout_branch(&local_repository, &remote_branch_to_copy)
+    {
+        Ok(_git_object) => _git_object,
+        Err(err) =>
+        {
+            debug!(?err);
+            // Then it's likely a tag or a commitish
+            let object_ref_result = local_repository.revparse_ext(revision).map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            });
+
+            if let Ok((object, reference)) = object_ref_result
+            {
+                info!("❤️ Found a valid revision tag or commit.");
+                // TODO: Move this describe logic to another function
+                local_repository.checkout_tree(&object, None).map_err(|err| {
+                    error!(?err);
+                    io::Error::other(err.to_string())
+                })?;
+
+                match reference
+                {
+                    Some(gitref) => local_repository.set_head(gitref.name().ok_or_else(|| {
+                        io::Error::new(io::ErrorKind::InvalidInput, "No reference name found.")
+                    })?),
+                    None => local_repository.set_head_detached(object.id()),
+                }
+                .map_err(|err| {
+                    error!(?err);
+                    io::Error::other(err.to_string())
+                })?;
+                object
+            }
+            else
+            {
+                // Otherwise, we'll just return an error here.
+                return Err(io::Error::other(format!("No revision `{}` found!", revision)));
+            }
         }
     };
     // Then recursively just update any submodule of the repository to match

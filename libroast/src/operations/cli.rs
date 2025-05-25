@@ -243,10 +243,7 @@ pub struct RoastScmArgs
         requires = "versionrewritepattern"
     )]
     pub versionrewriteregex: Option<String>,
-    #[arg(
-        long,
-        help = "Pass a pattern from the capture groups from `versionrewriteregex` flag.",
-    )]
+    #[arg(long, help = "Pass a pattern from the capture groups from `versionrewriteregex` flag.")]
     pub versionrewritepattern: Option<String>,
     #[arg(
         long, default_value_t = 0,

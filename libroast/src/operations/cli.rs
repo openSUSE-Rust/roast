@@ -239,13 +239,13 @@ pub struct RoastScmArgs
     #[arg(
         long,
         help = "Pass a regex with capture groups. Required by `versionrewritepattern` flag. Each \
-                capture group is labelled through increments of 1."
+                capture group is labelled through increments of 1.",
+        requires = "versionrewritepattern"
     )]
     pub versionrewriteregex: Option<String>,
     #[arg(
         long,
         help = "Pass a pattern from the capture groups from `versionrewriteregex` flag.",
-        requires = "versionformat"
     )]
     pub versionrewritepattern: Option<String>,
     #[arg(

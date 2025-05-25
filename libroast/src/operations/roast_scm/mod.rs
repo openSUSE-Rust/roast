@@ -129,6 +129,45 @@ struct ChangelogDetails
     pub tag_or_version: String,
     pub offset_since_current_commit: u32,
 }
+
+fn update_repo_from_ref<'a>(
+    local_repository: &'a Repository,
+    revision: &'a str,
+) -> io::Result<Object<'a>>
+{
+    let object_ref_result = local_repository.revparse_ext(revision).map_err(|err| {
+        error!(?err);
+        io::Error::other(err)
+    });
+
+    if let Ok((object, reference)) = object_ref_result
+    {
+        info!("❤️ Found a valid revision tag or commit.");
+        // TODO: Move this describe logic to another function
+        local_repository.checkout_tree(&object, None).map_err(|err| {
+            error!(?err);
+            io::Error::other(err.to_string())
+        })?;
+
+        match reference
+        {
+            Some(gitref) => local_repository.set_head(gitref.name().ok_or_else(|| {
+                io::Error::new(io::ErrorKind::InvalidInput, "No reference name found.")
+            })?),
+            None => local_repository.set_head_detached(object.id()),
+        }
+        .map_err(|err| {
+            error!(?err);
+            io::Error::other(err.to_string())
+        })?;
+        Ok(object)
+    }
+    else
+    {
+        // Otherwise, we'll just return an error here.
+        Err(io::Error::other(format!("No revision `{}` found!", revision)))
+    }
+}
 /// Helper function to clone a repository. Options are self-explanatory.
 ///
 /// If a repository has submodules, it will always attempt to update a
@@ -218,53 +257,31 @@ fn git_clone2(
     }
 
     let remote_branch_name = format!("{}/{}", &default_remote_name, revision);
-    let remote_branch_to_copy =
-        local_repository.find_branch(&remote_branch_name, branch_type).map_err(|err| {
-            debug!(?err);
-            io::Error::other(err)
-        })?;
 
-    let resulting_git_object = match checkout_branch(&local_repository, &remote_branch_to_copy)
+    let find_branch_result = local_repository.find_branch(&remote_branch_name, branch_type);
+    let resulting_git_object = match find_branch_result
     {
-        Ok(_git_object) => _git_object,
+        Ok(ref remote_branch_to_copy) =>
+        {
+            match checkout_branch(&local_repository, remote_branch_to_copy)
+            {
+                Ok(obj) => obj,
+                Err(err) =>
+                {
+                    debug!(?err);
+                    // Then it's likely a tag or a commitish
+                    update_repo_from_ref(&local_repository, revision)?
+                }
+            }
+        }
         Err(err) =>
         {
             debug!(?err);
             // Then it's likely a tag or a commitish
-            let object_ref_result = local_repository.revparse_ext(revision).map_err(|err| {
-                error!(?err);
-                io::Error::other(err)
-            });
-
-            if let Ok((object, reference)) = object_ref_result
-            {
-                info!("❤️ Found a valid revision tag or commit.");
-                // TODO: Move this describe logic to another function
-                local_repository.checkout_tree(&object, None).map_err(|err| {
-                    error!(?err);
-                    io::Error::other(err.to_string())
-                })?;
-
-                match reference
-                {
-                    Some(gitref) => local_repository.set_head(gitref.name().ok_or_else(|| {
-                        io::Error::new(io::ErrorKind::InvalidInput, "No reference name found.")
-                    })?),
-                    None => local_repository.set_head_detached(object.id()),
-                }
-                .map_err(|err| {
-                    error!(?err);
-                    io::Error::other(err.to_string())
-                })?;
-                object
-            }
-            else
-            {
-                // Otherwise, we'll just return an error here.
-                return Err(io::Error::other(format!("No revision `{}` found!", revision)));
-            }
+            update_repo_from_ref(&local_repository, revision)?
         }
     };
+
     // Then recursively just update any submodule of the repository to match
     // the index and tree.
     let submodules = local_repository.submodules().map_err(|err| {

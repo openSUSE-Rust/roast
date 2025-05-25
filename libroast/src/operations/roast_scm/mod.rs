@@ -344,13 +344,13 @@ fn changelog_generate(
         {
             if let Some((_new_rest, new_cunt)) = rest.rsplit_once("-")
             {
-                number_of_refs_since_commit = new_cunt.parse::<u32>().map_err(|err| {
+                let new_count = new_cunt.parse::<u32>().map_err(|err| {
                     error!(?err);
                     io::Error::other(err)
                 })?;
+                bad_parenting(&tagged_commit, new_count, &mut bulk_commit_message)?;
             }
         };
-        bad_parenting(&tagged_commit, number_of_refs_since_commit, &mut bulk_commit_message)?;
     }
     else if let Some(commitish) = git_object.as_commit()
     {
@@ -385,6 +385,7 @@ fn changelog_generate(
         }
         else if let Some((tag_string, the_rest)) = describe_string.split_once("-")
         {
+            tag_or_version = tag_string.to_string();
             if let Some((number_string, g_hash)) = the_rest.split_once("-")
             {
                 number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
@@ -399,6 +400,23 @@ fn changelog_generate(
                     error!(?err);
                     io::Error::other(err)
                 })?;
+                let describe_string_after_tag_delete = describe_revision(git_object)?;
+                let tagged_commit = git_object.peel_to_commit().map_err(|err| {
+                    error!(?err);
+                    io::Error::other(err)
+                })?;
+
+                if let Some((rest, _hash)) = describe_string_after_tag_delete.rsplit_once("-")
+                {
+                    if let Some((_new_rest, new_cunt)) = rest.rsplit_once("-")
+                    {
+                        let new_count = new_cunt.parse::<u32>().map_err(|err| {
+                            error!(?err);
+                            io::Error::other(err)
+                        })?;
+                        bad_parenting(&tagged_commit, new_count, &mut bulk_commit_message)?;
+                    }
+                };
             }
         }
         else
@@ -567,16 +585,26 @@ pub fn roast_scm_opts(
         if !changelog_details.tag_or_version.is_empty()
         {
             stub_format.push_str(&changelog_details.tag_or_version);
+            if changelog_details.offset_since_current_commit > 0
+            {
+                let git_offset = format!("+git{}", changelog_details.offset_since_current_commit);
+                stub_format.push_str(&git_offset);
+                if !changelog_details.commit_hash.is_empty()
+                {
+                    let git_hash_section = format!(".{}", changelog_details.commit_hash);
+                    stub_format.push_str(&git_hash_section);
+                }
+            }
         }
-        if changelog_details.offset_since_current_commit > 0
+        else
         {
-            let git_offset = format!("+git{}", changelog_details.offset_since_current_commit);
+            let git_offset = format!("0+git{}", changelog_details.offset_since_current_commit);
             stub_format.push_str(&git_offset);
-        }
-        if !changelog_details.commit_hash.is_empty()
-        {
-            let git_hash_section = format!(".g{}", changelog_details.commit_hash);
-            stub_format.push_str(&git_hash_section);
+            if !changelog_details.commit_hash.is_empty()
+            {
+                let git_hash_section = format!(".{}", changelog_details.commit_hash);
+                stub_format.push_str(&git_hash_section);
+            }
         }
         stub_format
     };

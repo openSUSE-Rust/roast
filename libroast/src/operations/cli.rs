@@ -260,7 +260,7 @@ pub struct RoastScmArgs
         long,
         short = 'f',
         help = "Output file of the generated archive with path. If not provided, attempts to \
-                write the filename based on project name and revision."
+                write the filename based on project name and revision based on <https://en.opensuse.org/openSUSE:Package_versioning_guidelines>."
     )]
     pub outfile: Option<PathBuf>,
     #[arg(long, short = 'd', help = "Output path of the generated archive.")]

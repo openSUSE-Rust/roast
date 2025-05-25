@@ -21,6 +21,7 @@ use git2::{
     Repository,
     build::RepoBuilder,
 };
+use regex::Regex;
 use std::{
     io,
     path::Path,
@@ -363,40 +364,40 @@ fn changelog_generate(
         // tag. so we have to split the `describe_string`.
         if let Some((_prefix, long_name)) = describe_string.split_once("heads/")
         {
-            if let Some((tag_string, the_rest)) = long_name.split_once("-")
+            if let Some((the_rest, g_hash)) = long_name.rsplit_once("-")
             {
-                tag_or_version = tag_string.to_string();
-                if let Some((number_string, g_hash)) = the_rest.split_once("-")
+                commit_hash = g_hash.to_string();
+                if let Some((tag_, number_string)) = the_rest.rsplit_once("-")
                 {
+                    tag_or_version = tag_.to_string();
                     number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
                         error!(?err);
                         io::Error::other(err)
                     })?;
-                    commit_hash = g_hash.to_string();
                 }
                 if number_of_refs_since_commit == 0 || the_rest.is_empty()
                 {
-                    local_repository.tag_delete(tag_string).map_err(|err| {
+                    local_repository.tag_delete(&tag_or_version).map_err(|err| {
                         error!(?err);
                         io::Error::other(err)
                     })?;
                 }
             }
         }
-        else if let Some((tag_string, the_rest)) = describe_string.split_once("-")
+        else if let Some((the_rest, g_hash)) = describe_string.rsplit_once("-")
         {
-            tag_or_version = tag_string.to_string();
-            if let Some((number_string, g_hash)) = the_rest.split_once("-")
+            commit_hash = g_hash.to_string();
+            if let Some((tag_, number_string)) = the_rest.rsplit_once("-")
             {
+                tag_or_version = tag_.to_string();
                 number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
                     error!(?err);
                     io::Error::other(err)
                 })?;
-                commit_hash = g_hash.to_string();
             }
             if number_of_refs_since_commit == 0 || the_rest.is_empty()
             {
-                local_repository.tag_delete(tag_string).map_err(|err| {
+                local_repository.tag_delete(&tag_or_version).map_err(|err| {
                     error!(?err);
                     io::Error::other(err)
                 })?;
@@ -422,7 +423,7 @@ fn changelog_generate(
         else
         {
             // Perform a revwalk. This means there were no tags! And we only got a hash
-            commit_hash = format!("g{}", commitish.id().to_string());
+            commit_hash = format!("g{}", commitish.id());
             let mut revwalk = local_repository.revwalk().map_err(|err| {
                 error!(?err);
                 io::Error::other(err)
@@ -584,7 +585,23 @@ pub fn roast_scm_opts(
         // 20220330.<time>.<gitHash>
         if !changelog_details.tag_or_version.is_empty()
         {
-            stub_format.push_str(&changelog_details.tag_or_version);
+            if let Some(versionrewriteregex) = &roast_scm_args.versionrewriteregex
+            {
+                if let Some(versionrewrite_pattern) = &roast_scm_args.versionrewritepattern
+                {
+                    let versionformat = Regex::new(versionrewriteregex).map_err(|err| {
+                        error!(?err);
+                        io::Error::other(err)
+                    })?;
+                    let after = versionformat
+                        .replace_all(&changelog_details.tag_or_version, versionrewrite_pattern);
+                    stub_format.push_str(&after);
+                }
+            }
+            else
+            {
+                stub_format.push_str(&changelog_details.tag_or_version);
+            }
             if changelog_details.offset_since_current_commit > 0
             {
                 let git_offset = format!("+git{}", changelog_details.offset_since_current_commit);

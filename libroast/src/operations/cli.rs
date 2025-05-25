@@ -231,8 +231,23 @@ pub struct RoastScmArgs
                 work directory to exclude when generating the archive."
     )]
     pub exclude: Option<Vec<PathBuf>>,
-    #[arg(long, help = "Revision or tag. It can also be a specific commit hash.")]
+    #[arg(
+        long,
+        help = "Revision or tag. It can also be a specific commit hash or branch. Supports <https://git-scm.com/docs/git-rev-parse.html#_specifying_revisions>."
+    )]
     pub revision: String,
+    #[arg(
+        long,
+        help = "Pass a regex with capture groups. Required by `versionrewritepattern` flag. Each \
+                capture group is labelled through increments of 1."
+    )]
+    pub versionrewriteregex: Option<String>,
+    #[arg(
+        long,
+        help = "Pass a pattern from the capture groups from `versionrewriteregex` flag.",
+        requires = "versionformat"
+    )]
+    pub versionrewritepattern: Option<String>,
     #[arg(
         long, default_value_t = 0,
         action = clap::ArgAction::Set,

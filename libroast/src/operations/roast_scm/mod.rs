@@ -73,6 +73,7 @@ fn checkout_branch<'a>(
         error!(?err);
         io::Error::other(err)
     })?;
+    let branch_obj = branch_commit.as_object();
     let Some(branch_shortname) = branch_ref.shorthand()
     else
     {
@@ -80,29 +81,34 @@ fn checkout_branch<'a>(
     };
     // NOTE: The branch ref will look like `refs/remotes/<name of remote>/<name of
     // branch>` so we `rsplit_once` just to get the name of the remote branch
-    if let Some((_rest, last_name)) = branch_shortname.rsplit_once("/")
+    let local_branch_name = if let Some((_rest, last_name)) = branch_shortname.rsplit_once("/")
     {
-        local_repository.branch(last_name, &branch_commit, true).map_err(|err| {
-            error!(?err);
-            io::Error::other(err)
-        })?;
+        let _ = local_repository.branch(last_name, &branch_commit, true).inspect_err(|err| {
+            debug!(?err);
+            debug!("This means the local branch exists and is the current HEAD of the repository!");
+        });
         last_name
     }
     else
     {
         // NOTE: Not sure if this is the best approach
-        local_repository.branch(branch_shortname, &branch_commit, true).map_err(|err| {
-            error!(?err);
-            io::Error::other(err)
-        })?;
+        let _ =
+            local_repository.branch(branch_shortname, &branch_commit, true).inspect_err(|err| {
+                debug!(?err);
+                debug!(
+                    "This means the local branch exists and is the current HEAD of the repository!"
+                );
+            });
         branch_shortname
     };
-    let branch_obj = branch_commit.as_object();
+
+    debug!(?local_branch_name, "The local branch name:");
 
     local_repository.checkout_tree(branch_obj, None).map_err(|err| {
         error!(?err);
         io::Error::other(err)
     })?;
+
     local_repository.set_head_detached(branch_obj.id()).map_err(|err| {
         error!(?err);
         io::Error::other(err)
@@ -213,6 +219,7 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
     {
         checkout_branch(&local_repository, found_branch).map_err(|err| {
             error!(?err);
+            error!("Error happens here?");
             io::Error::other(err)
         })?
     }
@@ -368,7 +375,7 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
                 error!(?err);
                 io::Error::other(err)
             })?;
-            revwalk.set_sorting(git2::Sort::TIME | git2::Sort::REVERSE).map_err(|err| {
+            revwalk.set_sorting(git2::Sort::TIME).map_err(|err| {
                 error!(?err);
                 io::Error::other(err)
             })?;
@@ -381,6 +388,7 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
                     Ok(rev_) => local_repository.find_commit(rev_).map_err(io::Error::other)?,
                     Err(err) => return Err(io::Error::other(err)),
                 };
+                debug!(?rev, ?commit);
                 if commit.id() == commitish.id()
                 {
                     start_count = true

@@ -271,6 +271,9 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
         })?;
     }
 
+    let mut bulk_commit_message = String::new();
+    let mut number_of_refs_since_commit: u32 = 0;
+
     // NOTE: Delete tag so we can get the previous tag to describe.
     // NOTE: Run `describe_revision` twice. one for output information and removing
     // a tag if there is, and the other to generate changelog.
@@ -278,23 +281,75 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
     info!(?describe_string, "Result of `git describe`: ");
     if let Some(resulting_tag) = resulting_git_object.as_tag()
     {
+        // Since the object directly points to a tag
+        // we delete it auto-magically
         let resulting_tag_string = resulting_tag.name().unwrap_or_default();
+        let tagged_obj = resulting_tag.target().map_err(|err| {
+            debug!(?err);
+            io::Error::other(err)
+        })?;
         info!("Git object is a tag: {}", &resulting_tag_string);
         local_repository.tag_delete(resulting_tag_string).map_err(|err| {
             error!(?err);
             io::Error::other(err)
         })?;
+        let describe_string_after_tag_delete = describe_revision(&tagged_obj)?;
+        let tagged_commit = tagged_obj.peel_to_commit().map_err(|err| {
+            error!(?err);
+            io::Error::other(err)
+        })?;
+
+        if let Some((rest, _hash)) = describe_string_after_tag_delete.rsplit_once("-")
+        {
+            if let Some((_new_rest, new_cunt)) = rest.rsplit_once("-")
+            {
+                number_of_refs_since_commit = new_cunt.parse::<u32>().map_err(|err| {
+                    error!(?err);
+                    io::Error::other(err)
+                })?;
+            }
+        };
+        bad_parenting(&tagged_commit, number_of_refs_since_commit, &mut bulk_commit_message)?;
     }
-    else
+    else if let Some(commitish) = resulting_git_object.as_commit()
     {
         // NOTE: Let's process if the describe string has a tag.
         // The format is long-format so if it's just a branch with no tag,
-        // it will be `heads/<name-of-branch>-g<short commit hash>`.
-        // If it has a tag, it will be `<tag>-<number of commits since tag>-g<current
-        // commit hash pointed by HEAD>`
+        // it will be `heads/<name-of-branch>-<number of commits since tag>-g<commit
+        // hash of current commit>`. If it has a tag, it will be `<tag>-<number
+        // of commits since tag>-g<current commit hash of current commit>`
+        // NOTE: Some users pass a hash, and the git object won't be considered as a
+        // tag. so we have to split the `describe_string`.
         if let Some((_prefix, long_name)) = describe_string.split_once("heads/")
         {
-            if let Some((tag_string, _)) = long_name.split_once("-")
+            if let Some((tag_string, the_rest)) = long_name.split_once("-")
+            {
+                if let Some((number_string, _g_hash)) = the_rest.split_once("-")
+                {
+                    number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
+                        error!(?err);
+                        io::Error::other(err)
+                    })?;
+                }
+                if number_of_refs_since_commit == 0 || the_rest.is_empty()
+                {
+                    local_repository.tag_delete(tag_string).map_err(|err| {
+                        error!(?err);
+                        io::Error::other(err)
+                    })?;
+                }
+            }
+        }
+        else if let Some((tag_string, the_rest)) = describe_string.split_once("-")
+        {
+            if let Some((number_string, _g_hash)) = the_rest.split_once("-")
+            {
+                number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
+                    error!(?err);
+                    io::Error::other(err)
+                })?;
+            }
+            if number_of_refs_since_commit == 0 || the_rest.is_empty()
             {
                 local_repository.tag_delete(tag_string).map_err(|err| {
                     error!(?err);
@@ -302,78 +357,54 @@ fn git_clone2(url: &str, local_clone_dir: &Path, revision: &str, depth: i32) -> 
                 })?;
             }
         }
-        else if let Some((tag_string, _)) = describe_string.split_once("-")
-        {
-            local_repository.tag_delete(tag_string).map_err(|err| {
-                error!(?err);
-                io::Error::other(err)
-            })?;
-        }
-    }
-    // Rerun `describe_revision` here for changelog generation.
-    let describe_string = describe_revision(&resulting_git_object)?;
-    debug!(?describe_string, "Result of `git describe` after ATTEMPTING to remove a tag: ");
-    let tunc_count = if let Some((rest, _g_hash)) = describe_string.rsplit_once("-")
-    {
-        if let Some((_new_rest, new_cunt)) = rest.rsplit_once("-")
-        {
-            let new_tunc = new_cunt.parse::<u32>().map_err(|err| {
-                error!(?err);
-                io::Error::other(err)
-            })?;
-            if new_tunc > 0 { new_tunc } else { 5 }
-        }
         else
         {
-            5
+            // Perform a revwalk. This means there were no tags! And we only got a hash
+            let mut revwalk = local_repository.revwalk().map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?;
+            revwalk.push_head().map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?;
+            revwalk.set_sorting(git2::Sort::TIME | git2::Sort::REVERSE).map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?;
+            let mut start_count = false;
+            let mut count = 0;
+            for rev in revwalk
+            {
+                let commit = match rev
+                {
+                    Ok(rev_) => local_repository.find_commit(rev_).map_err(io::Error::other)?,
+                    Err(err) => return Err(io::Error::other(err)),
+                };
+                if commit.id() == commitish.id()
+                {
+                    start_count = true
+                }
+                if start_count
+                {
+                    count += 1;
+                }
+            }
+            number_of_refs_since_commit = count;
         }
+        bad_parenting(commitish, number_of_refs_since_commit, &mut bulk_commit_message)?;
     }
     else
     {
-        5
-    };
-    let mut bulk_commit_message = String::new();
-    if let Some(commitish) = resulting_git_object.as_commit()
-    {
-        bad_parenting(commitish, tunc_count, &mut bulk_commit_message)?;
+        return Err(io::Error::other("Object is not a commit nor a tag!"));
     }
-    else
-    {
-        // NOTE: at this point, it's clearly a tag
-        let tag = resulting_git_object
-            .as_tag()
-            .ok_or_else(|| io::Error::other("Object does not point to a tag."))?;
-        let tagged_obj = tag.target().map_err(|err| {
-            error!(?err);
-            io::Error::other(err)
-        })?;
-        let describe_string = describe_revision(&tagged_obj)?;
-        let tagged_commit = tagged_obj.peel_to_commit().map_err(|err| {
-            error!(?err);
-            io::Error::other(err)
-        })?;
 
-        let tunc_count = if let Some((rest, _hash)) = describe_string.rsplit_once("-")
-        {
-            if let Some((_new_rest, new_cunt)) = rest.rsplit_once("-")
-            {
-                let new_cunt = new_cunt.parse::<u32>().map_err(|err| {
-                    error!(?err);
-                    io::Error::other(err)
-                })?;
-                if new_cunt > 0 { new_cunt } else { 5 }
-            }
-            else
-            {
-                5 // TODO: we might want to change this to something else but for now, this should suffice.
-            }
-        }
-        else
-        {
-            5
-        };
-        bad_parenting(&tagged_commit, tunc_count, &mut bulk_commit_message)?;
-    }
+    // Rerun `describe_revision` here for DEBUG
+    let describe_string_for_debug = describe_revision(&resulting_git_object)?;
+    debug!(
+        ?describe_string_for_debug,
+        "Result of `git describe` after ATTEMPTING to remove a tag: "
+    );
     if !&bulk_commit_message.is_empty()
     {
         info!("✍🏻 Copy the changelog below:");

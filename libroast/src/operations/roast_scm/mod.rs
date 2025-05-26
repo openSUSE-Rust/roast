@@ -34,6 +34,7 @@ use tracing::{
 };
 use url::Url;
 
+/// Performs a `git describe` operation on the repository.
 fn describe_revision(object: &Object) -> io::Result<String>
 {
     let mut describe_options = git2::DescribeOptions::default();
@@ -65,9 +66,9 @@ fn describe_revision(object: &Object) -> io::Result<String>
     Ok(describe_string)
 }
 
-// NOTE: checkout only remote branches. It does not make sense to checkout local
-// branches
-fn checkout_branch<'a>(
+/// Creates a local copy of the remote branch if the local branch does not exist
+/// then checkout to that local branch.
+fn remote_checkout_branch<'a>(
     local_repository: &'a Repository,
     branch: &'a Branch<'a>,
 ) -> io::Result<Object<'a>>
@@ -120,8 +121,7 @@ fn checkout_branch<'a>(
     Ok(branch_obj.to_owned())
 }
 
-#[allow(dead_code)]
-struct ChangelogDetails
+pub struct ChangelogDetails
 {
     pub changelog: String,
     pub describe_string: String,
@@ -143,7 +143,7 @@ fn update_repo_from_ref<'a>(
     if let Ok((object, reference)) = object_ref_result
     {
         info!("❤️ Found a valid revision tag or commit.");
-        // TODO: Move this describe logic to another function
+
         local_repository.checkout_tree(&object, None).map_err(|err| {
             error!(?err);
             io::Error::other(err.to_string())
@@ -263,7 +263,7 @@ fn git_clone2(
     {
         Ok(ref remote_branch_to_copy) =>
         {
-            match checkout_branch(&local_repository, remote_branch_to_copy)
+            match remote_checkout_branch(&local_repository, remote_branch_to_copy)
             {
                 Ok(obj) => obj,
                 Err(err) =>
@@ -349,7 +349,11 @@ fn changelog_generate(
                     error!(?err);
                     io::Error::other(err)
                 })?;
-                bad_parenting(&tagged_commit, new_count, &mut bulk_commit_message)?;
+                mutate_bulk_commit_message_string(
+                    &tagged_commit,
+                    new_count,
+                    &mut bulk_commit_message,
+                )?;
             }
         };
     }
@@ -415,7 +419,11 @@ fn changelog_generate(
                             error!(?err);
                             io::Error::other(err)
                         })?;
-                        bad_parenting(&tagged_commit, new_count, &mut bulk_commit_message)?;
+                        mutate_bulk_commit_message_string(
+                            &tagged_commit,
+                            new_count,
+                            &mut bulk_commit_message,
+                        )?;
                     }
                 };
             }
@@ -457,7 +465,11 @@ fn changelog_generate(
             }
             number_of_refs_since_commit = count;
         }
-        bad_parenting(commitish, number_of_refs_since_commit, &mut bulk_commit_message)?;
+        mutate_bulk_commit_message_string(
+            commitish,
+            number_of_refs_since_commit,
+            &mut bulk_commit_message,
+        )?;
     }
     else
     {
@@ -489,7 +501,7 @@ fn changelog_generate(
     })
 }
 
-fn bad_parenting(
+fn mutate_bulk_commit_message_string(
     commit: &Commit,
     countdown: u32,
     bulk_commit_message: &mut String,
@@ -513,12 +525,12 @@ fn bad_parenting(
     for parent in parents
     {
         let new_countdown = countdown - 1;
-        bad_parenting(&parent, new_countdown, bulk_commit_message)?;
+        mutate_bulk_commit_message_string(&parent, new_countdown, bulk_commit_message)?;
     }
     Ok(())
 }
 
-fn process_filename_prefix_from_url(url_string: &str, revision: &str) -> io::Result<String>
+fn process_filename_from_url_and_revision(url_string: &str, revision: &str) -> io::Result<String>
 {
     let url = Url::parse(url_string).map_err(|err| {
         error!(?err);
@@ -548,6 +560,59 @@ fn process_filename_prefix_from_url(url_string: &str, revision: &str) -> io::Res
     Ok(filename)
 }
 
+/// Edit the tag or version as desired. For example,
+/// wezterm's version format is a date but separated with dashes:
+/// 20220330-<time>-<gitHash> we need to turn the dashes into `.` ->
+/// 20220330.<time>.<gitHash>. This function allows that using the `regex`
+/// crate.
+fn rewrite_version_or_revision_from_changelog_details(
+    changelog_details: &ChangelogDetails,
+    roast_scm_args: &RoastScmArgs,
+) -> io::Result<String>
+{
+    let mut stub_format = String::new();
+    if !changelog_details.tag_or_version.is_empty()
+    {
+        if let Some(versionrewriteregex) = &roast_scm_args.versionrewriteregex
+        {
+            if let Some(versionrewrite_pattern) = &roast_scm_args.versionrewritepattern
+            {
+                let versionformat = Regex::new(versionrewriteregex).map_err(|err| {
+                    error!(?err);
+                    io::Error::other(err)
+                })?;
+                let after = versionformat
+                    .replace_all(&changelog_details.tag_or_version, versionrewrite_pattern);
+                stub_format.push_str(&after);
+            }
+        }
+        else
+        {
+            stub_format.push_str(&changelog_details.tag_or_version);
+        }
+        if changelog_details.offset_since_current_commit > 0
+        {
+            let git_offset = format!("+git{}", changelog_details.offset_since_current_commit);
+            stub_format.push_str(&git_offset);
+            if !changelog_details.commit_hash.is_empty()
+            {
+                let git_hash_section = format!(".{}", changelog_details.commit_hash);
+                stub_format.push_str(&git_hash_section);
+            }
+        }
+    }
+    else
+    {
+        let git_offset = format!("0+git{}", changelog_details.offset_since_current_commit);
+        stub_format.push_str(&git_offset);
+        if !changelog_details.commit_hash.is_empty()
+        {
+            let git_hash_section = format!(".{}", changelog_details.commit_hash);
+            stub_format.push_str(&git_hash_section);
+        }
+    }
+    Ok(stub_format)
+}
 /// Creates a tarball from a given URL. URL must be a valid remote git
 /// repository.
 ///
@@ -576,57 +641,10 @@ pub fn roast_scm_opts(
     let changelog_details =
         git_clone2(git_url, workdir, &roast_scm_args.revision, roast_scm_args.depth)?;
 
-    let final_revision_format = {
-        let mut stub_format = String::new();
-        // TODO: Create a function that allows users to
-        // edit the tag or version as desired. For example,
-        // wezterm's version format is a date but separated with dashes:
-        // 20220330-<time>-<gitHash> we need to turn the dashes into `.` ->
-        // 20220330.<time>.<gitHash>
-        if !changelog_details.tag_or_version.is_empty()
-        {
-            if let Some(versionrewriteregex) = &roast_scm_args.versionrewriteregex
-            {
-                if let Some(versionrewrite_pattern) = &roast_scm_args.versionrewritepattern
-                {
-                    let versionformat = Regex::new(versionrewriteregex).map_err(|err| {
-                        error!(?err);
-                        io::Error::other(err)
-                    })?;
-                    let after = versionformat
-                        .replace_all(&changelog_details.tag_or_version, versionrewrite_pattern);
-                    stub_format.push_str(&after);
-                }
-            }
-            else
-            {
-                stub_format.push_str(&changelog_details.tag_or_version);
-            }
-            if changelog_details.offset_since_current_commit > 0
-            {
-                let git_offset = format!("+git{}", changelog_details.offset_since_current_commit);
-                stub_format.push_str(&git_offset);
-                if !changelog_details.commit_hash.is_empty()
-                {
-                    let git_hash_section = format!(".{}", changelog_details.commit_hash);
-                    stub_format.push_str(&git_hash_section);
-                }
-            }
-        }
-        else
-        {
-            let git_offset = format!("0+git{}", changelog_details.offset_since_current_commit);
-            stub_format.push_str(&git_offset);
-            if !changelog_details.commit_hash.is_empty()
-            {
-                let git_hash_section = format!(".{}", changelog_details.commit_hash);
-                stub_format.push_str(&git_hash_section);
-            }
-        }
-        stub_format
-    };
+    let final_revision_format =
+        rewrite_version_or_revision_from_changelog_details(&changelog_details, roast_scm_args)?;
 
-    let filename_prefix = process_filename_prefix_from_url(
+    let filename_prefix = process_filename_from_url_and_revision(
         &roast_scm_args.git_repository_url,
         &final_revision_format,
     )?;

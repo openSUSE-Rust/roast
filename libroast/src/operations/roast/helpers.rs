@@ -17,7 +17,7 @@ use tracing::{
     warn,
 };
 
-pub fn is_hidden(entry: &Path, hidden: bool, ignore_git: bool, root: &Path) -> bool
+pub(crate) fn is_hidden(entry: &Path, hidden: bool, ignore_git: bool, root: &Path) -> bool
 {
     let entry_str = entry.file_name().unwrap_or(entry.as_os_str());
     let entry_str = entry_str.to_string_lossy();
@@ -46,7 +46,7 @@ pub fn is_hidden(entry: &Path, hidden: bool, ignore_git: bool, root: &Path) -> b
     }
 }
 
-pub fn is_excluded(
+pub(crate) fn is_excluded(
     entry_as_path_canonicalized: &Path,
     exclude_canonicalized_paths: &[PathBuf],
 ) -> bool
@@ -65,7 +65,7 @@ pub fn is_excluded(
     is_it
 }
 
-pub fn helper_archiver(
+pub(crate) fn helper_archiver(
     entry_as_path_canonicalized: &Path,
     target_path: &Path,
     hidden: bool,
@@ -117,7 +117,7 @@ pub fn helper_archiver(
     Ok(())
 }
 
-pub fn filter_paths(
+pub(crate) fn filter_paths(
     target_path: &Path,
     root: &Path,
     hidden: bool,

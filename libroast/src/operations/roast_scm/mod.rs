@@ -71,6 +71,7 @@ fn describe_revision(object: &Object) -> io::Result<String>
 fn remote_checkout_branch<'a>(
     local_repository: &'a Repository,
     branch: &'a Branch<'a>,
+    remote_name: &str,
 ) -> io::Result<Object<'a>>
 {
     let branch_ref = branch.get();
@@ -84,10 +85,24 @@ fn remote_checkout_branch<'a>(
     {
         return Err(io::Error::other("No shortname or fullname found!"));
     };
+
+    let refremote_path = format!("ref/remotes/{}/", remote_name);
     // NOTE: The branch ref will look like `refs/remotes/<name of remote>/<name of
     // branch>` so we `rsplit_once` just to get the name of the remote branch
-    let local_branch_name = if let Some((_rest, last_name)) = branch_shortname.rsplit_once("/")
+    let local_branch_name = if let Some((_rest, last_name)) =
+        branch_shortname.split_once(&refremote_path)
     {
+        debug!(?_rest, ?last_name);
+        let _ = local_repository.branch(last_name, &branch_commit, true).inspect_err(|err| {
+            debug!(?err);
+            debug!("This means the local branch exists and is the current HEAD of the repository!");
+        });
+        last_name
+    }
+    else if let Some((_rest, last_name)) =
+        branch_shortname.split_once(&format!("{}/", remote_name))
+    {
+        debug!(?_rest, ?last_name);
         let _ = local_repository.branch(last_name, &branch_commit, true).inspect_err(|err| {
             debug!(?err);
             debug!("This means the local branch exists and is the current HEAD of the repository!");
@@ -96,7 +111,6 @@ fn remote_checkout_branch<'a>(
     }
     else
     {
-        // NOTE: Not sure if this is the best approach
         let _ =
             local_repository.branch(branch_shortname, &branch_commit, true).inspect_err(|err| {
                 debug!(?err);
@@ -263,7 +277,11 @@ fn git_clone2(
     {
         Ok(ref remote_branch_to_copy) =>
         {
-            match remote_checkout_branch(&local_repository, remote_branch_to_copy)
+            match remote_checkout_branch(
+                &local_repository,
+                remote_branch_to_copy,
+                &default_remote_name,
+            )
             {
                 Ok(obj) => obj,
                 Err(err) =>

@@ -217,10 +217,7 @@ pub fn process_globs(src: &Path) -> io::Result<PathBuf>
     if globs.len() > 1
     {
         warn!("⚠️  Multiple files matched glob");
-        for item in &globs
-        {
-            warn!("- {}", item.display());
-        }
+        globs.iter().for_each(|glob| warn!(" - {}", glob.display()));
     }
 
     // Take the last item.

@@ -320,7 +320,7 @@ fn git_clone2(
         io::Error::other(err.to_string())
     })?;
 
-    submodules.iter_mut().try_for_each(|mut subm| update_submodule(&mut subm))?;
+    submodules.iter_mut().try_for_each(|subm| update_submodule(subm))?;
 
     changelog_details_generate(&local_repository, &resulting_git_object)
 }
@@ -481,7 +481,7 @@ fn changelog_details_generate(
             let mut start_count = false;
             let mut count = 0;
 
-            revwalk.into_iter().try_for_each(|rev| {
+            revwalk.try_for_each(|rev| {
                 let commit = match rev
                 {
                     Ok(rev_) => local_repository.find_commit(rev_).map_err(io::Error::other)?,

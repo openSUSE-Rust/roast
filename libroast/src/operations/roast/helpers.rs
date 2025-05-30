@@ -51,18 +51,11 @@ pub(crate) fn is_excluded(
     exclude_canonicalized_paths: &[PathBuf],
 ) -> bool
 {
-    let mut is_it = false;
-    for exclude in exclude_canonicalized_paths
-    {
+    exclude_canonicalized_paths.par_iter().any(|exclude| {
         let is_stripped = entry_as_path_canonicalized.strip_prefix(exclude);
         debug!(?is_stripped, ?entry_as_path_canonicalized, ?exclude);
-        if is_stripped.is_ok()
-        {
-            is_it = true;
-            break;
-        }
-    }
-    is_it
+        is_stripped.is_ok()
+    })
 }
 
 pub(crate) fn helper_archiver(

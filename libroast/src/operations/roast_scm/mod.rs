@@ -11,6 +11,16 @@ use crate::{
         start_tracing,
     },
 };
+use core::str::FromStr;
+use hifitime::{
+    efmt::Format,
+    prelude::*,
+};
+
+const CHANGELOG_LONG_SET_OF_DASHES: &str =
+    "-------------------------------------------------------------------";
+const CHANGELOG_DATE_TIME_FORMAT: &str = "%a %b %H:%M:%S UTC %Y";
+
 use git2::{
     AutotagOption,
     Branch,
@@ -23,7 +33,9 @@ use git2::{
 };
 use regex::Regex;
 use std::{
-    io,
+    io::{
+        self,
+    },
     path::Path,
 };
 use tracing::{
@@ -319,10 +331,10 @@ fn git_clone2(
         })?;
     }
 
-    changelog_generate(&local_repository, &resulting_git_object)
+    changelog_details_generate(&local_repository, &resulting_git_object)
 }
 
-fn changelog_generate(
+fn changelog_details_generate(
     local_repository: &Repository,
     git_object: &Object,
 ) -> io::Result<ChangelogDetails>
@@ -548,7 +560,7 @@ fn mutate_bulk_commit_message_string(
     Ok(())
 }
 
-fn process_filename_from_url_and_revision(url_string: &str, revision: &str) -> io::Result<String>
+fn process_basename_from_url(url_string: &str) -> io::Result<String>
 {
     let url = Url::parse(url_string).map_err(|err| {
         error!(?err);
@@ -565,7 +577,12 @@ fn process_filename_from_url_and_revision(url_string: &str, revision: &str) -> i
         Some((basename, _)) => basename,
         None => path_segments[1],
     };
+    Ok(basename.to_string())
+}
 
+fn process_filename_from_url_and_revision(url_string: &str, revision: &str) -> io::Result<String>
+{
+    let basename = process_basename_from_url(url_string)?;
     let filename = if revision.is_empty()
     {
         basename.to_string()
@@ -705,12 +722,72 @@ pub fn roast_scm_opts(
             let changesoutfile = match &roast_scm_args.changesoutfile
             {
                 Some(v) => v,
-                None => &std::env::current_dir().map_err(|err| {
-                    error!(?err);
-                    io::Error::other(err)
-                })?,
+                None => &std::env::current_dir()
+                    .map_err(|err| {
+                        error!(?err);
+                        io::Error::other(err)
+                    })?
+                    .join(format!("{}.changes", process_basename_from_url(git_url)?)),
             };
-            // TODO: process if the `changesoutfile` exists and is a file.
+
+            let time_format = Format::from_str(CHANGELOG_DATE_TIME_FORMAT).map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?;
+            let time_now = Epoch::now().map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?;
+            let formatted_time_now = Formatter::new(time_now, time_format);
+            let changelog_header = format!(
+                "{}\n{} - {}",
+                CHANGELOG_LONG_SET_OF_DASHES, formatted_time_now, changesauthor
+            );
+            let update_statement = format!("- Update to version {}:", final_revision_format);
+            let mut final_changelog_lines = String::new();
+            if !changelog_details.changelog.trim().is_empty()
+            {
+                let changelog_lines = changelog_details.changelog.split('\n');
+                for line in changelog_lines
+                {
+                    let format_with_two_spaces = format!("  {}\n", line);
+                    final_changelog_lines.push_str(&format_with_two_spaces);
+                }
+            }
+            else
+            {
+                final_changelog_lines.push_str("  * NO CHANGELOG\n");
+            }
+
+            let changes_string_from_file = match std::fs::File::create_new(changesoutfile)
+            {
+                Ok(file) =>
+                {
+                    debug!(?file);
+                    std::fs::read_to_string(changesoutfile)
+                }
+                Err(err) =>
+                {
+                    debug!(?err);
+                    // If the file exists
+                    if changesoutfile.exists()
+                    {
+                        std::fs::read_to_string(changesoutfile)
+                    }
+                    else
+                    {
+                        Err(io::Error::other(err))
+                    }
+                }
+            }?;
+
+            let final_changes_string_for_file = format!(
+                "{}\n\n{}\n{}{}",
+                changelog_header, update_statement, final_changelog_lines, changes_string_from_file
+            );
+            std::fs::write(changesoutfile, &final_changes_string_for_file).inspect(|_| {
+                info!("🗒️ Writing changelog to `{}`", &changesoutfile.display());
+            })?
         }
         else
         {

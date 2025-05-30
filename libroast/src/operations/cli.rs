@@ -222,6 +222,25 @@ pub struct RecomprizzArgs
 )]
 pub struct RoastScmArgs
 {
+    #[arg(long, short = 'C', action = clap::ArgAction::Set, default_value_t = false, help = "Whether to generate or update a changelog file or not.")]
+    pub changesgenerate: bool,
+    #[arg(
+        long,
+        short = 'A',
+        requires_if("changesgenerate", "true"),
+        help = "Author to include during the changelog generation."
+    )]
+    pub changesauthor: Option<String>,
+    #[arg(
+        long,
+        alias = "caof",
+        requires_if("changesgenerate", "true"),
+        help = "Whether to specify a path to the changes file. Otherwise, it is the current \
+                directory and the filename is the same filename prefix of the generated tarball \
+                e.g. `source.tar.xz` will have `source.changes` file. If file exists, append the \
+                newest changes to the top-most part of the text file."
+    )]
+    pub changesoutfile: Option<PathBuf>,
     #[arg(long, short = 'g', help = "Remote URL to the git repository.", alias = "url")]
     pub git_repository_url: String,
     #[arg(

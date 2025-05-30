@@ -19,7 +19,7 @@ use hifitime::{
 
 const CHANGELOG_LONG_SET_OF_DASHES: &str =
     "-------------------------------------------------------------------";
-const CHANGELOG_DATE_TIME_FORMAT: &str = "%a %b %H:%M:%S UTC %Y";
+const CHANGELOG_DATE_TIME_FORMAT: &str = "%a %b %H:%M:%S %T %Y";
 
 use git2::{
     AutotagOption,
@@ -514,7 +514,7 @@ fn changelog_details_generate(
     );
     if !&bulk_commit_message.is_empty()
     {
-        info!("✍🏻 Copy the changelog below:");
+        info!("✍🏻 You can copy the changelog below:");
         println!("{}", &bulk_commit_message);
     }
     else

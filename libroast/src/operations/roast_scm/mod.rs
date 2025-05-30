@@ -754,7 +754,7 @@ pub fn roast_scm_opts(
             let mut final_changelog_lines = String::new();
             if !changelog_details.changelog.trim().is_empty()
             {
-                let changelog_lines = changelog_details.changelog.split('\n');
+                let changelog_lines = changelog_details.changelog.lines();
                 changelog_lines.into_iter().for_each(|line| {
                     let format_with_two_spaces = format!("  {}\n", line);
                     final_changelog_lines.push_str(&format_with_two_spaces);

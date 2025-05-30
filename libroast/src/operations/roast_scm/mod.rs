@@ -29,6 +29,7 @@ use git2::{
     FetchOptions,
     Object,
     Repository,
+    Submodule,
     build::RepoBuilder,
 };
 use regex::Regex;
@@ -314,24 +315,27 @@ fn git_clone2(
 
     // Then recursively just update any submodule of the repository to match
     // the index and tree.
-    let submodules = local_repository.submodules().map_err(|err| {
+    let mut submodules = local_repository.submodules().map_err(|err| {
         error!(?err);
         io::Error::other(err.to_string())
     })?;
 
-    for mut subm in submodules
-    {
-        subm.update(true, None).map_err(|err| {
-            error!(?err);
-            io::Error::other(err.to_string())
-        })?;
-        subm.open().map_err(|err| {
-            error!(?err);
-            io::Error::other(err.to_string())
-        })?;
-    }
+    submodules.iter_mut().try_for_each(|mut subm| update_submodule(&mut subm))?;
 
     changelog_details_generate(&local_repository, &resulting_git_object)
+}
+
+fn update_submodule(subm: &mut Submodule) -> io::Result<()>
+{
+    subm.update(true, None).map_err(|err| {
+        error!(?err);
+        io::Error::other(err.to_string())
+    })?;
+    subm.open().map_err(|err| {
+        error!(?err);
+        io::Error::other(err.to_string())
+    })?;
+    Ok(())
 }
 
 fn changelog_details_generate(
@@ -476,8 +480,8 @@ fn changelog_details_generate(
             })?;
             let mut start_count = false;
             let mut count = 0;
-            for rev in revwalk
-            {
+
+            revwalk.into_iter().try_for_each(|rev| {
                 let commit = match rev
                 {
                     Ok(rev_) => local_repository.find_commit(rev_).map_err(io::Error::other)?,
@@ -492,7 +496,9 @@ fn changelog_details_generate(
                 {
                     count += 1;
                 }
-            }
+                Ok(())
+            })?;
+
             number_of_refs_since_commit = count;
         }
         mutate_bulk_commit_message_string(
@@ -552,11 +558,12 @@ fn mutate_bulk_commit_message_string(
         bulk_commit_message.push_str(&format_summary);
         bulk_commit_message.push('\n');
     }
-    for parent in parents
-    {
+
+    parents.into_iter().try_for_each(|parent| {
         let new_countdown = countdown - 1;
-        mutate_bulk_commit_message_string(&parent, new_countdown, bulk_commit_message)?;
-    }
+        mutate_bulk_commit_message_string(&parent, new_countdown, bulk_commit_message)
+    })?;
+
     Ok(())
 }
 
@@ -748,11 +755,10 @@ pub fn roast_scm_opts(
             if !changelog_details.changelog.trim().is_empty()
             {
                 let changelog_lines = changelog_details.changelog.split('\n');
-                for line in changelog_lines
-                {
+                changelog_lines.into_iter().for_each(|line| {
                     let format_with_two_spaces = format!("  {}\n", line);
                     final_changelog_lines.push_str(&format_with_two_spaces);
-                }
+                });
             }
             else
             {

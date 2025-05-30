@@ -698,6 +698,26 @@ pub fn roast_scm_opts(
         ignore_hidden: roast_scm_args.ignore_hidden,
     };
 
+    if roast_scm_args.changesgenerate
+    {
+        if let Some(changesauthor) = &roast_scm_args.changesauthor
+        {
+            let changesoutfile = match &roast_scm_args.changesoutfile
+            {
+                Some(v) => v,
+                None => &std::env::current_dir().map_err(|err| {
+                    error!(?err);
+                    io::Error::other(err)
+                })?,
+            };
+            // TODO: process if the `changesoutfile` exists and is a file.
+        }
+        else
+        {
+            return Err(io::Error::other("No changes author provided."));
+        }
+    }
+
     roast_opts(&roast_args, false)
         .map(|ok| {
             debug!(?ok);

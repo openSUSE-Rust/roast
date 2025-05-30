@@ -413,7 +413,7 @@ fn changelog_details_generate(
                         io::Error::other(err)
                     })?;
                 }
-                if number_of_refs_since_commit == 0 || the_rest.is_empty()
+                if number_of_refs_since_commit == 0 || the_rest.trim().is_empty()
                 {
                     local_repository.tag_delete(&tag_or_version).map_err(|err| {
                         error!(?err);
@@ -433,7 +433,7 @@ fn changelog_details_generate(
                     io::Error::other(err)
                 })?;
             }
-            if number_of_refs_since_commit == 0 || the_rest.is_empty()
+            if number_of_refs_since_commit == 0 || the_rest.trim().is_empty()
             {
                 local_repository.tag_delete(&tag_or_version).map_err(|err| {
                     error!(?err);
@@ -518,7 +518,7 @@ fn changelog_details_generate(
         ?describe_string_for_debug,
         "Result of `git describe` after ATTEMPTING to remove a tag: "
     );
-    if !&bulk_commit_message.is_empty()
+    if !&bulk_commit_message.trim().is_empty()
     {
         info!("✍🏻 You can copy the changelog below:");
         println!("{}", &bulk_commit_message);
@@ -551,7 +551,7 @@ fn mutate_bulk_commit_message_string(
     let hash = commit.id().to_string();
     debug!("Commit hash: {}", hash);
     let summary = commit.summary().unwrap_or_default();
-    if !summary.is_empty()
+    if !summary.trim().is_empty()
     {
         debug!("Commit summary: {}", summary);
         let format_summary = format!("* {}", &summary);
@@ -590,7 +590,7 @@ fn process_basename_from_url(url_string: &str) -> io::Result<String>
 fn process_filename_from_url_and_revision(url_string: &str, revision: &str) -> io::Result<String>
 {
     let basename = process_basename_from_url(url_string)?;
-    let filename = if revision.is_empty()
+    let filename = if revision.trim().is_empty()
     {
         basename.to_string()
     }
@@ -613,7 +613,7 @@ fn rewrite_version_or_revision_from_changelog_details(
 ) -> io::Result<String>
 {
     let mut stub_format = String::new();
-    if !changelog_details.tag_or_version.is_empty()
+    if !changelog_details.tag_or_version.trim().is_empty()
     {
         if let Some(versionrewriteregex) = &roast_scm_args.versionrewriteregex
         {
@@ -636,7 +636,7 @@ fn rewrite_version_or_revision_from_changelog_details(
         {
             let git_offset = format!("+git{}", changelog_details.offset_since_current_commit);
             stub_format.push_str(&git_offset);
-            if !changelog_details.commit_hash.is_empty()
+            if !changelog_details.commit_hash.trim().is_empty()
             {
                 let git_hash_section = format!(".{}", changelog_details.commit_hash);
                 stub_format.push_str(&git_hash_section);
@@ -647,7 +647,7 @@ fn rewrite_version_or_revision_from_changelog_details(
     {
         let git_offset = format!("0+git{}", changelog_details.offset_since_current_commit);
         stub_format.push_str(&git_offset);
-        if !changelog_details.commit_hash.is_empty()
+        if !changelog_details.commit_hash.trim().is_empty()
         {
             let git_hash_section = format!(".{}", changelog_details.commit_hash);
             stub_format.push_str(&git_hash_section);

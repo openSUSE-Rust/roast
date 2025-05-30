@@ -786,7 +786,7 @@ pub fn roast_scm_opts(
                 changelog_header, update_statement, final_changelog_lines, changes_string_from_file
             );
             std::fs::write(changesoutfile, &final_changes_string_for_file).inspect(|_| {
-                info!("🗒️ Writing changelog to `{}`", &changesoutfile.display());
+                info!("🗒️ Successfully generated changelog to `{}`.", &changesoutfile.display());
             })?
         }
         else

@@ -138,8 +138,8 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() 
         compression: libroast::common::Compression::default(),
     };
     libroast::operations::roast_scm::roast_scm_opts(&r2, false)?;
-    let read_dir1 = read_dir(&outdir1)?;
-    let read_dir2 = read_dir(&outdir2)?;
+    let read_dir1 = read_dir(outdir1)?;
+    let read_dir2 = read_dir(outdir2)?;
     let Some(file1) = read_dir1.flatten().find(|entry| entry.path().is_file())
     else
     {

@@ -286,7 +286,7 @@ pub struct RoastScmArgs
     #[arg(
         long, default_value_t = true,
         action = clap::ArgAction::Set,
-        help = "If the cloned repository should be temporary."
+        help = "Whether the cloned repository should be deleted or not after the operation."
     )]
     pub is_temporary: bool,
     #[arg(

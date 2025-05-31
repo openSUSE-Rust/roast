@@ -845,22 +845,6 @@ fn set_version_in_specfile(
     Ok(())
 }
 
-#[cfg(not(feature = "obs"))]
-fn set_version_in_specfile(
-    _new_version: &Option<String>,
-    _from_formatted_revision: &str,
-) -> io::Result<()>
-{
-    if _new_version.is_some()
-    {
-        error!(
-            "⛳ Feature flag `obs` was not enabled yet `--set-version` was
-passed. This will not do anything."
-        );
-    }
-    Ok(())
-}
-
 /// Creates a tarball from a given URL. URL must be a valid remote git
 /// repository.
 ///
@@ -892,6 +876,13 @@ pub fn roast_scm_opts(
     let final_revision_format =
         rewrite_version_or_revision_from_changelog_details(&changelog_details, roast_scm_args)?;
 
+    #[cfg(not(feature = "obs"))]
+    let filename_prefix = process_filename_from_url_and_revision(
+        &roast_scm_args.git_repository_url,
+        &final_revision_format,
+    )?;
+
+    #[cfg(feature = "obs")]
     let filename_prefix = if let Some(set_name) = &roast_scm_args.set_name
     {
         if let Some(set_version) = &roast_scm_args.set_version
@@ -949,6 +940,8 @@ pub fn roast_scm_opts(
     roast_opts(&roast_args, false)
         .map(|_| {
             generate_changelog_file(roast_scm_args, &changelog_details, &final_revision_format)?;
+
+            #[cfg(feature = "obs")]
             set_version_in_specfile(&roast_scm_args.set_version, &final_revision_format)?;
 
             if !roast_scm_args.is_temporary

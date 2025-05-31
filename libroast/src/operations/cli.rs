@@ -241,6 +241,18 @@ pub struct RoastScmArgs
                 newest changes to the top-most part of the text file."
     )]
     pub changesoutfile: Option<PathBuf>,
+    #[arg(
+        long,
+        help = "Whether to hard code the version or not. Set it to hard code one, otherwise, it \
+                will use the generated version internally."
+    )]
+    pub set_version: Option<String>,
+    #[arg(
+        long,
+        help = "Whether to hard code the name or not. Set it to hard code one, otherwise, it will \
+                use the generated name internally."
+    )]
+    pub set_name: Option<String>,
     #[arg(long, short = 'g', help = "Remote URL to the git repository.", alias = "url")]
     pub git_repository_url: String,
     #[arg(

@@ -39,6 +39,11 @@ sha3 = { version = "0.11.0-pre.4" }
 hex-literal = "0.4.1"
 
 [features]
+# Enables set version and set name flags. This feature
+# is specific to <https://openbuildservice.org/> and
+# <https://build.opensuse.org/> as this only affects
+# a specific file with a file extension ".spec"
+# or called specfiles.
 obs =[]
 
 [lints]

@@ -898,6 +898,8 @@ pub fn roast_scm_opts(
             {
                 final_changelog_lines.push_str("  * NO CHANGELOG\n");
             }
+            // Add the last newline
+            final_changelog_lines.push('\n');
 
             let changes_string_from_file = match std::fs::File::create_new(changesoutfile)
             {

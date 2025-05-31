@@ -231,7 +231,7 @@ pub struct RoastScmArgs
         help = "Author to include during the changelog generation."
     )]
     pub changesauthor: Option<String>,
-    #[arg(long, short = 'E', help = "Email of author to include during the changelog generation.")]
+    #[arg(long, short = 'e', help = "Email of author to include during the changelog generation.")]
     pub changesemail: Option<String>,
     #[arg(
         long,

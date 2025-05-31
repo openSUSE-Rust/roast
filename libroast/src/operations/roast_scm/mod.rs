@@ -751,10 +751,13 @@ fn set_version_in_specfile(
     _from_formatted_revision: &str,
 ) -> io::Result<()>
 {
-    error!(
-        "⛳ Feature flag `obs` was not enabled yet `--set-version` was
+    if _new_version.is_some()
+    {
+        error!(
+            "⛳ Feature flag `obs` was not enabled yet `--set-version` was
 passed. This will not do anything."
-    );
+        );
+    }
     Ok(())
 }
 

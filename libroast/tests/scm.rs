@@ -1,13 +1,20 @@
-#![cfg(feature="obs")]
-use std::{
-    fs::{read, read_dir}, io, path::{
-        Path,
-        PathBuf,
-    }
+use libroast::{
+    self,
+    operations::cli::RoastScmArgs,
 };
-
+use sha3::{
+    Digest,
+    Keccak256,
+};
+use std::{
+    fs::{
+        read,
+        read_dir,
+    },
+    io,
+    path::PathBuf,
+};
 use test_log::test;
-
 #[allow(unused_imports)]
 use tracing::{
     Level,
@@ -18,15 +25,9 @@ use tracing::{
     warn,
 };
 
-use sha3::{
-    Digest,
-    Keccak256,
-};
-
-use libroast::{self, operations::cli::RoastScmArgs};
-
 #[test]
-fn different_revisions_pointing_to_the_same_commit_produce_the_same_files() -> io::Result<()> {
+fn different_revisions_pointing_to_the_same_commit_produce_the_same_files() -> io::Result<()>
+{
     let tmp_binding = tempfile::TempDir::new().map_err(|err| {
         error!(?err, "Failed to create temporary directory");
         err
@@ -34,7 +35,7 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_files() -> i
     let mut hasher1 = Keccak256::new();
     let mut hasher2 = Keccak256::new();
     let outdir = tmp_binding.path();
-    let r1  = RoastScmArgs {
+    let r1 = RoastScmArgs {
         changesgenerate: false,
         changesauthor: None,
         changesemail: None,
@@ -46,17 +47,17 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_files() -> i
         versionrewritepattern: None,
         depth: 0,
         is_temporary: true,
-        outfile: Some(PathBuf::new().join("r1.tar.zst")) ,
+        outfile: Some(PathBuf::new().join("r1.tar.zst")),
         outdir: Some(outdir.to_path_buf()),
         reproducible: true,
         ignore_git: true,
         ignore_hidden: false,
         compression: libroast::common::Compression::default(),
     };
-    libroast::operations::roast_scm::roast_scm_opts(&r1, true)?;
+    libroast::operations::roast_scm::roast_scm_opts(&r1, false)?;
     let buf1 = read(outdir.join("r1.tar.zst"))?;
     hasher1.update(buf1);
-    let r2  = RoastScmArgs {
+    let r2 = RoastScmArgs {
         changesgenerate: false,
         changesauthor: None,
         changesemail: None,
@@ -68,14 +69,14 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_files() -> i
         versionrewritepattern: None,
         depth: 0,
         is_temporary: true,
-        outfile: Some(PathBuf::new().join("r2.tar.zst")) ,
+        outfile: Some(PathBuf::new().join("r2.tar.zst")),
         outdir: Some(outdir.to_path_buf()),
         reproducible: true,
         ignore_git: true,
         ignore_hidden: false,
         compression: libroast::common::Compression::default(),
     };
-    libroast::operations::roast_scm::roast_scm_opts(&r2, true)?;
+    libroast::operations::roast_scm::roast_scm_opts(&r2, false)?;
     let buf2 = read(outdir.join("r2.tar.zst"))?;
     hasher2.update(buf2);
     assert_eq!(hasher1.finalize(), hasher2.finalize());
@@ -83,7 +84,8 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_files() -> i
 }
 
 #[test]
-fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() -> io::Result<()> {
+fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() -> io::Result<()>
+{
     let tmp_binding1 = tempfile::TempDir::new().map_err(|err| {
         error!(?err, "Failed to create temporary directory");
         err
@@ -96,7 +98,7 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() 
     let mut hasher2 = Keccak256::new();
     let outdir1 = tmp_binding1.path();
     let outdir2 = tmp_binding2.path();
-    let r1  = RoastScmArgs {
+    let r1 = RoastScmArgs {
         changesgenerate: false,
         changesauthor: None,
         changesemail: None,
@@ -115,8 +117,8 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() 
         ignore_hidden: false,
         compression: libroast::common::Compression::default(),
     };
-    libroast::operations::roast_scm::roast_scm_opts(&r1, true)?;
-    let r2  = RoastScmArgs {
+    libroast::operations::roast_scm::roast_scm_opts(&r1, false)?;
+    let r2 = RoastScmArgs {
         changesgenerate: false,
         changesauthor: None,
         changesemail: None,
@@ -135,16 +137,20 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() 
         ignore_hidden: false,
         compression: libroast::common::Compression::default(),
     };
-    libroast::operations::roast_scm::roast_scm_opts(&r2, true)?;
+    libroast::operations::roast_scm::roast_scm_opts(&r2, false)?;
     let read_dir1 = read_dir(&outdir1)?;
     let read_dir2 = read_dir(&outdir2)?;
-    let Some(file1) = read_dir1.flatten().find(|entry| entry.path().is_file()) else {
+    let Some(file1) = read_dir1.flatten().find(|entry| entry.path().is_file())
+    else
+    {
         return Err(io::Error::new(io::ErrorKind::NotFound, "file1 not found."));
     };
-    let Some(file2) = read_dir2.flatten().find(|entry| entry.path().is_file()) else {
+    let Some(file2) = read_dir2.flatten().find(|entry| entry.path().is_file())
+    else
+    {
         return Err(io::Error::new(io::ErrorKind::NotFound, "file2 not found."));
     };
-    assert_eq!(file1.file_name(),file2.file_name());
+    assert_eq!(file1.file_name(), file2.file_name());
     let hash1 = read(file1.path())?;
     let hash2 = read(file2.path())?;
     hasher1.update(hash1);

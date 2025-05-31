@@ -6,7 +6,7 @@ when:
   - event: [push, tag, pull_request]
     branch: [main]
     path:
-      include: ['.woodpecker/*.yaml', '*.woodpecker/*.yml']
+      include: ['.woodpecker/*.yaml', '*.woodpecker/*.yml', "*.rs"]
       exclude: ['*.md', 'docs/**', '*.service', 'advocacy/**']
 
 labels:

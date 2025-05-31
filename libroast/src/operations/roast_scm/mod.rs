@@ -19,7 +19,7 @@ use hifitime::{
 
 const CHANGELOG_LONG_SET_OF_DASHES: &str =
     "-------------------------------------------------------------------";
-const CHANGELOG_DATE_TIME_FORMAT: &str = "%a %b %H:%M:%S %T %Y";
+const CHANGELOG_DATE_TIME_FORMAT: &str = "%a %b %d %H:%M:%S %T %Y";
 
 use git2::{
     AutotagOption,

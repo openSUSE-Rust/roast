@@ -222,6 +222,39 @@ pub struct RecomprizzArgs
 )]
 pub struct RoastScmArgs
 {
+    #[arg(long, short = 'C', action = clap::ArgAction::Set, default_value_t = false, help = "Whether to generate or update a changelog file or not.")]
+    pub changesgenerate: bool,
+    #[arg(
+        long,
+        short = 'A',
+        requires_if("changesgenerate", "true"),
+        help = "Author to include during the changelog generation."
+    )]
+    pub changesauthor: Option<String>,
+    #[arg(long, short = 'E', help = "Email of author to include during the changelog generation.")]
+    pub changesemail: Option<String>,
+    #[arg(
+        long,
+        alias = "caof",
+        requires_if("changesgenerate", "true"),
+        help = "Whether to specify a path to the changes file. Otherwise, it is the current \
+                directory and the filename is the same filename prefix of the generated tarball \
+                e.g. `source.tar.xz` will have `source.changes` file. If file exists, append the \
+                newest changes to the top-most part of the text file."
+    )]
+    pub changesoutfile: Option<PathBuf>,
+    #[arg(
+        long,
+        help = "Whether to hard code the version or not. Set it to hard code one, otherwise, it \
+                will use the generated version internally."
+    )]
+    pub set_version: Option<String>,
+    #[arg(
+        long,
+        help = "Whether to hard code the name or not. Set it to hard code one, otherwise, it will \
+                use the generated name internally."
+    )]
+    pub set_name: Option<String>,
     #[arg(long, short = 'g', help = "Remote URL to the git repository.", alias = "url")]
     pub git_repository_url: String,
     #[arg(
@@ -231,10 +264,22 @@ pub struct RoastScmArgs
                 work directory to exclude when generating the archive."
     )]
     pub exclude: Option<Vec<PathBuf>>,
-    #[arg(long, help = "Revision or tag. It can also be a specific commit hash.")]
+    #[arg(
+        long,
+        help = "Revision or tag. It can also be a specific commit hash or branch. Supports <https://git-scm.com/docs/git-rev-parse.html#_specifying_revisions>."
+    )]
     pub revision: String,
     #[arg(
-        long, default_value_t = 1,
+        long,
+        help = "Pass a regex with capture groups. Required by `versionrewritepattern` flag. Each \
+                capture group is labelled through increments of 1.",
+        requires = "versionrewritepattern"
+    )]
+    pub versionrewriteregex: Option<String>,
+    #[arg(long, help = "Pass a pattern from the capture groups from `versionrewriteregex` flag.")]
+    pub versionrewritepattern: Option<String>,
+    #[arg(
+        long, default_value_t = 0,
         action = clap::ArgAction::Set,
         help = "The depth of cloning the repository.")]
     pub depth: i32,
@@ -248,7 +293,7 @@ pub struct RoastScmArgs
         long,
         short = 'f',
         help = "Output file of the generated archive with path. If not provided, attempts to \
-                write the filename based on project name and revision."
+                write the filename based on project name and revision based on <https://en.opensuse.org/openSUSE:Package_versioning_guidelines>."
     )]
     pub outfile: Option<PathBuf>,
     #[arg(long, short = 'd', help = "Output path of the generated archive.")]

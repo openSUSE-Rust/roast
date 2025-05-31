@@ -46,7 +46,7 @@ use tracing_subscriber::EnvFilter;
 
 /// Utility function to start tracing subscriber in the environment for logging.
 /// Supports coloured and no coloured outputs using `terminfo::capability`.
-pub fn start_tracing()
+pub(crate) fn start_tracing()
 {
     let terminfodb = Database::from_env().map_err(|e| {
         error!(err = ?e, "Unable to access terminfo db. This is a bug!");
@@ -217,10 +217,7 @@ pub fn process_globs(src: &Path) -> io::Result<PathBuf>
     if globs.len() > 1
     {
         warn!("⚠️  Multiple files matched glob");
-        for item in &globs
-        {
-            warn!("- {}", item.display());
-        }
+        globs.iter().for_each(|glob| warn!(" - {}", glob.display()));
     }
 
     // Take the last item.

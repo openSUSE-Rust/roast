@@ -46,7 +46,7 @@ pub(crate) fn get_additional_paths(adtnl_path: &str, root: &Path) -> (PathBuf, P
     if let Some((ar, tgt)) = adtnl_path.split_once(",")
     {
         debug!(?ar, ?tgt);
-        let tgt = if tgt.is_empty() { root } else { &root.join(tgt) };
+        let tgt = if tgt.trim().is_empty() { root } else { &root.join(tgt) };
         (PathBuf::from(&ar), tgt.to_path_buf())
     }
     else
@@ -256,7 +256,7 @@ pub fn roast_opts(roast_args: &cli::RoastArgs, start_trace: bool) -> io::Result<
 
     if !outdir.is_dir()
     {
-        std::fs::create_dir_all(&outdir)?;
+        std::fs::create_dir_all(outdir)?;
     }
 
     let outpath = outdir.join(&roast_args.outfile);
@@ -270,7 +270,7 @@ pub fn roast_opts(roast_args: &cli::RoastArgs, start_trace: bool) -> io::Result<
         .map(|p| target_path.join(p).canonicalize().unwrap_or_default())
         // NOTE: This is important. as unwrap_or_default contains at least one element of
         // Path::from("") or a PathBuf::new()
-        .filter(|p| !p.as_os_str().is_empty())
+        .filter(|p| !p.to_string_lossy().trim().is_empty())
         .collect();
 
     debug!(?exclude_canonicalized_paths);

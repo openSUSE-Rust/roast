@@ -90,16 +90,9 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
         },
     };
 
-    let file_extension = match recomprizz_args.compression
-    {
-        crate::common::Compression::Gz => "tar.gz",
-        crate::common::Compression::Xz => "tar.xz",
-        crate::common::Compression::Zst | crate::common::Compression::Zstd => "tar.zst",
-        crate::common::Compression::Bz2 => "tar.bz",
-        crate::common::Compression::Not => "tar",
-    };
+    let file_extension = recomprizz_args.compression.to_extension();
 
-    let out_filename = format!("{}.{}", out_filename.display(), file_extension);
+    let out_filename = format!("{}{}", out_filename.display(), file_extension);
 
     let roast_args = RoastArgs {
         target: outpath_for_raw.to_path_buf(),

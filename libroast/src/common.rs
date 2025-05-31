@@ -35,6 +35,21 @@ pub enum Compression
     Not,
 }
 
+impl Compression
+{
+    pub fn to_extension(&self) -> String
+    {
+        match self
+        {
+            Compression::Gz => ".tar.gz",
+            Compression::Xz => ".tar.xz",
+            Compression::Zst | Compression::Zstd => ".tar.zst",
+            Compression::Bz2 => ".tar.bz",
+            Compression::Not => ".tar",
+        }
+        .to_string()
+    }
+}
 impl Display for Compression
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result

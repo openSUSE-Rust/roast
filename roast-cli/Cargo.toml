@@ -20,5 +20,8 @@ walkdir = "2.5.0"
 tempfile = "3.12.0"
 libroast = { workspace = true }
 
+[features]
+obs = ["libroast/obs"]
+
 [lints]
 workspace = true

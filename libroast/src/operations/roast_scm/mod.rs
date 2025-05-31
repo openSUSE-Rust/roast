@@ -739,7 +739,7 @@ fn set_version_in_specfile(
 
     fs::copy(specfile_temporary, specfile_path).inspect(|bytes| {
         info!("✍️ Updated version in specfile.");
-        info!("💽 Total bytes written: {}", bytes);
+        debug!("💽 Total bytes written: {}", bytes);
     })?;
 
     Ok(())
@@ -852,6 +852,14 @@ pub fn roast_scm_opts(
     {
         if let Some(changesauthor) = &roast_scm_args.changesauthor
         {
+            let changesauthor = if let Some(changesemail) = &roast_scm_args.changesemail
+            {
+                format!("{} <{}>", changesauthor, changesemail)
+            }
+            else
+            {
+                changesauthor.to_string()
+            };
             let changesoutfile = match &roast_scm_args.changesoutfile
             {
                 Some(v) => v,

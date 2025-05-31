@@ -2,6 +2,7 @@ use sha3::{
     Digest,
     Keccak256,
 };
+
 use std::{
     fs::read,
     io,

@@ -115,6 +115,9 @@ to `source.tar.zst`. The renaming scheme is too dumb and simple though, and not 
 - [roast_scm.service](./roast_scm.service)
 - [roast.service](./roast.service)
 
+> [!NOTE]
+> The options will differ `roast_scm.service` in the service file since those options only exist if the `obs` feature was enabled.
+
 It maps when you run the following commands
 - `raw -h`
 - `recomprizz -h`

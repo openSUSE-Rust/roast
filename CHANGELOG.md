@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.1.0] - 2025-05-31
+
+### Bug Fixes
+
+- Date format now fixed [7653416](https://codeberg.org/Rusty-Geckos/roast/commit/7653416b46d21267273d2e3cc308423aef24aff1)
+
 ## [7.0.0] - 2025-05-31
 
 ### Bug Fixes
@@ -60,7 +66,7 @@ All notable changes to this project will be documented in this file.
 
 ### Miscellaneous Tasks
 
-- Bump to v7.0.0 [db8629d](https://codeberg.org/Rusty-Geckos/roast/commit/db8629d812d5e9cd7ab0eaec9cdc8c4d2b695e9b)
+- Bump to v7.0.0 [89d185b](https://codeberg.org/Rusty-Geckos/roast/commit/89d185b2163cc1bd27cf56e0f47ec25edc098722)
 - Cleanup and whether to disable or enable code for `obs` feature [8949e89](https://codeberg.org/Rusty-Geckos/roast/commit/8949e89ff36ef2760192e6aa0e534f1e4ff800ca)
 - Add optional obs feature in roast-cli [3edb410](https://codeberg.org/Rusty-Geckos/roast/commit/3edb410c13aa985c175af3b0a3459b63550f681b)
 - Add optional obs feature [5ab9259](https://codeberg.org/Rusty-Geckos/roast/commit/5ab9259045c9256dbb24df51309d9c024645445f)

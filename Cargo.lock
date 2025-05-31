@@ -692,7 +692,7 @@ dependencies = [
 
 [[package]]
 name = "libroast"
-version = "7.0.0"
+version = "7.1.0"
 dependencies = [
  "bzip2",
  "clap",
@@ -710,33 +710,6 @@ dependencies = [
  "tempfile",
  "terminfo",
  "test-log",
- "tracing",
- "tracing-subscriber",
- "url",
- "walkdir",
- "xz2",
- "zstd",
-]
-
-[[package]]
-name = "libroast"
-version = "7.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e143325566b19a4568b01f45a09b619cd8dead59c1f2131e8efc11ce84d55299"
-dependencies = [
- "bzip2",
- "clap",
- "flate2",
- "git2",
- "glob",
- "hifitime",
- "infer",
- "rayon",
- "regex",
- "semver",
- "tar",
- "tempfile",
- "terminfo",
  "tracing",
  "tracing-subscriber",
  "url",
@@ -1084,10 +1057,10 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
 name = "roast-cli"
-version = "7.0.0"
+version = "7.1.0"
 dependencies = [
  "clap",
- "libroast 7.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libroast",
  "tempfile",
  "terminfo",
  "tracing",

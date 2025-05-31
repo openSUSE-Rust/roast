@@ -655,6 +655,109 @@ fn rewrite_version_or_revision_from_changelog_details(
     }
     Ok(stub_format)
 }
+
+#[cfg(feature = "obs")]
+fn set_version_in_specfile(
+    hard_coded_version: &Option<String>,
+    from_formatted_revision: &str,
+) -> io::Result<()>
+{
+    use std::{
+        fs,
+        io::Write,
+    };
+    let new_version = if let Some(new_version) = hard_coded_version
+    {
+        new_version
+    }
+    else
+    {
+        &{ from_formatted_revision.to_string() }
+    };
+
+    let r = r"(^Version:)(\s+)(\S+)";
+    let regex = Regex::new(r).map_err(|err| {
+        error!(?err);
+        io::Error::other(err)
+    })?;
+    let cwd = std::env::current_dir().map_err(|err| {
+        error!(?err);
+        io::Error::other(err)
+    })?;
+    let read_dir = cwd.read_dir()?;
+
+    // NOTE: The specfile name should be the same as the name of the directory
+    // without the `.spec` extension. Currently, I don't think this is a good
+    // idea but is it?
+    let Some(basename) = cwd.file_name()
+    else
+    {
+        return Err(io::Error::other("There is no basename found!"));
+    };
+
+    debug!(?basename);
+
+    let Some(specfile) = read_dir.flatten().find(|f| {
+        let the_filename = format!("{}.spec", basename.to_string_lossy());
+        let binding = f.path();
+        let file_basename = binding.file_name().unwrap_or_default();
+        let filename = file_basename.to_string_lossy();
+
+        debug!(?filename, ?the_filename);
+        *filename == the_filename
+    })
+    else
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            "Specfile not found. Might have a different name?",
+        ));
+    };
+
+    let specfile_path = specfile.path();
+
+    let mut specfile_temporary = tempfile::NamedTempFile::new()?;
+
+    let specfile_read = std::fs::read_to_string(&specfile_path)?;
+
+    let mut specfile_lines = specfile_read.lines();
+
+    specfile_lines.try_for_each(|line| -> io::Result<()> {
+        if regex.is_match(line)
+        {
+            debug!(?line, "Match found:");
+            let mut after = regex.replace_all(line, r"$1$2").to_string();
+            after.push_str(new_version);
+            writeln!(specfile_temporary, "{}", after)?;
+        }
+        else
+        {
+            writeln!(specfile_temporary, "{}", line)?;
+        }
+        Ok(())
+    })?;
+
+    fs::copy(specfile_temporary, specfile_path).inspect(|bytes| {
+        info!("✍️ Updated version in specfile.");
+        info!("💽 Total bytes written: {}", bytes);
+    })?;
+
+    Ok(())
+}
+
+#[cfg(not(feature = "obs"))]
+fn set_version_in_specfile(
+    _new_version: &Option<String>,
+    _from_formatted_revision: &str,
+) -> io::Result<()>
+{
+    error!(
+        "⛳ Feature flag `obs` was not enabled yet `--set-version` was
+passed. This will not do anything."
+    );
+    Ok(())
+}
+
 /// Creates a tarball from a given URL. URL must be a valid remote git
 /// repository.
 ///
@@ -686,10 +789,30 @@ pub fn roast_scm_opts(
     let final_revision_format =
         rewrite_version_or_revision_from_changelog_details(&changelog_details, roast_scm_args)?;
 
-    let filename_prefix = process_filename_from_url_and_revision(
-        &roast_scm_args.git_repository_url,
-        &final_revision_format,
-    )?;
+    let filename_prefix = if let Some(set_name) = &roast_scm_args.set_name
+    {
+        if let Some(set_version) = &roast_scm_args.set_version
+        {
+            format!("{}-{}", set_name, set_version)
+        }
+        else
+        {
+            format!("{}-{}", set_name, &final_revision_format)
+        }
+    }
+    else if let Some(set_version) = &roast_scm_args.set_version
+    {
+        process_filename_from_url_and_revision(&roast_scm_args.git_repository_url, set_version)?
+    }
+    else
+    {
+        process_filename_from_url_and_revision(
+            &roast_scm_args.git_repository_url,
+            &final_revision_format,
+        )?
+    };
+
+    set_version_in_specfile(&roast_scm_args.set_version, &final_revision_format)?;
 
     let new_workdir_for_copy = tempfile::TempDir::new()?;
     let local_copy_dir = new_workdir_for_copy.path().join(&filename_prefix);

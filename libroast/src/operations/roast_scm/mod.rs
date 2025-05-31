@@ -948,7 +948,7 @@ pub fn roast_scm_opts(
 
     roast_opts(&roast_args, false)
         .map(|_| {
-            generate_changelog_file(&roast_scm_args, &changelog_details, &final_revision_format)?;
+            generate_changelog_file(roast_scm_args, &changelog_details, &final_revision_format)?;
             set_version_in_specfile(&roast_scm_args.set_version, &final_revision_format)?;
 
             if !roast_scm_args.is_temporary

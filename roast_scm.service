@@ -5,20 +5,49 @@
    <parameter name="strategy">
       <description>Legacy argument, no longer used. Values: roast_scm. Default: roast_scm</description>
    </parameter>
+   <parameter name="changesgenerate">
+      <description>Whether to generate or update a changelog file or not. Default: false</description>
+      <allowedvalues>true</allowedvalues>
+      <allowedvalues>false</allowedvalues>
+   </parameter>
+   <parameter name="changesauthor">
+      <description>Author to include during the changelog generation.</description>
+   </parameter>
+   <parameter name="changesemail">
+      <description>Email of author to include during the changelog generation.</description>
+   </parameter>
+   <parameter name="changesoutfile">
+      <description> Whether to specify a path to the changes file. Otherwise, it is the current directory and the
+      filename is the same filename prefix of the generated tarball e.g. `source.tar.xz` will have `source.changes`
+      file. If file exists, append the newest changes to the top-most part of the text file.</description>
+   </parameter>
+   <parameter name="set-version">
+      <description>Whether to hard code the version or not. Set it to hard code one, otherwise, it will use the generated version internally.</description>
+   </parameter>
+   <parameter name="set-name">
+      <description>Whether to hard code the name or not. Set it to hard code one, otherwise, it will use the generated name internally.</description>
+   </parameter>
    <parameter name="git-repository-url">
       <description>Remote URL to the git repository.</description>
    </parameter>
    <parameter name="revision">
       <description>Revision or tag. It can also be a specific commit hash.</description>
    </parameter>
+   <parameter name="versionrewriteregex">
+      <description>Pass a regex with capture groups. Required by `versionrewritepattern` flag. Each capture group is labelled through increments of 1.</description>
+   </parameter>
+   <parameter name="versionrewritepattern">
+      <description>Pass a pattern from the capture groups from `versionrewriteregex` flag.</description>
+   </parameter>
    <parameter name="exclude">
-      <description>Additional paths such as files or directories from within target repository's work directory to exclude when generating the archive.</description>
+      <description>Additional paths such as files or directories from within target repository's work directory
+      to exclude when generating the archive.</description>
    </parameter>
    <parameter name="depth">
       <description>The depth of cloning the repository. Defaults to 1. Set to 0 to use default maximum depth.</description>
    </parameter>
    <parameter name="is-temporary">
-      <description>If the cloned repository should be temporary.</description>
+      <description>Whether the cloned repository should be deleted or not after the operation.</description>
    </parameter>
    <parameter name="outfile">
       <description>Output file of the generated archive with path. If not provided, attempts to write the filename based on project name and revision.</description>

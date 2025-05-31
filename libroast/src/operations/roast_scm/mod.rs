@@ -848,110 +848,122 @@ pub fn roast_scm_opts(
         ignore_hidden: roast_scm_args.ignore_hidden,
     };
 
-    if roast_scm_args.changesgenerate
-    {
-        if let Some(changesauthor) = &roast_scm_args.changesauthor
-        {
-            let changesauthor = if let Some(changesemail) = &roast_scm_args.changesemail
+    roast_opts(&roast_args, false)
+        .map(|_| {
+            if roast_scm_args.changesgenerate
             {
-                format!("{} <{}>", changesauthor, changesemail)
-            }
-            else
-            {
-                changesauthor.to_string()
-            };
-            let changesoutfile = match &roast_scm_args.changesoutfile
-            {
-                Some(v) => v,
-                None => &std::env::current_dir()
-                    .map_err(|err| {
-                        error!(?err);
-                        io::Error::other(err)
-                    })?
-                    .join(format!("{}.changes", process_basename_from_url(git_url)?)),
-            };
-
-            let time_format = Format::from_str(CHANGELOG_DATE_TIME_FORMAT).map_err(|err| {
-                error!(?err);
-                io::Error::other(err)
-            })?;
-            let time_now = Epoch::now().map_err(|err| {
-                error!(?err);
-                io::Error::other(err)
-            })?;
-            let formatted_time_now = Formatter::new(time_now, time_format);
-            let changelog_header = format!(
-                "{}\n{} - {}",
-                CHANGELOG_LONG_SET_OF_DASHES, formatted_time_now, changesauthor
-            );
-            let update_statement = format!("- Update to version {}:", final_revision_format);
-            let mut final_changelog_lines = String::new();
-            if !changelog_details.changelog.trim().is_empty()
-            {
-                let changelog_lines = changelog_details.changelog.lines();
-                changelog_lines.into_iter().for_each(|line| {
-                    let format_with_two_spaces = format!("  {}\n", line);
-                    final_changelog_lines.push_str(&format_with_two_spaces);
-                });
-            }
-            else
-            {
-                final_changelog_lines.push_str("  * NO CHANGELOG\n");
-            }
-            // Add the last newline
-            final_changelog_lines.push('\n');
-
-            let changes_string_from_file = match std::fs::File::create_new(changesoutfile)
-            {
-                Ok(file) =>
+                if let Some(changesauthor) = &roast_scm_args.changesauthor
                 {
-                    debug!(?file);
-                    std::fs::read_to_string(changesoutfile)
-                }
-                Err(err) =>
-                {
-                    debug!(?err);
-                    // If the file exists
-                    if changesoutfile.exists()
+                    let changesauthor = if let Some(changesemail) = &roast_scm_args.changesemail
                     {
-                        std::fs::read_to_string(changesoutfile)
+                        format!("{} <{}>", changesauthor, changesemail)
                     }
                     else
                     {
-                        Err(io::Error::other(err))
+                        changesauthor.to_string()
+                    };
+                    let changesoutfile = match &roast_scm_args.changesoutfile
+                    {
+                        Some(v) => v,
+                        None => &std::env::current_dir()
+                            .map_err(|err| {
+                                error!(?err);
+                                io::Error::other(err)
+                            })?
+                            .join(format!("{}.changes", process_basename_from_url(git_url)?)),
+                    };
+
+                    let time_format =
+                        Format::from_str(CHANGELOG_DATE_TIME_FORMAT).map_err(|err| {
+                            error!(?err);
+                            io::Error::other(err)
+                        })?;
+                    let time_now = Epoch::now().map_err(|err| {
+                        error!(?err);
+                        io::Error::other(err)
+                    })?;
+                    let formatted_time_now = Formatter::new(time_now, time_format);
+                    let changelog_header = format!(
+                        "{}\n{} - {}",
+                        CHANGELOG_LONG_SET_OF_DASHES, formatted_time_now, changesauthor
+                    );
+                    let update_statement =
+                        format!("- Update to version {}:", final_revision_format);
+                    let mut final_changelog_lines = String::new();
+                    if !changelog_details.changelog.trim().is_empty()
+                    {
+                        let changelog_lines = changelog_details.changelog.lines();
+                        changelog_lines.into_iter().for_each(|line| {
+                            let format_with_two_spaces = format!("  {}\n", line);
+                            final_changelog_lines.push_str(&format_with_two_spaces);
+                        });
                     }
+                    else
+                    {
+                        final_changelog_lines.push_str("  * NO CHANGELOG\n");
+                    }
+                    // Add the last newline
+                    final_changelog_lines.push('\n');
+
+                    let changes_string_from_file = match std::fs::File::create_new(changesoutfile)
+                    {
+                        Ok(file) =>
+                        {
+                            debug!(?file);
+                            std::fs::read_to_string(changesoutfile)
+                        }
+                        Err(err) =>
+                        {
+                            debug!(?err);
+                            // If the file exists
+                            if changesoutfile.exists()
+                            {
+                                std::fs::read_to_string(changesoutfile)
+                            }
+                            else
+                            {
+                                Err(io::Error::other(err))
+                            }
+                        }
+                    }?;
+
+                    let final_changes_string_for_file = format!(
+                        "{}\n\n{}\n{}{}",
+                        changelog_header,
+                        update_statement,
+                        final_changelog_lines,
+                        changes_string_from_file
+                    );
+                    std::fs::write(changesoutfile, &final_changes_string_for_file).inspect(
+                        |_| {
+                            info!(
+                                "🗒️ Successfully generated changelog to `{}`.",
+                                &changesoutfile.display()
+                            );
+                        },
+                    )?
                 }
-            }?;
+                else
+                {
+                    return Err(io::Error::other("No changes author provided."));
+                }
+            }
 
-            let final_changes_string_for_file = format!(
-                "{}\n\n{}\n{}{}",
-                changelog_header, update_statement, final_changelog_lines, changes_string_from_file
-            );
-            std::fs::write(changesoutfile, &final_changes_string_for_file).inspect(|_| {
-                info!("🗒️ Successfully generated changelog to `{}`.", &changesoutfile.display());
-            })?
-        }
-        else
-        {
-            return Err(io::Error::other("No changes author provided."));
-        }
-    }
-
-    roast_opts(&roast_args, false)
-        .map(|ok| {
-            debug!(?ok);
-            info!("⛓️🔥 Finished Roast SCM!");
             if !roast_scm_args.is_temporary
             {
                 info!(
                     "👁️ Locally cloned repository is not deleted and located at `{}`.",
                     workdir.display()
                 );
-                return Some(workdir.to_path_buf());
-            };
-            None
+                Ok(Some(workdir.to_path_buf()))
+            }
+            else
+            {
+                Ok(None)
+            }
         })
         .inspect_err(|err| {
             error!(?err);
-        })
+        })?
+        .inspect(|_| info!("⛓️🔥 Finished Roast SCM!"))
 }

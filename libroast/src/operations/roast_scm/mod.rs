@@ -822,13 +822,19 @@ fn set_version_in_specfile(
 
     let mut specfile_lines = specfile_read.lines();
 
+    let mut update_only_once = false;
+
     specfile_lines.try_for_each(|line| -> io::Result<()> {
         if regex.is_match(line)
         {
-            debug!(?line, "Match found:");
-            let mut after = regex.replace_all(line, r"$1$2").to_string();
-            after.push_str(new_version);
-            writeln!(specfile_temporary, "{}", after)?;
+            if !update_only_once
+            {
+                update_only_once = regex.is_match(line);
+                debug!(?line, "Match found:");
+                let mut after = regex.replace_all(line, r"$1$2").to_string();
+                after.push_str(new_version);
+                writeln!(specfile_temporary, "{}", after)?;
+            }
         }
         else
         {

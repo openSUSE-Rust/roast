@@ -24,5 +24,6 @@ steps:
       - cargo +nightly fmt -- --check
       - cargo clippy --tests
       - cargo test --release -- --test-threads=1
+      - cargo test -F obs --release -- --test-threads=1
 
 runs_on: [ success, failure ]

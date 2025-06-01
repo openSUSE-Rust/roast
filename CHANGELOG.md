@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.1.2] - 2025-06-01
+
+### Continuous Integrations
+
+- Forgot to enable obs in the feature flag [3b4ce92](https://codeberg.org/Rusty-Geckos/roast/commit/3b4ce922313b45fbbc3b264114ffe5d37fd05018)
+
+### Improvements
+
+- Only update the changelog header if possible [47a50b6](https://codeberg.org/Rusty-Geckos/roast/commit/47a50b6ea5d7914596deaa03f48b39ed9c9c1112)
+
 ## [7.1.1] - 2025-06-01
 
 ### Continuous Integrations
@@ -11,6 +21,7 @@ All notable changes to this project will be documented in this file.
 
 ### Miscellaneous Tasks
 
+- Bump to v7.1.1 [48c61a4](https://codeberg.org/Rusty-Geckos/roast/commit/48c61a49b8f905ff5bd19a2ebe45c391ba38178b)
 - Update only once the version string. [c524422](https://codeberg.org/Rusty-Geckos/roast/commit/c5244228e99a135f766789c136fb7649409e67a8)
 
 ### Testing

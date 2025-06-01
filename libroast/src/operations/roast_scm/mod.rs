@@ -740,13 +740,40 @@ fn generate_changelog_file(
                 }
             }?;
 
-            let final_changes_string_for_file = format!(
-                "{}\n\n{}\n{}{}",
-                changelog_header, update_statement, final_changelog_lines, changes_string_from_file
-            );
-            std::fs::write(changesoutfile, &final_changes_string_for_file).inspect(|_| {
-                info!("🗒️ Successfully generated changelog to `{}`.", &changesoutfile.display());
-            })?
+            let new_changes_to_append = format!("{}\n{}", update_statement, final_changelog_lines);
+            if !changes_string_from_file.contains(&new_changes_to_append)
+            {
+                let final_changes_string_for_file = format!(
+                    "{}\n\n{}{}",
+                    changelog_header, new_changes_to_append, changes_string_from_file
+                );
+                std::fs::write(changesoutfile, &final_changes_string_for_file).inspect(|_| {
+                    info!(
+                        "🗒️ Successfully generated changelog to `{}`.",
+                        &changesoutfile.display()
+                    );
+                })?
+            }
+            else
+            {
+                let lines_from_changes_file = changes_string_from_file.lines();
+                let new_changes_string_without_header_yet =
+                    lines_from_changes_file.skip(2).collect::<Vec<&str>>().join("\n");
+                let final_changes_string_for_file =
+                    format!("{}\n{}", changelog_header, new_changes_string_without_header_yet);
+                std::fs::write(changesoutfile, &final_changes_string_for_file).inspect(|_| {
+                    info!(
+                        "🗒️ Changelog was already appended before. Not updating the changelog \
+                         lines located at `{}`.",
+                        &changesoutfile.display()
+                    );
+                    info!("🗒️ The changelog date and author will be updated, however.");
+                    info!(
+                        "🗒️ Successfully updated the latest changelog header to `{}`.",
+                        &changesoutfile.display()
+                    );
+                })?
+            }
         }
         else
         {

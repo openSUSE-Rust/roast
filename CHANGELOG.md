@@ -2,11 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.1.1] - 2025-06-01
+
+### Continuous Integrations
+
+- Forgot to specify which test to run [108f6f6](https://codeberg.org/Rusty-Geckos/roast/commit/108f6f6a6a17920b23b62eac75a279cf5d799192)
+- Include a test for feature `obs` [38702fc](https://codeberg.org/Rusty-Geckos/roast/commit/38702fc355f70d839c7c11bbda840b85d8cb0a30)
+
+### Miscellaneous Tasks
+
+- Update only once the version string. [c524422](https://codeberg.org/Rusty-Geckos/roast/commit/c5244228e99a135f766789c136fb7649409e67a8)
+
+### Testing
+
+- Test feature `obs` [6630e70](https://codeberg.org/Rusty-Geckos/roast/commit/6630e705d7ae8f48cd63ebc449f5a94828182c20)
+
 ## [7.1.0] - 2025-05-31
 
 ### Bug Fixes
 
 - Date format now fixed [7653416](https://codeberg.org/Rusty-Geckos/roast/commit/7653416b46d21267273d2e3cc308423aef24aff1)
+
+### Miscellaneous Tasks
+
+- Bump to v7.1.0 [c6a727c](https://codeberg.org/Rusty-Geckos/roast/commit/c6a727c4bbc5aeebb0fc28bcc3599754e78a8151)
 
 ## [7.0.0] - 2025-05-31
 

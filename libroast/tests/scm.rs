@@ -54,7 +54,7 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_files() -> i
         ignore_hidden: false,
         compression: libroast::common::Compression::default(),
     };
-    libroast::operations::roast_scm::roast_scm_opts(&r1, false)?;
+    libroast::operations::roast_scm::roast_scm_opts(None, &r1, false)?;
     let buf1 = read(outdir.join("r1.tar.zst"))?;
     hasher1.update(buf1);
     let r2 = RoastScmArgs {
@@ -76,7 +76,7 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_files() -> i
         ignore_hidden: false,
         compression: libroast::common::Compression::default(),
     };
-    libroast::operations::roast_scm::roast_scm_opts(&r2, false)?;
+    libroast::operations::roast_scm::roast_scm_opts(None, &r2, false)?;
     let buf2 = read(outdir.join("r2.tar.zst"))?;
     hasher2.update(buf2);
     assert_eq!(hasher1.finalize(), hasher2.finalize());
@@ -117,7 +117,7 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() 
         ignore_hidden: false,
         compression: libroast::common::Compression::default(),
     };
-    libroast::operations::roast_scm::roast_scm_opts(&r1, false)?;
+    libroast::operations::roast_scm::roast_scm_opts(None, &r1, false)?;
     let r2 = RoastScmArgs {
         changesgenerate: false,
         changesauthor: None,
@@ -137,7 +137,7 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() 
         ignore_hidden: false,
         compression: libroast::common::Compression::default(),
     };
-    libroast::operations::roast_scm::roast_scm_opts(&r2, false)?;
+    libroast::operations::roast_scm::roast_scm_opts(None, &r2, false)?;
     let read_dir1 = read_dir(outdir1)?;
     let read_dir2 = read_dir(outdir2)?;
     let Some(file1) = read_dir1.flatten().find(|entry| entry.path().is_file())

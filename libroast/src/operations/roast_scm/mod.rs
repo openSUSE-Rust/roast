@@ -37,7 +37,10 @@ use std::{
     io::{
         self,
     },
-    path::Path,
+    path::{
+        Path,
+        PathBuf,
+    },
 };
 use tracing::{
     debug,
@@ -885,6 +888,7 @@ fn set_version_in_specfile(
 /// repositories can be not deleted if the `crate::cli::RoastScmArgs` has its
 /// field `is_temporary` set to `false`.
 pub fn roast_scm_opts(
+    custom_workdir: Option<PathBuf>,
     roast_scm_args: &RoastScmArgs,
     start_trace: bool,
 ) -> io::Result<Option<std::path::PathBuf>>
@@ -895,8 +899,22 @@ pub fn roast_scm_opts(
     }
     info!("⛓️🔥 Starting Roast SCM!");
     debug!(?roast_scm_args);
-    let workdir = tempfile::TempDir::new()?;
-    let workdir = if !roast_scm_args.is_temporary { &workdir.keep() } else { workdir.path() };
+    let workdir = if let Some(workdir) = custom_workdir
+    {
+        workdir
+    }
+    else
+    {
+        let tmp_workdir = tempfile::TempDir::new()?;
+        if !roast_scm_args.is_temporary
+        {
+            tmp_workdir.keep()
+        }
+        else
+        {
+            tmp_workdir.path().to_owned()
+        }
+    };
 
     let git_url = &roast_scm_args.git_repository_url.to_string();
 
@@ -904,7 +922,7 @@ pub fn roast_scm_opts(
     info!(?workdir, "🏃 Cloning to local directory...");
 
     let changelog_details =
-        git_clone2(git_url, workdir, &roast_scm_args.revision, roast_scm_args.depth)?;
+        git_clone2(git_url, &workdir, &roast_scm_args.revision, roast_scm_args.depth)?;
 
     let final_revision_format =
         rewrite_version_or_revision_from_changelog_details(&changelog_details, roast_scm_args)?;
@@ -942,7 +960,7 @@ pub fn roast_scm_opts(
     let new_workdir_for_copy = tempfile::TempDir::new()?;
     let local_copy_dir = new_workdir_for_copy.path().join(&filename_prefix);
 
-    copy_dir_all(workdir, &local_copy_dir)?;
+    copy_dir_all(&workdir, &local_copy_dir)?;
 
     let outfile = match roast_scm_args.outfile.clone()
     {
@@ -955,7 +973,7 @@ pub fn roast_scm_opts(
         }
     };
     info!(?git_url, "🫂 Finished cloning remote repository.");
-    info!("🍄 Cloned to `{}`.", workdir.display());
+    info!("🍄 Cloned to `{}`.", &workdir.display());
 
     let roast_args = RoastArgs {
         target: local_copy_dir,

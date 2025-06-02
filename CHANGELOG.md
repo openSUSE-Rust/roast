@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.2.0] - 2025-06-02
+
+### Improvements
+
+- Add a possibility to pass a custom workdir [f8163a9](https://codeberg.org/Rusty-Geckos/roast/commit/f8163a9b723485c946cb97cf1192181c13c1f2be)
+
+### Testing
+
+- Roast_scm_opts should have `None` as the first parameter [ee0c7f8](https://codeberg.org/Rusty-Geckos/roast/commit/ee0c7f80648d04417a471077b577e185e8425d9a)
+
 ## [7.1.2] - 2025-06-01
 
 ### Continuous Integrations
@@ -11,6 +21,10 @@ All notable changes to this project will be documented in this file.
 ### Improvements
 
 - Only update the changelog header if possible [47a50b6](https://codeberg.org/Rusty-Geckos/roast/commit/47a50b6ea5d7914596deaa03f48b39ed9c9c1112)
+
+### Miscellaneous Tasks
+
+- Bump to version 7.1.2 [1671e70](https://codeberg.org/Rusty-Geckos/roast/commit/1671e70bdace568021be6b71be035bbbfddfa00d)
 
 ## [7.1.1] - 2025-06-01
 

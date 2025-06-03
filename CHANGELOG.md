@@ -2,11 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.2.2] - 2025-06-03
+
+### Bug Fixes
+
+- If there are no tags found, count the commits until the initial commit [4e66d51](https://codeberg.org/Rusty-Geckos/roast/commit/4e66d5103142a8e04c9f6fa0b47f007a763e9fb4)
+- Changelog generation was broken. use revwalk to fix the issue [a70f99c](https://codeberg.org/Rusty-Geckos/roast/commit/a70f99cd3baabcecf607fe57ac7ff49f35ec2591)
+
 ## [7.2.0] - 2025-06-02
 
 ### Improvements
 
 - Add a possibility to pass a custom workdir [f8163a9](https://codeberg.org/Rusty-Geckos/roast/commit/f8163a9b723485c946cb97cf1192181c13c1f2be)
+
+### Miscellaneous Tasks
+
+- Bump to version 7.2.0 [b5c1c63](https://codeberg.org/Rusty-Geckos/roast/commit/b5c1c6399aa75f370007713dd88afe68d0114de3)
 
 ### Testing
 

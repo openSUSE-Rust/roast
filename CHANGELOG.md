@@ -2,12 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.2.3] - 2025-06-03
+
+### Bug Fixes
+
+- Refactor so that after a deletion of tag does not cause an error [ec170b0](https://codeberg.org/Rusty-Geckos/roast/commit/ec170b07a56dcdffacc40cc245f797835430d594)
+
 ## [7.2.2] - 2025-06-03
 
 ### Bug Fixes
 
 - If there are no tags found, count the commits until the initial commit [4e66d51](https://codeberg.org/Rusty-Geckos/roast/commit/4e66d5103142a8e04c9f6fa0b47f007a763e9fb4)
 - Changelog generation was broken. use revwalk to fix the issue [a70f99c](https://codeberg.org/Rusty-Geckos/roast/commit/a70f99cd3baabcecf607fe57ac7ff49f35ec2591)
+
+### Miscellaneous Tasks
+
+- Bump to version 7.2.2 [a8c8b39](https://codeberg.org/Rusty-Geckos/roast/commit/a8c8b3925bce645386c14f4034299cf4aa295c85)
 
 ## [7.2.0] - 2025-06-02
 

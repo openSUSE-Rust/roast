@@ -18,7 +18,7 @@ tracing = { version = "0.1", features = [
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 walkdir = "2.5.0"
 tempfile = "3.12.0"
-libroast = { version = "7.2.2", path = "../libroast" }
+libroast = { version = "7.2.3", path = "../libroast" }
 
 [features]
 obs = ["libroast/obs"]

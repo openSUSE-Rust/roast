@@ -457,6 +457,14 @@ fn changelog_details_generate(
             };
         }
     }
+    else
+    {
+        count_commit_history_since_ref(
+            &processed_git_commit,
+            local_repository,
+            &mut number_of_refs_since_commit,
+        )?;
+    };
     let commit_hash = format!("{}", processed_git_commit.id());
 
     debug!(?processed_git_commit);
@@ -493,6 +501,48 @@ fn changelog_details_generate(
         tag_or_version,
         offset_since_current_commit: number_of_refs_since_commit,
     })
+}
+
+// This is only useful if there are no tags
+fn count_commit_history_since_ref(
+    processed_git_commit: &Commit,
+    local_repository: &Repository,
+    number_of_refs_since_commit: &mut u32,
+) -> io::Result<()>
+{
+    // Perform a revwalk. This means there were no tags! And we only got a hash
+    let mut revwalk = local_repository.revwalk().map_err(|err| {
+        error!(?err);
+        io::Error::other(err)
+    })?;
+    revwalk.push_head().map_err(|err| {
+        error!(?err);
+        io::Error::other(err)
+    })?;
+    revwalk.set_sorting(git2::Sort::TIME | git2::Sort::TOPOLOGICAL).map_err(|err| {
+        error!(?err);
+        io::Error::other(err)
+    })?;
+    let mut start_count = false;
+
+    for rev in revwalk
+    {
+        let commit = match rev
+        {
+            Ok(rev_) => local_repository.find_commit(rev_).map_err(io::Error::other)?,
+            Err(err) => return Err(io::Error::other(err)),
+        };
+        debug!(?rev, ?commit);
+        if commit.id() == processed_git_commit.id()
+        {
+            start_count = true
+        }
+        if start_count
+        {
+            *number_of_refs_since_commit += 1;
+        }
+    }
+    Ok(())
 }
 
 fn mutate_bulk_commit_message_string(

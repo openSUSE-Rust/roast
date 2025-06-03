@@ -349,11 +349,23 @@ fn changelog_details_generate(
     let mut bulk_commit_message = String::new();
     let mut number_of_refs_since_commit: u32 = 0;
     let mut tag_or_version: String = String::new();
+    let mut number_of_changes: u32 = 0;
 
     // NOTE: Delete tag so we can get the previous tag to describe.
     // NOTE: Run `describe_revision` twice. one for output information and removing
     // a tag if there is, and the other to generate changelog.
     let describe_string = describe_revision(git_object)?;
+    if let Some((rest, _hash)) = describe_string.rsplit_once("-")
+    {
+        if let Some((_new_rest, new_cunt)) = rest.rsplit_once("-")
+        {
+            let new_count = new_cunt.parse::<u32>().map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?;
+            number_of_changes = new_count;
+        }
+    };
     info!(?describe_string, "Result of `git describe`: ");
     let processed_git_commit = if let Some(resulting_tag) = git_object.as_tag()
     {
@@ -391,23 +403,35 @@ fn changelog_details_generate(
     }
     else if let Some(commitish) = git_object.as_commit()
     {
-        commitish.to_owned()
-    }
-    else
-    {
-        return Err(io::Error::other("Object is not a commit nor a tag!"));
-    };
-
-    // NOTE: Let's process if the describe string has a tag.
-    // The format is long-format so if it's just a branch with no tag,
-    // it will be `heads/<name-of-branch>-<number of commits since tag>-g<commit
-    // hash of current commit>`. If it has a tag, it will be `<tag>-<number
-    // of commits since tag>-g<current commit hash of current commit>`
-    // NOTE: Some users pass a hash, and the git object won't be considered as a
-    // tag. so we have to split the `describe_string`.
-    if let Some((_prefix, long_name)) = describe_string.split_once("heads/")
-    {
-        if let Some((the_rest, _g_hash)) = long_name.rsplit_once("-")
+        // NOTE: Let's process if the describe string has a tag.
+        // The format is long-format so if it's just a branch with no tag,
+        // it will be `heads/<name-of-branch>-<number of commits since tag>-g<commit
+        // hash of current commit>`. If it has a tag, it will be `<tag>-<number
+        // of commits since tag>-g<current commit hash of current commit>`
+        // NOTE: Some users pass a hash, and the git object won't be considered as a
+        // tag. so we have to split the `describe_string`.
+        if let Some((_prefix, long_name)) = describe_string.split_once("heads/")
+        {
+            if let Some((the_rest, _g_hash)) = long_name.rsplit_once("-")
+            {
+                if let Some((tag_, number_string)) = the_rest.rsplit_once("-")
+                {
+                    tag_or_version = tag_.to_string();
+                    number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
+                        error!(?err);
+                        io::Error::other(err)
+                    })?;
+                }
+                if number_of_refs_since_commit == 0 || the_rest.trim().is_empty()
+                {
+                    local_repository.tag_delete(&tag_or_version).map_err(|err| {
+                        error!(?err);
+                        io::Error::other(err)
+                    })?;
+                }
+            }
+        }
+        else if let Some((the_rest, _g_hash)) = describe_string.rsplit_once("-")
         {
             if let Some((tag_, number_string)) = the_rest.rsplit_once("-")
             {
@@ -421,50 +445,40 @@ fn changelog_details_generate(
             {
                 local_repository.tag_delete(&tag_or_version).map_err(|err| {
                     error!(?err);
+                    error!("Error happened here?");
                     io::Error::other(err)
                 })?;
+                let describe_string_after_tag_delete = describe_revision(git_object)?;
+
+                if let Some((rest, _hash)) = describe_string_after_tag_delete.rsplit_once("-")
+                {
+                    if let Some((_new_rest, new_cunt)) = rest.rsplit_once("-")
+                    {
+                        let new_count = new_cunt.parse::<u32>().map_err(|err| {
+                            error!(?err);
+                            io::Error::other(err)
+                        })?;
+                        number_of_refs_since_commit = new_count;
+                    }
+                };
             }
         }
-    }
-    else if let Some((the_rest, _g_hash)) = describe_string.rsplit_once("-")
-    {
-        if let Some((tag_, number_string)) = the_rest.rsplit_once("-")
+        else
         {
-            tag_or_version = tag_.to_string();
-            number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
-                error!(?err);
-                io::Error::other(err)
-            })?;
-        }
-        if number_of_refs_since_commit == 0 || the_rest.trim().is_empty()
-        {
-            local_repository.tag_delete(&tag_or_version).map_err(|err| {
-                error!(?err);
-                io::Error::other(err)
-            })?;
-            let describe_string_after_tag_delete = describe_revision(git_object)?;
-
-            if let Some((rest, _hash)) = describe_string_after_tag_delete.rsplit_once("-")
-            {
-                if let Some((_new_rest, new_cunt)) = rest.rsplit_once("-")
-                {
-                    let new_count = new_cunt.parse::<u32>().map_err(|err| {
-                        error!(?err);
-                        io::Error::other(err)
-                    })?;
-                    number_of_refs_since_commit = new_count;
-                }
-            };
-        }
+            count_commit_history_since_ref(
+                commitish,
+                local_repository,
+                &mut number_of_refs_since_commit,
+            )?;
+            number_of_changes = number_of_refs_since_commit; // since there are no tags to begin with so we count from the commit to the root commit
+        };
+        commitish.to_owned()
     }
     else
     {
-        count_commit_history_since_ref(
-            &processed_git_commit,
-            local_repository,
-            &mut number_of_refs_since_commit,
-        )?;
+        return Err(io::Error::other("Object is not a commit nor a tag!"));
     };
+
     let commit_hash = format!("{}", processed_git_commit.id());
 
     debug!(?processed_git_commit);
@@ -499,7 +513,7 @@ fn changelog_details_generate(
         describe_string,
         commit_hash,
         tag_or_version,
-        offset_since_current_commit: number_of_refs_since_commit,
+        offset_since_current_commit: number_of_changes,
     })
 }
 

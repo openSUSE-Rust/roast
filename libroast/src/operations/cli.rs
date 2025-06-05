@@ -363,7 +363,7 @@ pub struct RoastScmArgs
                 use the generated name internally."
     )]
     pub set_name: Option<String>,
-    #[arg(long, short = 'g', help = "Remote URL to the git repository.", alias = "url")]
+    #[arg(long, short = 'U', help = "Remote URL to the git repository.", alias = "url")]
     pub git_repository_url: String,
     #[arg(
         long,

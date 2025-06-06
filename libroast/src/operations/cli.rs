@@ -244,7 +244,7 @@ pub struct RoastScmArgs
                 newest changes to the top-most part of the text file."
     )]
     pub changesoutfile: Option<PathBuf>,
-    #[arg(long, short = 'g', help = "Remote URL to the git repository.", alias = "url")]
+    #[arg(long, short = 'U', help = "Remote URL to the git repository.", alias = "url")]
     pub git_repository_url: String,
     #[arg(
         long,

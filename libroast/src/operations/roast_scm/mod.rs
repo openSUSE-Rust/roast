@@ -842,7 +842,7 @@ fn generate_changelog_file(
             if !changes_string_from_file.contains(&new_changes_to_append)
             {
                 let final_changes_string_for_file = format!(
-                    "{}\n\n{}{}",
+                    "{}\n\n{}{}\n",
                     changelog_header, new_changes_to_append, changes_string_from_file
                 );
                 std::fs::write(changesoutfile, &final_changes_string_for_file).inspect(|_| {
@@ -858,7 +858,7 @@ fn generate_changelog_file(
                 let new_changes_string_without_header_yet =
                     lines_from_changes_file.skip(2).collect::<Vec<&str>>().join("\n");
                 let final_changes_string_for_file =
-                    format!("{}\n{}", changelog_header, new_changes_string_without_header_yet);
+                    format!("{}\n{}\n", changelog_header, new_changes_string_without_header_yet);
                 std::fs::write(changesoutfile, &final_changes_string_for_file).inspect(|_| {
                     info!(
                         "🗒️ Changelog was already appended before. Not updating the changelog \

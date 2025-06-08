@@ -2,11 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.2.4] - 2025-06-08
+
+### Dependencies
+
+- Remove semver crate [9d10a3b](https://codeberg.org/Rusty-Geckos/roast/commit/9d10a3bc86d109f630d5efe1a55265e2e01a8ca6)
+
+### Miscellaneous Tasks
+
+- Add newline to the end of the file if file was not empty before. [1b6fbf0](https://codeberg.org/Rusty-Geckos/roast/commit/1b6fbf01202fb8175fe456f9e6cce0d65c5db599)
+- Add newline at the end of the dot changes file [9509d75](https://codeberg.org/Rusty-Geckos/roast/commit/9509d75e75dd791873a8ec99e872d022f55779f3)
+- Change short flag to U [ad486a9](https://codeberg.org/Rusty-Geckos/roast/commit/ad486a98245fb2f879991e7e424260950c7ae614)
+- Change short flag to U [d9b4a92](https://codeberg.org/Rusty-Geckos/roast/commit/d9b4a92b2ea32fdc99c93852b63dd0cc2c88b332)
+
+### Refactor
+
+- Improve getting "number of changes since" logic [c75d73f](https://codeberg.org/Rusty-Geckos/roast/commit/c75d73f8953641bc46255a40348edf4c4c0852c3)
+
 ## [7.2.3] - 2025-06-03
 
 ### Bug Fixes
 
 - Refactor so that after a deletion of tag does not cause an error [ec170b0](https://codeberg.org/Rusty-Geckos/roast/commit/ec170b07a56dcdffacc40cc245f797835430d594)
+
+### Miscellaneous Tasks
+
+- Bump to version 7.2.3 [fe44607](https://codeberg.org/Rusty-Geckos/roast/commit/fe44607bf8e91268601de2183f161ee2f55cf2a2)
 
 ## [7.2.2] - 2025-06-03
 

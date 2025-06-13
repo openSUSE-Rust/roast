@@ -185,6 +185,7 @@ pub struct RecomprizzArgs
     pub rename: Option<String>,
     #[arg(
         long,
+        requires = "rename",
         help = "Pass a replacement pattern using the capture groups into this flag. This will be \
                 used with the `--rename` flag."
     )]

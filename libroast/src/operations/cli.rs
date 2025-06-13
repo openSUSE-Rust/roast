@@ -178,10 +178,17 @@ pub struct RecomprizzArgs
     #[arg(
         long,
         short = 'R',
-        help = "Use this flag if you want a new filename to use ignoring the new file extension. \
-                Omitting this flag will just fallback to basename."
+        help = "Pass a string or regex value into this flag. This will be used with the \
+                `--renamepattern` flag. If no value is provided to `--renamepattern`, this is \
+                assumed to be a hard-coded name."
     )]
     pub rename: Option<String>,
+    #[arg(
+        long,
+        help = "Pass a replacement pattern using the capture groups into this flag. This will be \
+                used with the `--rename` flag."
+    )]
+    pub renamepattern: Option<String>,
     #[arg(
         long,
         short = 'r',

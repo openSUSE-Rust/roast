@@ -38,7 +38,39 @@ use tracing::{
     trace,
     warn,
 };
-use walkdir::WalkDir;
+
+fn get_all_files(updated_paths: &mut Vec<PathBuf>, workdir: &Path) -> io::Result<()>
+{
+    if workdir.is_dir()
+    {
+        let processed_paths: Vec<PathBuf> = workdir
+            .read_dir()?
+            .par_bridge()
+            .flatten()
+            .into_par_iter()
+            .map(|f| {
+                debug!(?f);
+                f.path()
+            })
+            .filter(|p| {
+                p.canonicalize().unwrap_or(p.to_path_buf())
+                    != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
+            })
+            .collect();
+        processed_paths.into_iter().try_for_each(|f| -> io::Result<()> {
+            if f.is_dir()
+            {
+                get_all_files(updated_paths, &f.canonicalize().unwrap_or(f.to_path_buf()))?;
+            }
+            else if f.is_file()
+            {
+                updated_paths.push(f.canonicalize().unwrap_or(f.to_path_buf()));
+            }
+            Ok(())
+        })?;
+    }
+    Ok(())
+}
 
 /// This function helps process a list of additional paths separated by commas.
 pub(crate) fn get_additional_paths(adtnl_path: &str, root: &Path) -> (PathBuf, PathBuf)
@@ -305,16 +337,8 @@ pub fn roast_opts(roast_args: &cli::RoastArgs, start_trace: bool) -> io::Result<
         &exclude_canonicalized_paths,
     )?;
 
-    let archive_files: Vec<PathBuf> = WalkDir::new(workdir)
-        .into_iter()
-        .par_bridge()
-        .flatten()
-        .map(|f| {
-            debug!(?f);
-            f.into_path()
-        })
-        .filter(|p| p.is_file())
-        .collect();
+    let mut archive_files: Vec<PathBuf> = Vec::new();
+    get_all_files(&mut archive_files, workdir)?;
 
     debug!(?archive_files);
 

@@ -712,7 +712,6 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "url",
- "walkdir",
  "xz2",
  "zstd",
 ]

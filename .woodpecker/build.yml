@@ -14,9 +14,9 @@ labels:
 
 steps:
   build:
-    image: opensuse/tumbleweed:latest
+    image: opensuse/leap
     commands:
-      - zypper --non-interactive install rustup openssl-devel libzstd-devel
+      - zypper --non-interactive install rustup openssl-devel libzstd-devel tar gzip
       - rustup default stable
       - rustup install nightly
       - rustup update

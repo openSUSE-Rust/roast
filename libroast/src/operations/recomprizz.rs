@@ -17,17 +17,15 @@ use crate::{
         roast::roast_opts,
     },
     utils::{
+        is_supported_format,
         process_globs,
         start_tracing,
     },
 };
+use regex::Regex;
 use std::{
     io,
-    os::unix::ffi::OsStrExt,
-    path::{
-        Path,
-        PathBuf,
-    },
+    path::PathBuf,
 };
 #[allow(unused_imports)]
 use tracing::{
@@ -67,32 +65,67 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
 
     raw_opts(raw_args, start_trace)?;
 
-    // Yuck!
-    let out_filename = match recomprizz_args.rename
-    {
-        Some(ref v) => &Path::new(v).to_path_buf(),
-        None => &{
-            let mut filename = target.clone();
-            while let Some(file_prefix) = &mut filename.file_stem()
-            {
-                let file_prefix_str_bytes = file_prefix.as_bytes();
-                if let Some(last_byte) = file_prefix_str_bytes.last()
-                {
-                    if last_byte.is_ascii_digit()
-                    {
-                        filename = PathBuf::from(&file_prefix);
-                        break;
-                    }
-                }
-                filename = PathBuf::from(&file_prefix);
-            }
-            filename
-        },
-    };
-
     let file_extension = recomprizz_args.compression.to_extension();
 
-    let out_filename = format!("{}{}", out_filename.display(), file_extension);
+    let out_filename = match recomprizz_args.rename
+    {
+        Some(rename_string) => match recomprizz_args.renamepattern
+        {
+            Some(pattern) =>
+            {
+                info!("Renaming with regex `{}` with pattern `{}`.", rename_string, pattern);
+                let re = Regex::new(&rename_string).map_err(|err| {
+                    error!(?err);
+                    io::Error::other(err)
+                })?;
+                let filename = target.file_name().unwrap_or_default().to_string_lossy();
+                let after = re.replace_all(&filename, pattern);
+                after.to_string()
+            }
+            None =>
+            {
+                info!("Setting hard-coded name: {}", rename_string);
+                rename_string.to_string()
+            }
+        },
+        None =>
+        {
+            let supported_format = is_supported_format(&target).map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?;
+            match supported_format
+            {
+                crate::common::SupportedFormat::Compressed(compression, path_buf) =>
+                {
+                    let path_buf_filename = path_buf.to_string_lossy();
+                    match path_buf_filename.rsplit_once(&compression.to_extension())
+                    {
+                        Some((name, _)) => name.to_string(),
+                        None =>
+                        {
+                            warn!("Not able to remove extension.");
+                            warn!(
+                                "The file might be a supported format but is using a different \
+                                 file extension."
+                            );
+                            warn!(
+                                "Not removing old file extension. This will result to an \
+                                 undesirable rename of the file."
+                            );
+                            path_buf_filename.to_string()
+                        }
+                    }
+                }
+                crate::common::SupportedFormat::Dir(_) =>
+                {
+                    unreachable!("Only files are supported in `recomprizz`.")
+                }
+            }
+        }
+    };
+
+    let out_filename = format!("{}{}", out_filename, file_extension);
 
     let roast_args = RoastArgs {
         target: outpath_for_raw.to_path_buf(),

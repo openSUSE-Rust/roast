@@ -5,8 +5,11 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
+use rayon::prelude::*;
 use std::{
-    fs,
+    fs::{
+        self,
+    },
     io::{
         self,
         Write,
@@ -100,9 +103,9 @@ fn add_path_to_archive<T: Write>(
 /// `super::tarzst`, `super::vanilla` and `super::tarxz` use this function as a
 /// "tar builder" since all of them have a trait bound for trait
 /// `std::io::Write` and have similar parameters.
-pub fn tar_builder<T: Write>(
+pub fn tar_builder<T: Write + std::marker::Send>(
     builder: &mut tar::Builder<T>,
-    target_dir: impl AsRef<Path>,
+    target_dir: &Path,
     archive_files: &[impl AsRef<Path>],
     reproducible: bool,
 ) -> io::Result<()>
@@ -112,19 +115,13 @@ pub fn tar_builder<T: Write>(
     builder.mode(tar::HeaderMode::Deterministic);
     let mut archive_files: Vec<PathBuf> =
         archive_files.iter().map(|p| p.as_ref().to_path_buf()).collect();
-    archive_files.sort();
+    archive_files.par_sort_by(|a, b| a.to_string_lossy().cmp(&b.to_string_lossy()));
     archive_files.iter().try_for_each(|f| {
-        let f = PathBuf::from(f);
+        let f = &Path::new(f);
         debug!(?f);
         if f.exists()
         {
-            // Using walkdir for deterministic ordering of the files
-            for entry in walkdir::WalkDir::new(f).sort_by_file_name()
-            {
-                let entry = entry?;
-                add_path_to_archive(builder, entry.path(), target_dir.as_ref(), reproducible)?;
-            }
-            Ok(())
+            add_path_to_archive(builder, f, target_dir, reproducible)
         }
         else
         {
@@ -152,7 +149,7 @@ pub fn targz(
         .inspect_err(|_| error!(outpath = ?outpath.as_ref(), "Unable to create outtar"))?;
     let encoder = GzEncoder::new(outtar, Compression::default());
     let mut builder = tar::Builder::new(encoder);
-    tar_builder(&mut builder, target_dir, archive_files, reproducible)
+    tar_builder(&mut builder, target_dir.as_ref(), archive_files, reproducible)
 }
 
 /// Produces a Zst compressed tarball e.g. `source.tar.zst` or
@@ -173,7 +170,7 @@ pub fn tarzst(
     enc_builder.multithread(threads)?;
     let encoder = enc_builder.auto_finish();
     let mut builder = tar::Builder::new(encoder);
-    tar_builder(&mut builder, target_dir, archive_files, reproducible)
+    tar_builder(&mut builder, target_dir.as_ref(), archive_files, reproducible)
 }
 
 /// Produces a Xz compressed tarball e.g. `source.tar.xz`.
@@ -198,7 +195,7 @@ pub fn tarxz(
     let enc_builder = MtStreamBuilder::new().preset(6).threads(threads).check(Crc32).encoder()?;
     let encoder = XzEncoder::new_stream(outtar, enc_builder);
     let mut builder = tar::Builder::new(encoder);
-    tar_builder(&mut builder, target_dir, archive_files, reproducible)
+    tar_builder(&mut builder, target_dir.as_ref(), archive_files, reproducible)
 }
 
 /// Produces a Bz compressed tarball e.g. `source.tar.bz`.
@@ -217,7 +214,7 @@ pub fn tarbz2(
         .inspect_err(|_| error!(outpath = ?outpath.as_ref(), "Unable to create outtar"))?;
     let encoder = BzEncoder::new(outtar, Compression::best());
     let mut builder = tar::Builder::new(encoder);
-    tar_builder(&mut builder, target_dir, archive_files, reproducible)
+    tar_builder(&mut builder, target_dir.as_ref(), archive_files, reproducible)
 }
 
 /// Produces a uncompressed tarball e.g. `source.tar`.
@@ -231,5 +228,5 @@ pub fn vanilla(
     let outtar = fs::File::create(outpath.as_ref())
         .inspect_err(|_| error!(outpath = ?outpath.as_ref(), "Unable to create outtar"))?;
     let mut builder = tar::Builder::new(outtar);
-    tar_builder(&mut builder, target_dir, archive_files, reproducible)
+    tar_builder(&mut builder, target_dir.as_ref(), archive_files, reproducible)
 }

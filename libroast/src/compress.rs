@@ -9,7 +9,6 @@ use rayon::prelude::*;
 use std::{
     fs::{
         self,
-        DirEntry,
     },
     io::{
         self,
@@ -116,19 +115,7 @@ pub fn tar_builder<T: Write + std::marker::Send>(
     builder.mode(tar::HeaderMode::Deterministic);
     let mut archive_files: Vec<PathBuf> =
         archive_files.iter().map(|p| p.as_ref().to_path_buf()).collect();
-    archive_files.par_sort_unstable_by(|a, b| {
-        a.file_name().unwrap_or_default().cmp(b.file_name().unwrap_or_default())
-    });
-    archive_files.par_iter().try_for_each(|path_to_file_or_directory| -> io::Result<()> {
-        debug!(?path_to_file_or_directory);
-        if path_to_file_or_directory.is_dir()
-        {
-            let mut directory_contents: Vec<DirEntry> =
-                path_to_file_or_directory.read_dir()?.flatten().collect();
-            directory_contents.par_sort_unstable_by(|a, b| a.file_name().cmp(&b.file_name()));
-        }
-        Ok(())
-    })?;
+    archive_files.par_sort_by(|a, b| a.to_string_lossy().cmp(&b.to_string_lossy()));
     archive_files.iter().try_for_each(|f| {
         let f = &Path::new(f);
         debug!(?f);

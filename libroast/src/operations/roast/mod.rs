@@ -38,7 +38,6 @@ use tracing::{
     trace,
     warn,
 };
-use walkdir::WalkDir;
 
 /// This function helps process a list of additional paths separated by commas.
 pub(crate) fn get_additional_paths(adtnl_path: &str, root: &Path) -> (PathBuf, PathBuf)
@@ -305,13 +304,13 @@ pub fn roast_opts(roast_args: &cli::RoastArgs, start_trace: bool) -> io::Result<
         &exclude_canonicalized_paths,
     )?;
 
-    let archive_files: Vec<PathBuf> = WalkDir::new(workdir)
-        .into_iter()
+    let archive_files: Vec<PathBuf> = workdir
+        .read_dir()?
         .par_bridge()
         .flatten()
         .map(|f| {
             debug!(?f);
-            f.into_path()
+            f.path()
         })
         .filter(|p| p.is_file())
         .collect();

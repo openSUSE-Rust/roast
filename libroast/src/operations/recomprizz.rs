@@ -109,6 +109,10 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
                                 "The file might be a supported format but is using a different \
                                  file extension."
                             );
+                            warn!(
+                                "Not removing old file extension. This will result to an \
+                                 undesirable rename of the file."
+                            );
                             path_buf_filename.to_string()
                         }
                     }

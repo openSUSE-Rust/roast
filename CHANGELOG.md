@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.0.0] - 2025-06-13
+
+### Continuous Integrations
+
+- Switch to leap image [2f0db72](https://codeberg.org/Rusty-Geckos/roast/commit/2f0db72888fa153c0d1f94c85ea5fcccb2ca1554)
+
+### Documentation
+
+- Update recomprizz.service file to match new features [7fb14d6](https://codeberg.org/Rusty-Geckos/roast/commit/7fb14d63abec47be50202e7bc9bbdbf490d267cc)
+
+### Improvements
+
+- Remove any usage of walkdir [6c3e4fe](https://codeberg.org/Rusty-Geckos/roast/commit/6c3e4fee0f78fb7c0f68971f61cc1498ad820913)
+
+### Miscellaneous Tasks
+
+- Make the warning clear if renaming fails because of wrong file extension [551fdba](https://codeberg.org/Rusty-Geckos/roast/commit/551fdbaba6bcc7835bdefce6189a69fb89686452)
+
+### Refactor
+
+- `renamepattern` should require `rename` [5b077d1](https://codeberg.org/Rusty-Geckos/roast/commit/5b077d1c23e4bd69d42568c182f7ba7df7a8df55)
+- Rework recomprizz renaming logic [85a8be0](https://codeberg.org/Rusty-Geckos/roast/commit/85a8be0964a41e899052380a9b2831a4a5f9adb0)
+- Rework recomprizz args fields to introduce renaming with regex. [8f85c4c](https://codeberg.org/Rusty-Geckos/roast/commit/8f85c4c107f9263e7964cba0d9c2121f1f8d0563)
+
+### Removed
+
+- Removal of walkdir crate since we are using standard library's fs module only. [9df3842](https://codeberg.org/Rusty-Geckos/roast/commit/9df38426a0b2816b8dc7b88c5f4cddf118233679)
+
 ## [7.2.4] - 2025-06-08
 
 ### Dependencies
@@ -10,6 +38,7 @@ All notable changes to this project will be documented in this file.
 
 ### Miscellaneous Tasks
 
+- Bump to v7.2.4 [a7ab846](https://codeberg.org/Rusty-Geckos/roast/commit/a7ab8468466c6ebf15126bfc39e813c014a2aa17)
 - Add newline to the end of the file if file was not empty before. [1b6fbf0](https://codeberg.org/Rusty-Geckos/roast/commit/1b6fbf01202fb8175fe456f9e6cce0d65c5db599)
 - Add newline at the end of the dot changes file [9509d75](https://codeberg.org/Rusty-Geckos/roast/commit/9509d75e75dd791873a8ec99e872d022f55779f3)
 - Change short flag to U [ad486a9](https://codeberg.org/Rusty-Geckos/roast/commit/ad486a98245fb2f879991e7e424260950c7ae614)

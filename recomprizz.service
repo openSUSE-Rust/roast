@@ -29,7 +29,10 @@
       <allowedvalues>not</allowedvalues>
    </parameter>
    <parameter name="rename">
-      <description>Use this flag if you want a new filename to use ignoring the new file extension. Omitting this flag will just fallback to basename.</description>
+      <description>Pass a string or regex value into this flag. This will be used with the `--renamepattern` flag. If no value is provided to `--renamepattern`, this is assumed to be a hard-coded name.</description>
+   </parameter>
+   <parameter name="renamepattern">
+      <description>Pass a replacement pattern using the capture groups into this flag. This will be used with the `--rename` flag.</description>
    </parameter>
    <parameter name="reproducible">
       <description>Allow reproducibility for Reproducible Builds. Default: false</description>

@@ -93,7 +93,7 @@ the output file's filename from the project name and the revision (i.e. commit h
 > Do remember that `raw`, `roast`, and `recomprizz` can be used for OBS even without the feature flag.
 
 If `roast-cli` was compiled with `obs` feature, you can *rewrite* the "revision" part
-of the filename. Since versions in an specfile should be in this format, `a.b.c`, where
+of the filename. Since versions in a specfile should be in this format, `a.b.c`, where
 `a` must be a numeric string while `b` and `c` can be alphanumeric, a revision such
 as a tag with names like `v7.0.0` is not considered a valid version string, despite
 that it obviously indicates a version.
@@ -132,6 +132,25 @@ the filename. This will only rename the filename excluding the file extension.
 
 > [!NOTE]
 > One can use `outfile` flag to hard code the FULL filename.
+
+#### Changelog generation
+
+Optionally, you can pass a value to `changesgenerate`, either `true` or `false`.
+
+If set to `true`, one must provide a value to `changesauthor`. This is to create
+a timestamp + author as a changelog header. This contains a record of who generated
+the tarball. There is an optional `changesemail` flag that you can use to pass
+an email address as well.
+
+Just below the changelog header are the list of commit summaries from the git
+repository. The list starts from the target revision until the most recent
+tag. If there is no tag at all, it starts from the target revision until
+the first initial commit.
+
+The resulting changelog filename is based on the resulting filename of the
+generated tarball e.g. `source.tar.zst` will have a changelog filename of
+`source.changes`. You can hard-code a full filename by passing a value to
+`changesoutfile`.
 
 ## Raw - How it works
 

@@ -84,6 +84,56 @@ As of now, the filename MUST INCLUDE the extension. We might want to change this
 `--outfile` has a type `Option<PathBuf>`. Hence, if not provided, it will try to base
 the output file's filename from the project name and the revision (i.e. commit hash or tag).
 
+### With OBS Feature enabled
+
+> [!NOTE]
+> This feature is to be used only for [OBS](https://openbuildservice.org/) and only affects
+> the `roast_scm` library and binary.
+>
+> Do remember that `raw`, `roast`, and `recomprizz` can be used for OBS even without the feature flag.
+
+If `roast-cli` was compiled with `obs` feature, you can *rewrite* the
+"revision" part of the filename. Since versions in an specfile should be
+in this format, `a.b.c`, where `a` must be a numeric string while `b` and
+`c` can be alphanumeric, a revision such as a tag with names like `v7.0.0`
+is not considered a valid version string, despite that it obviously indicates
+a version.
+
+To make it a valid version string for a specfile, the `versionrewriteregex`
+must have a value like `^v?(.*)` (cause sometimes, the developer forgots to add a letter "v").
+Then rearrange the string based on the regex by indicating the capture groups. You can pass
+this pattern of rearrangement to replace the old string value to `versionrewritepattern`.
+The value for `versionrewritepattern` is "$1".
+
+> [!IMPORTANT]
+> This regex replacement format for the `--renamepattern` is based on the
+> [regex crate](https://docs.rs/crate/regex/latest)
+> [example](https://docs.rs/regex/latest/regex/struct.Regex.html#example-10).
+>
+> Capture groups are denoted by `$` and a number based on the its position
+> from other capture groups starting from the left-most side of the string.
+
+Since `roast_scm` is intended to be an OBS Service,
+an example `_service` file for this scenario will look like this.
+
+```xml
+<services>
+  <service name="roast_scm" mode="manual">
+    <param name="src">https://github.com/openSUSE-Rust/obs-service-cargo</param>
+    <param name="versionrewriteregex">^v?(.*)</param>
+    <param name="versionrewritepattern">${1}</param>
+    <param name="revision">v7.0.0</param>
+  </service>
+</services>
+```
+
+In case that it is impossible to create a valid version, you can hard-code it
+using the `set-version` flag. There is also a `set-name` flag to hard-code
+the filename. This will only rename the filename excluding the file extension.
+
+> [!NOTE]
+> One can use `outfile` flag to hard code the FULL filename.
+
 ## Raw - How it works
 
 `raw` is an extractor utility. It detects the mime-type instead of basing it from a file extension
@@ -95,18 +145,61 @@ before it extracts the tarball archive.
 target tarball before it creates a new tarball of a different compression option e.g. `source.tar.gz`
 to `source.tar.zst`. The renaming scheme is too dumb and simple though, and not perfect—see note below.
 
-> [!NOTE]
-> When using `recomprizz`, files with filenames like `package-1.2.3.tar.gz` will have
-> the number parts of their names preserved i.e. `package-1.2.3.tar.gz` -> `package-1.2.3.tar.zst`.
-> However, filenames with letters after the numbers will be removed especially for version part
-> of the filenames are tagged as `alpha` or `beta`. For example, `package-1.2.3.alpha.tar.gz` will
-> turn into `package-1.2.3.tar.zst`. This is a limitation with the renaming logic. The solution is
-> to use the `-R` or `--rename` flag to hardcode the new name. So a command like
-> ```
-> recomprizz -t package-1.2.3.alpha.tar.gz -R package-1.2.3.alpha
-> ```
-> should fix the issue. **However, I think the better option is to just hardcode it, regardless**.
+You might want to _rename_ the resulting output file with `recomprizz`. There are two flags you should
+know:
+- `--rename`
+- `--renamepattern`
+
+The `--rename` flag can be used to either hard-code a filename or use a valid regex which can be used
+for `--renamepattern`.
+
+The `--renamepattern` should be a string that contains the *capture groups* based on the regex you
+passed to `--rename`.
+
+For example, you want to rename `roast.tar.zst` to `raw.tar.zst`, then
+you can just hard-code it by just passing "raw" to `--rename`. In another
+example, you want to rename `source.tar.zst` to `marvelous-source.tar.zst`,
+then you must first pass a valid regex to `--rename` like `(.*).tar.zst`,
+and the `--renamepattern` should be `marvelous-${1}.tar.zst`. Of course,
+since you are going to use some form of shell like bash to run the commands,
+you must escape `$` like so -> `\${1}`.
+
+> [!IMPORTANT]
+> This regex replacement format for the `--renamepattern` is based on the
+> [regex crate](https://docs.rs/crate/regex/latest)
+> [example](https://docs.rs/regex/latest/regex/struct.Regex.html#example-10).
 >
+> Capture groups are denoted by `$` and a number based on the its position
+> from other capture groups starting from the left-most side of the string.
+
+The difference between hard-coded vs regex is that when hard-coded, you just
+need to pass a desired name EXCLUDING the file extensions. However, if the
+target file has no file extension, the recompressed output file will have
+a file extension based on the compression option which defaults to `.tar.zst`.
+
+If `--rename` has a regex, then `--renamepattern` should have a value. **The
+constructed regex should encompass the whole filename** e.g. a filename of `vendor.tar.zst`
+with a `--rename` regex value of `(.*)` and `--compression` of "gz" will have an output
+filename of `vendor.tar.zst.tar.gz`. Hence, be careful on how you construct your regex.
+
+
+> [!WARNING]
+> If you accidentally pass a string with no regex to `--rename` flag
+> and then pass a string as well with `--renamepattern`, the rename might result
+> in an undesirable output. That is NOT A BUG.
+
+> [!IMPORTANT]
+> Since `recomprizz` can be used without the `--rename` flag, filenames that
+> do not follow the usual file extensions with their supported formats
+> will be forced to retain its old filename but with a new file extension
+> based on the value of the compression option e.g.
+> a target file `vendor.tar.wrong.ext` will have an output file
+> `vendor.tar.wrong.ext.tar.gz`. A zstd compressed tarball with filename
+> `vendor.tar.gz` that is recompressed as a gz file will have an output filename
+> of `vendor.tar.gz.tar.gz`.
+>
+> Files with the correct file extension and mime-type will have a desired
+> output filename.
 
 # Service files are in the following with descriptions.
 

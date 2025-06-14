@@ -92,12 +92,11 @@ the output file's filename from the project name and the revision (i.e. commit h
 >
 > Do remember that `raw`, `roast`, and `recomprizz` can be used for OBS even without the feature flag.
 
-If `roast-cli` was compiled with `obs` feature, you can *rewrite* the
-"revision" part of the filename. Since versions in an specfile should be
-in this format, `a.b.c`, where `a` must be a numeric string while `b` and
-`c` can be alphanumeric, a revision such as a tag with names like `v7.0.0`
-is not considered a valid version string, despite that it obviously indicates
-a version.
+If `roast-cli` was compiled with `obs` feature, you can *rewrite* the "revision" part
+of the filename. Since versions in an specfile should be in this format, `a.b.c`, where
+`a` must be a numeric string while `b` and `c` can be alphanumeric, a revision such
+as a tag with names like `v7.0.0` is not considered a valid version string, despite
+that it obviously indicates a version.
 
 To make it a valid version string for a specfile, the `versionrewriteregex`
 must have a value like `^v?(.*)` (cause sometimes, the developer forgots to add a letter "v").
@@ -106,7 +105,7 @@ this pattern of rearrangement to replace the old string value to `versionrewrite
 The value for `versionrewritepattern` is "$1".
 
 > [!IMPORTANT]
-> This regex replacement format for the `--renamepattern` is based on the
+> This regex replacement format for the `--versionrewritepattern` is based on the
 > [regex crate](https://docs.rs/crate/regex/latest)
 > [example](https://docs.rs/regex/latest/regex/struct.Regex.html#example-10).
 >

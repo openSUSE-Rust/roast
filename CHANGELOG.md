@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.1.1] - 2025-06-15
+
+### Documentation
+
+- Renaming scheme is now "better" [abe7353](https://codeberg.org/Rusty-Geckos/roast/commit/abe735342639007f70634564e4978f654f9c4350)
+- The `.changes` filename is based on the filename without the version part. [91a6658](https://codeberg.org/Rusty-Geckos/roast/commit/91a66583a4e4a1f74b15f5e339aa4427c93f4ef1)
+- Clarify what the header is for [4db561a](https://codeberg.org/Rusty-Geckos/roast/commit/4db561a5bd54e61527a90411a908e9aa84c54bb3)
+- Fix grammar here [03d2d42](https://codeberg.org/Rusty-Geckos/roast/commit/03d2d426faf87f49c0b214597add3ea5224f5ae9)
+- Update README [d31b41a](https://codeberg.org/Rusty-Geckos/roast/commit/d31b41a541a5c323d5faf67dde82c5b79d4d68de)
+- Fix README.md. `obs` feature flag only updates the version in the specfile. [cd865b8](https://codeberg.org/Rusty-Geckos/roast/commit/cd865b858a52cc3575a449613c2864cfaef469b5)
+
 ## [8.1.0] - 2025-06-15
 
 ### Bug Fixes
@@ -26,6 +37,10 @@ All notable changes to this project will be documented in this file.
 ### Improvements
 
 - Feature obs will just call `set_version_in_specfile`. [2cee767](https://codeberg.org/Rusty-Geckos/roast/commit/2cee7671bc5fd132c4ed31fd1df5ce351d42c54e)
+
+### Miscellaneous Tasks
+
+- Bump to v8.1.0 [8a7e57f](https://codeberg.org/Rusty-Geckos/roast/commit/8a7e57fab8e2350374ff0f3c19b5b7630fa91628)
 
 ### Other
 

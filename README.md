@@ -78,13 +78,26 @@ the extension should be based on the compression option.
 ## Roast SCM - How it works
 
 `roast_scm` is an extended utility of `roast`. Its purpose is to create tarballs from a
-remote repository. The behaviour is similar to `roast` but only at some point.
+remote repository. It uses `roast` under the hood.
+
+### Naming and Versioning
+
+> [!NOTE]
+> The naming mechanism follows a certain logic:
+> - get the last segment of the git URL e.g. <https://codeberg.org/Rusty-Geckos/roast.git>'s last segment is "roast". `.git` will be removed.
+> - get the recent git tag if there is, otherwise, get the number of commits since revision. Format it to follow <https://en.opensuse.org/openSUSE:Package_versioning_guidelines>.
+>
+> **The explanation is done in reverse as you read further below so you can easily grasp the logic**.
 
 You can *rewrite* the "revision" part of the filename. Since versions in
 a specfile should be in this format, `a.b.c`, where `a` must be a numeric
 string while `b` and `c` can be alphanumeric, a revision such as a tag with
 names like `v7.0.0` is not considered a valid version string, despite that
 it obviously indicates a version.
+
+> A **specfile or RPM specfile** is a packaging build "recipe", specifically tailored for RPM-based
+> distributions such as openSUSE, and Fedora. It contains metadata and instructions of how
+> a software is packaged into the distribution.
 
 To make it a valid version string for a specfile, the `versionrewriteregex`
 must have a value like `^v?(.*)` (cause sometimes, the developer forgots to add a letter "v").
@@ -100,8 +113,8 @@ The value for `versionrewritepattern` is "$1".
 > Capture groups are denoted by `$` and a number based on their position
 > from other capture groups starting from the left-most side of the string.
 
-Since `roast_scm` is intended to be an OBS Service,
-an example `_service` file for this scenario will look like this.
+Since `roast_scm` is intended to be an OBS Service, an example `_service` file for
+this scenario will look like this.
 
 ```xml
 <services>
@@ -114,14 +127,35 @@ an example `_service` file for this scenario will look like this.
 </services>
 ```
 
+> A service file is another kind of "recipe". It contains a set of services with options configured in XML format.
+> Each service has parameters to pass values that change how the command behaves.
+
 In case that it is impossible to create a valid version, you can hard-code it
 using the `set-version` flag. There is also a `set-name` flag to hard-code
 the filename. This will only rename the filename excluding the file extension.
+The resulting hard-coded name and version will follow the format like this:
+`<set-name>-<set-version>.tar.gz`, without the angled brackets.
+
+If the set-name value is missing, then it will try to set the name from the **last
+segment** of the Git URL. For example, the URL <https://codeberg.org/Rusty-Geckos/roast>
+and <https://codeberg.org/Rusty-Geckos/roast.git> will both have a "roast" name.
+
+If the set-version value is missing, it will try to either create a
+version from a recent git tag. Otherwise, it will be just the number of
+commits since revision with a format `0+git<N>` where `N` is the number of
+commits, and without the angled brackets. The versioning format follows the
+<https://en.opensuse.org/openSUSE:Package_versioning_guidelines>.
 
 > [!NOTE]
 > One can use `outfile` flag to hard code the FULL filename.
 
-#### Changelog generation
+> [!WARNING]
+> There are some projects that do not follow the convention that git tags
+> are for versions e.g. [wezterm](https://github.com/wezterm/wezterm). If that's
+> the case, your best option for setting the version in the output tarball's filename
+> is to hard-code the version.
+
+### Changelog generation
 
 Optionally, you can pass a value to `changesgenerate`, either `true` or `false`.
 

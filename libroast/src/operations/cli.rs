@@ -252,7 +252,7 @@ pub struct RoastScmArgs
         alias = "caof",
         help = "Whether to specify a path to the changes file. Otherwise, it is the current \
                 directory and the filename is the same filename prefix of the generated tarball \
-                e.g. `source.tar.xz` will have `source.changes` file. If file exists, prepend the \
+                e.g. `source.tar.xz` will have `source.changes` file. If file exists, it prepends the \
                 newest changes to the top-most part of the text file."
     )]
     pub changesoutfile: Option<PathBuf>,
@@ -363,7 +363,7 @@ pub struct RoastScmArgs
         alias = "caof",
         help = "Whether to specify a path to the changes file. Otherwise, it is the current \
                 directory and the filename is the same filename prefix of the generated tarball \
-                e.g. `source.tar.xz` will have `source.changes` file. If file exists, prepend the \
+                e.g. `source.tar.xz` will have `source.changes` file. If file exists, it prepends the \
                 newest changes to the top-most part of the text file."
     )]
     pub changesoutfile: Option<PathBuf>,

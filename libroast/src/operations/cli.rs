@@ -236,16 +236,20 @@ pub struct RoastScmArgs
     #[arg(
         long,
         short = 'A',
-        requires_if("changesgenerate", "true"),
+        required_if_eq("changesgenerate", "true"),
         help = "Author to include during the changelog generation."
     )]
     pub changesauthor: Option<String>,
-    #[arg(long, short = 'e', help = "Email of author to include during the changelog generation.")]
+    #[arg(
+        long,
+        requires = "changesauthor",
+        short = 'e',
+        help = "Email of author to include during the changelog generation."
+    )]
     pub changesemail: Option<String>,
     #[arg(
         long,
         alias = "caof",
-        requires_if("changesgenerate", "true"),
         help = "Whether to specify a path to the changes file. Otherwise, it is the current \
                 directory and the filename is the same filename prefix of the generated tarball \
                 e.g. `source.tar.xz` will have `source.changes` file. If file exists, append the \
@@ -343,16 +347,20 @@ pub struct RoastScmArgs
     #[arg(
         long,
         short = 'A',
-        requires_if("changesgenerate", "true"),
+        required_if_eq("changesgenerate", "true"),
         help = "Author to include during the changelog generation."
     )]
     pub changesauthor: Option<String>,
-    #[arg(long, short = 'e', help = "Email of author to include during the changelog generation.")]
+    #[arg(
+        long,
+        requires = "changesauthor",
+        short = 'e',
+        help = "Email of author to include during the changelog generation."
+    )]
     pub changesemail: Option<String>,
     #[arg(
         long,
         alias = "caof",
-        requires_if("changesgenerate", "true"),
         help = "Whether to specify a path to the changes file. Otherwise, it is the current \
                 directory and the filename is the same filename prefix of the generated tarball \
                 e.g. `source.tar.xz` will have `source.changes` file. If file exists, append the \

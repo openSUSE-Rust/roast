@@ -226,11 +226,8 @@ filename of `vendor.tar.zst.tar.gz`. Hence, be careful on how you construct your
 - [roast.service](./roast.service)
 
 > [!NOTE]
-> The options might differ in `roast_scm.service` since those options only exist if the `obs` feature was enabled. These flags or options are
-> - `set-name`
-> - `set-version`
-> - `versionrewriteregex`
-> - `versionrewritepattern`
+> The behaviours might differ in `roast_scm.service` if roast was compiled with `obs` feature. This additional feature flag
+> will update the version from a target specfile.
 
 It maps when you run the following commands
 - `raw -h`

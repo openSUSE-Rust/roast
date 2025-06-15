@@ -100,7 +100,7 @@ it obviously indicates a version.
 > a software is packaged into the distribution.
 
 To make it a valid version string for a specfile, the `versionrewriteregex`
-must have a value like `^v?(.*)` (cause sometimes, the developer forgots to add a letter "v").
+must have a value like `^v?(.*)` (cause sometimes, the developer forgets to add a letter "v").
 Then rearrange the string based on the regex by indicating the capture groups. You can pass
 this pattern of rearrangement to replace the old string value to `versionrewritepattern`.
 The value for `versionrewritepattern` is "$1".

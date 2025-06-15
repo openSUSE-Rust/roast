@@ -159,23 +159,19 @@ commits, and without the angled brackets. The versioning format follows the
 
 Optionally, you can pass a value to `changesgenerate`, either `true` or `false`.
 
-If set to `true`, one must provide a value to `changesauthor`. This is to create
-a timestamp + author as a changelog header. This contains a record of who generated
-the tarball. There is an optional `changesemail` flag that you can use to pass
-an email address as well.
+If set to `true`, one must provide a value to `changesauthor`. This is to create a timestamp + author as a changelog
+header. This contains a record of who recently modified the package sources. There is an optional `changesemail`
+flag that you can use to pass an email address as well.
 
-Just below the changelog header are the list of commit summaries from the git
-repository. The list starts from the target revision until the most recent
-tag. If there is no tag at all, it starts from the target revision until
+Just below the changelog header are the list of commit summaries from the git repository. The list starts from
+the target revision until the most recent tag. If there is no tag at all, it starts from the target revision until
 the first initial commit.
 
-The resulting changelog filename is based on the resulting filename of the
-generated tarball e.g. `source.tar.zst` will have a changelog filename of
-`source.changes`. You can hard-code a full filename by passing a value to
+The resulting changelog filename is based on the resulting filename of the generated tarball e.g. `source.tar.zst`
+will have a changelog filename of `source.changes`. You can hard-code a full filename by passing a value to
 `changesoutfile`.
 
-If the destination `.changes` file exists, the new changelog will be prepended
-with the old contents of the file.
+If the destination `.changes` file exists, the new changelog will be prepended with the old contents of the file.
 
 ## Raw - How it works
 

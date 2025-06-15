@@ -167,7 +167,7 @@ Just below the changelog header are the list of commit summaries from the git re
 the target revision until the most recent tag. If there is no tag at all, it starts from the target revision until
 the first initial commit.
 
-The resulting changelog filename is based on the resulting filename of the generated tarball e.g. `source.tar.zst`
+The resulting changelog filename is based on the resulting filename EXCLUDING THE VERSION part of the generated tarball e.g. `source-1.0.1.tar.zst`
 will have a changelog filename of `source.changes`. You can hard-code a full filename by passing a value to
 `changesoutfile`.
 

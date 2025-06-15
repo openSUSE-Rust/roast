@@ -231,12 +231,12 @@ pub struct RecomprizzArgs
 )]
 pub struct RoastScmArgs
 {
-    #[arg(long, short = 'C', action = clap::ArgAction::Set, default_value_t = false, help = "Whether to generate or update a changelog file or not.")]
+    #[arg(long, requires_if("true", "changesauthor"), short = 'C', action = clap::ArgAction::Set, default_value_t = false, help = "Whether to generate or update a changelog file or not.")]
     pub changesgenerate: bool,
     #[arg(
         long,
         short = 'A',
-        required_if_eq("changesgenerate", "true"),
+        requires = "changesgenerate",
         help = "Author to include during the changelog generation."
     )]
     pub changesauthor: Option<String>,
@@ -342,12 +342,12 @@ pub struct RoastScmArgs
 )]
 pub struct RoastScmArgs
 {
-    #[arg(long, short = 'C', action = clap::ArgAction::Set, default_value_t = false, help = "Whether to generate or update a changelog file or not.")]
+    #[arg(long, requires_if("true", "changesauthor"), short = 'C', action = clap::ArgAction::Set, default_value_t = false, help = "Whether to generate or update a changelog file or not.")]
     pub changesgenerate: bool,
     #[arg(
         long,
         short = 'A',
-        required_if_eq("changesgenerate", "true"),
+        requires = "changesgenerate",
         help = "Author to include during the changelog generation."
     )]
     pub changesauthor: Option<String>,

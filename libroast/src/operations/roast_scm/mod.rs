@@ -892,7 +892,6 @@ fn generate_changelog_file(
     Ok(())
 }
 
-#[cfg(feature = "obs")]
 fn set_version_in_specfile(
     hard_coded_version: &Option<String>,
     from_formatted_revision: &str,
@@ -1033,13 +1032,6 @@ pub fn roast_scm_opts(
     let final_revision_format =
         rewrite_version_or_revision_from_changelog_details(&changelog_details, roast_scm_args)?;
 
-    #[cfg(not(feature = "obs"))]
-    let filename_prefix = process_filename_from_url_and_revision(
-        &roast_scm_args.git_repository_url,
-        &final_revision_format,
-    )?;
-
-    #[cfg(feature = "obs")]
     let filename_prefix = if let Some(set_name) = &roast_scm_args.set_name
     {
         if let Some(set_version) = &roast_scm_args.set_version
@@ -1098,8 +1090,10 @@ pub fn roast_scm_opts(
         .map(|_| {
             generate_changelog_file(roast_scm_args, &changelog_details, &final_revision_format)?;
 
-            #[cfg(feature = "obs")]
-            set_version_in_specfile(&roast_scm_args.set_version, &final_revision_format)?;
+            if cfg!(feature = "obs")
+            {
+                set_version_in_specfile(&roast_scm_args.set_version, &final_revision_format)?;
+            }
 
             if !roast_scm_args.is_temporary
             {

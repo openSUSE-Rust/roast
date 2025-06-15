@@ -19,7 +19,7 @@
    <parameter name="changesoutfile">
       <description> Whether to specify a path to the changes file. Otherwise, it is the current directory and the
       filename is the same filename prefix of the generated tarball e.g. `source.tar.xz` will have `source.changes`
-      file. If file exists, append the newest changes to the top-most part of the text file.</description>
+      file. If file exists, prepend the newest changes to the top-most part of the text file.</description>
    </parameter>
    <parameter name="set-version">
       <description>Whether to hard code the version or not. Set it to hard code one, otherwise, it will use the generated version internally.</description>

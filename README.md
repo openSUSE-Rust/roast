@@ -80,10 +80,6 @@ the extension should be based on the compression option.
 `roast_scm` is an extended utility of `roast`. Its purpose is to create tarballs from a
 remote repository. The behaviour is similar to `roast` but only at some point.
 
-As of now, the filename MUST INCLUDE the extension. We might want to change this behaviour since
-`--outfile` has a type `Option<PathBuf>`. Hence, if not provided, it will try to base
-the output file's filename from the project name and the revision (i.e. commit hash or tag).
-
 ### With OBS Feature enabled
 
 > [!NOTE]
@@ -109,7 +105,7 @@ The value for `versionrewritepattern` is "$1".
 > [regex crate](https://docs.rs/crate/regex/latest)
 > [example](https://docs.rs/regex/latest/regex/struct.Regex.html#example-10).
 >
-> Capture groups are denoted by `$` and a number based on the its position
+> Capture groups are denoted by `$` and a number based on their position
 > from other capture groups starting from the left-most side of the string.
 
 Since `roast_scm` is intended to be an OBS Service,
@@ -152,6 +148,9 @@ generated tarball e.g. `source.tar.zst` will have a changelog filename of
 `source.changes`. You can hard-code a full filename by passing a value to
 `changesoutfile`.
 
+If the destination `.changes` file exists, the new changelog will be prepended
+with the old contents of the file.
+
 ## Raw - How it works
 
 `raw` is an extractor utility. It detects the mime-type instead of basing it from a file extension
@@ -187,7 +186,7 @@ you must escape `$` like so -> `\${1}`.
 > [regex crate](https://docs.rs/crate/regex/latest)
 > [example](https://docs.rs/regex/latest/regex/struct.Regex.html#example-10).
 >
-> Capture groups are denoted by `$` and a number based on the its position
+> Capture groups are denoted by `$` and a number based on their position
 > from other capture groups starting from the left-most side of the string.
 
 The difference between hard-coded vs regex is that when hard-coded, you just
@@ -227,7 +226,11 @@ filename of `vendor.tar.zst.tar.gz`. Hence, be careful on how you construct your
 - [roast.service](./roast.service)
 
 > [!NOTE]
-> The options will differ `roast_scm.service` in the service file since those options only exist if the `obs` feature was enabled.
+> The options might differ in `roast_scm.service` since those options only exist if the `obs` feature was enabled. These flags or options are
+> - `set-name`
+> - `set-version`
+> - `versionrewriteregex`
+> - `versionrewritepattern`
 
 It maps when you run the following commands
 - `raw -h`

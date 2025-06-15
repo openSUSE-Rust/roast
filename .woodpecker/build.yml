@@ -24,6 +24,6 @@ steps:
       - cargo +nightly fmt -- --check
       - cargo clippy --tests
       - cargo test --release -- --test-threads=1
-      - cargo test -F obs --test obs_scm --release -- --test-threads=1
+      - cargo test -F obs --test obs_scm --release -- --test-threads=1  # Tests are separated here because apparently, envs are shared between threads.
 
 runs_on: [ success, failure ]

@@ -182,7 +182,7 @@ before it extracts the tarball archive.
 
 `recomprizz` is a recompression utility. It utilises `roast` and `raw` under the hood. It extracts the
 target tarball before it creates a new tarball of a different compression option e.g. `source.tar.gz`
-to `source.tar.zst`. The renaming scheme is too dumb and simple though, and not perfect—see note below.
+to `source.tar.zst`.
 
 You might want to _rename_ the resulting output file with `recomprizz`. There are two flags you should
 know:

@@ -80,19 +80,11 @@ the extension should be based on the compression option.
 `roast_scm` is an extended utility of `roast`. Its purpose is to create tarballs from a
 remote repository. The behaviour is similar to `roast` but only at some point.
 
-### With OBS Feature enabled
-
-> [!NOTE]
-> This feature is to be used only for [OBS](https://openbuildservice.org/) and only affects
-> the `roast_scm` library and binary.
->
-> Do remember that `raw`, `roast`, and `recomprizz` can be used for OBS even without the feature flag.
-
-If `roast-cli` was compiled with `obs` feature, you can *rewrite* the "revision" part
-of the filename. Since versions in a specfile should be in this format, `a.b.c`, where
-`a` must be a numeric string while `b` and `c` can be alphanumeric, a revision such
-as a tag with names like `v7.0.0` is not considered a valid version string, despite
-that it obviously indicates a version.
+You can *rewrite* the "revision" part of the filename. Since versions in
+a specfile should be in this format, `a.b.c`, where `a` must be a numeric
+string while `b` and `c` can be alphanumeric, a revision such as a tag with
+names like `v7.0.0` is not considered a valid version string, despite that
+it obviously indicates a version.
 
 To make it a valid version string for a specfile, the `versionrewriteregex`
 must have a value like `^v?(.*)` (cause sometimes, the developer forgots to add a letter "v").

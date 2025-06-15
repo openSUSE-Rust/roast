@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.1.0] - 2025-06-15
+
+### Bug Fixes
+
+- More clap fix workarounds. `changesauthor` is required if `changesgenerate` is set to true. [ef52077](https://codeberg.org/Rusty-Geckos/roast/commit/ef5207761a92349942303e04cc7dd8964abb0733)
+- "prepend" -> "it prepends" [43e746d](https://codeberg.org/Rusty-Geckos/roast/commit/43e746dcbde4981f7d3d25727ae13b02fc0033d7)
+- Word should be prepend and not append. [4545613](https://codeberg.org/Rusty-Geckos/roast/commit/4545613dcbc2585f7a17f96364dfc3b681a2fc4c)
+- `requires_if` to `required_if_eq` [314d477](https://codeberg.org/Rusty-Geckos/roast/commit/314d4775aed252b92057fca3ed64a41ac4e092d2)
+
+### Continuous Integrations
+
+- Add a note for why tests are separated. [71b8c53](https://codeberg.org/Rusty-Geckos/roast/commit/71b8c533a0b6379a3608e74c1866de720c576657)
+
+### Documentation
+
+- Update README.md to reflect new behaviour [26fd6a7](https://codeberg.org/Rusty-Geckos/roast/commit/26fd6a750d9f406bd93df4190835804380b0b81e)
+- Fix typos and inconsistencies in README.md [9642839](https://codeberg.org/Rusty-Geckos/roast/commit/96428394f127b7c2077337d2e2cb05f151e8a6c4)
+- Update README [4d81469](https://codeberg.org/Rusty-Geckos/roast/commit/4d81469104009537c63d6e0243858f920eb06555)
+- Update README.md [27c27c6](https://codeberg.org/Rusty-Geckos/roast/commit/27c27c661464515acab768c389c55879256ae870)
+- Update README.md [8d08ddb](https://codeberg.org/Rusty-Geckos/roast/commit/8d08ddbbe87e86101f6cfe9061435e853f3299c2)
+
+### Improvements
+
+- Feature obs will just call `set_version_in_specfile`. [2cee767](https://codeberg.org/Rusty-Geckos/roast/commit/2cee7671bc5fd132c4ed31fd1df5ce351d42c54e)
+
+### Other
+
+- Run `cargo +nightly fmt` [75fe51a](https://codeberg.org/Rusty-Geckos/roast/commit/75fe51acfdd3f7d35d6ebdd12a14a52a2244308f)
+
 ## [8.0.0] - 2025-06-13
 
 ### Continuous Integrations
@@ -18,6 +47,7 @@ All notable changes to this project will be documented in this file.
 
 ### Miscellaneous Tasks
 
+- Bump to v8.0.0 [2ac2c36](https://codeberg.org/Rusty-Geckos/roast/commit/2ac2c36d7b63b8dfcd00343ea49e9b03f172929b)
 - Make the warning clear if renaming fails because of wrong file extension [551fdba](https://codeberg.org/Rusty-Geckos/roast/commit/551fdbaba6bcc7835bdefce6189a69fb89686452)
 
 ### Refactor

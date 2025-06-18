@@ -30,6 +30,7 @@ use git2::{
     Object,
     Repository,
     Submodule,
+    SubmoduleUpdateOptions,
     build::RepoBuilder,
 };
 use regex::Regex;
@@ -323,21 +324,78 @@ fn git_clone2(
         io::Error::other(err.to_string())
     })?;
 
-    submodules.iter_mut().try_for_each(|subm| update_submodule(subm))?;
+    submodules.iter_mut().try_for_each(|subm| update_submodule(&local_repository, subm))?;
 
     changelog_details_generate(&local_repository, &resulting_git_object)
 }
 
-fn update_submodule(subm: &mut Submodule) -> io::Result<()>
+fn update_submodule(local_repository: &Repository, subm: &mut Submodule) -> io::Result<()>
 {
-    subm.update(true, None).map_err(|err| {
+    let Some(local_clone_dir) = local_repository.workdir()
+    else
+    {
+        return Err(io::Error::new(io::ErrorKind::NotFound, "Repository workdir not found!"));
+    };
+    let submodule_path_in_workdir = local_clone_dir.join(subm.path());
+    info!("Cloning submodule at path: `{}`", submodule_path_in_workdir.display());
+    let mut submodule_update_options = SubmoduleUpdateOptions::default();
+    if !submodule_path_in_workdir.exists()
+    {
+        subm.init(true).map_err(|err| {
+            error!(?err);
+            error!("Error happened here in init");
+            io::Error::other(err)
+        })?;
+        subm.repo_init(true).map_err(|err| {
+            error!(?err);
+            error!("Error happened here in repo init");
+            io::Error::other(err)
+        })?;
+        subm.clone(Some(&mut submodule_update_options)).map_err(|err| {
+            error!(?err);
+            error!("Error happened here in clone");
+            io::Error::other(err)
+        })?;
+        subm.add_finalize().map_err(|err| {
+            error!(?err);
+            error!("Error happened here in add_finalize");
+            io::Error::other(err)
+        })?;
+        subm.sync().map_err(|err| {
+            error!(?err);
+            error!("Error happened here in add_finalize");
+            io::Error::other(err)
+        })?;
+        subm.add_to_index(true).map_err(|err| {
+            error!(?err);
+            error!("Error happened here in index");
+            io::Error::other(err)
+        })?;
+    }
+    else
+    {
+        // NOTE: The reason it's inside else-block is because
+        // the parent repository has not committed the "new" submodule.
+        // If we do remove put this outside the else-block, it will
+        // error that it could not find the ID of the submodule
+        subm.update(true, Some(&mut submodule_update_options)).map_err(|err| {
+            error!(?err);
+            error!("Error happened here in update");
+            io::Error::other(err)
+        })?;
+    }
+    let subm_repo = subm.open().map_err(|err| {
         error!(?err);
-        io::Error::other(err.to_string())
+        error!("Error happened here in open");
+        io::Error::other(err)
     })?;
-    subm.open().map_err(|err| {
+    let mut subm_repo_submodules = subm_repo.submodules().map_err(|err| {
         error!(?err);
-        io::Error::other(err.to_string())
+        io::Error::other(err)
     })?;
+    subm_repo_submodules
+        .iter_mut()
+        .try_for_each(|subm_repo_submodule| update_submodule(&subm_repo, subm_repo_submodule))?;
     Ok(())
 }
 

@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.1.2] - 2025-06-18
+
+### Bug Fixes
+
+- Update submodule logic if in case the submodule path does not exist. [987695b](https://codeberg.org/Rusty-Geckos/roast/commit/987695be719e62d857503a2b649722c72a04bf53)
+
+### Other
+
+- Run `cargo +nightly fmt` [aafe93e](https://codeberg.org/Rusty-Geckos/roast/commit/aafe93e697fb829b5f6add2beda5bd5d6065c4b8)
+
+### Testing
+
+- Switch test case from deno to river [eb5f1ff](https://codeberg.org/Rusty-Geckos/roast/commit/eb5f1ff4f08c666b145015441d6fa0d20734baff)
+- Add deno and jay, they're known to contain submodules [d923e42](https://codeberg.org/Rusty-Geckos/roast/commit/d923e428f2b62697df0b2d267ded8a05c12b5286)
+
 ## [8.1.1] - 2025-06-15
 
 ### Documentation
@@ -12,6 +27,10 @@ All notable changes to this project will be documented in this file.
 - Fix grammar here [03d2d42](https://codeberg.org/Rusty-Geckos/roast/commit/03d2d426faf87f49c0b214597add3ea5224f5ae9)
 - Update README [d31b41a](https://codeberg.org/Rusty-Geckos/roast/commit/d31b41a541a5c323d5faf67dde82c5b79d4d68de)
 - Fix README.md. `obs` feature flag only updates the version in the specfile. [cd865b8](https://codeberg.org/Rusty-Geckos/roast/commit/cd865b858a52cc3575a449613c2864cfaef469b5)
+
+### Miscellaneous Tasks
+
+- Bump to v8.1.1 [df1f31c](https://codeberg.org/Rusty-Geckos/roast/commit/df1f31cd04308302555f97f67650d1f20322df09)
 
 ## [8.1.0] - 2025-06-15
 

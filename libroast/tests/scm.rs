@@ -167,7 +167,6 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() 
     Ok(())
 }
 
-
 #[test]
 fn repo_with_submodules_1() -> io::Result<()>
 {
@@ -248,7 +247,6 @@ fn repo_with_submodules_1() -> io::Result<()>
     Ok(())
 }
 
-
 #[test]
 fn repo_with_submodules_2() -> io::Result<()>
 {
@@ -328,5 +326,3 @@ fn repo_with_submodules_2() -> io::Result<()>
     assert_eq!(hasher1.finalize(), hasher2.finalize());
     Ok(())
 }
-
-

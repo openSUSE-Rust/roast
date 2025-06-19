@@ -897,17 +897,17 @@ fn generate_changelog_file(
             }?;
 
             let new_changes_to_append = format!("{}\n{}", update_statement, final_changelog_lines);
+            let mut final_changes_string_for_file: String;
             if !changes_string_from_file.contains(&new_changes_to_append)
             {
-                let mut final_changes_string_for_file = format!(
+                final_changes_string_for_file = format!(
                     "{}\n\n{}{}",
                     changelog_header, new_changes_to_append, changes_string_from_file
                 );
+                final_changes_string_for_file =
+                    final_changes_string_for_file.trim_end().to_string();
+                final_changes_string_for_file.push('\n');
 
-                if !changes_string_from_file.trim().is_empty()
-                {
-                    final_changes_string_for_file.push('\n');
-                }
                 std::fs::write(changesoutfile, &final_changes_string_for_file).inspect(|_| {
                     info!(
                         "🗒️ Successfully generated changelog to `{}`.",
@@ -920,13 +920,11 @@ fn generate_changelog_file(
                 let lines_from_changes_file = changes_string_from_file.lines();
                 let new_changes_string_without_header_yet =
                     lines_from_changes_file.skip(2).collect::<Vec<&str>>().join("\n");
-                let mut final_changes_string_for_file =
+                final_changes_string_for_file =
                     format!("{}\n{}", changelog_header, new_changes_string_without_header_yet);
-
-                if !changes_string_from_file.trim().is_empty()
-                {
-                    final_changes_string_for_file.push('\n');
-                }
+                final_changes_string_for_file =
+                    final_changes_string_for_file.trim_end().to_string();
+                final_changes_string_for_file.push('\n');
 
                 std::fs::write(changesoutfile, &final_changes_string_for_file).inspect(|_| {
                     info!(

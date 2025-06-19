@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.1.5] - 2025-06-19
+
+### Bug Fixes
+
+- Just add one newline lol [d237ec6](https://codeberg.org/Rusty-Geckos/roast/commit/d237ec6be30eb4c6e373a73987059461e6b776b8)
+
 ## [8.1.4] - 2025-06-19
 
 ### Bug Fixes
 
 - Finally properly fix adding the newline. [5815417](https://codeberg.org/Rusty-Geckos/roast/commit/58154175cfe07c9bd10673db1a45788f88bf3d32)
+
+### Miscellaneous Tasks
+
+- V8.1.4 [8bc664a](https://codeberg.org/Rusty-Geckos/roast/commit/8bc664a58f9f8d0645cb7816bd2dcb0f3900afbc)
 
 ## [8.1.3] - 2025-06-19
 

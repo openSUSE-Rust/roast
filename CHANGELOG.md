@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.1.4] - 2025-06-19
+
+### Bug Fixes
+
+- Finally properly fix adding the newline. [5815417](https://codeberg.org/Rusty-Geckos/roast/commit/58154175cfe07c9bd10673db1a45788f88bf3d32)
+
 ## [8.1.3] - 2025-06-19
 
 ### Bug Fixes
 
 - Add newline at the end of the file properly [f131e45](https://codeberg.org/Rusty-Geckos/roast/commit/f131e455890bf2162898685cdc53655cf905e140)
+
+### Miscellaneous Tasks
+
+- V8.1.3 [e540816](https://codeberg.org/Rusty-Geckos/roast/commit/e5408167c6cb2214d9fc3b826d618502b25f44fd)
 
 ## [8.1.2] - 2025-06-18
 

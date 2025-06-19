@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.1.3] - 2025-06-19
+
+### Bug Fixes
+
+- Add newline at the end of the file properly [f131e45](https://codeberg.org/Rusty-Geckos/roast/commit/f131e455890bf2162898685cdc53655cf905e140)
+
 ## [8.1.2] - 2025-06-18
 
 ### Bug Fixes
 
 - Update submodule logic if in case the submodule path does not exist. [987695b](https://codeberg.org/Rusty-Geckos/roast/commit/987695be719e62d857503a2b649722c72a04bf53)
+
+### Miscellaneous Tasks
+
+- Bump to v8.1.2 [3655a2a](https://codeberg.org/Rusty-Geckos/roast/commit/3655a2a9c03014b446db028a5c19bf223b0a5b3d)
 
 ### Other
 

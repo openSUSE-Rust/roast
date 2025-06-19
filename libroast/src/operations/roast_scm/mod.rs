@@ -907,6 +907,7 @@ fn generate_changelog_file(
                 final_changes_string_for_file =
                     final_changes_string_for_file.trim_end().to_string();
                 final_changes_string_for_file.push('\n');
+                final_changes_string_for_file.push('\n');
 
                 std::fs::write(changesoutfile, &final_changes_string_for_file).inspect(|_| {
                     info!(
@@ -924,6 +925,7 @@ fn generate_changelog_file(
                     format!("{}\n{}", changelog_header, new_changes_string_without_header_yet);
                 final_changes_string_for_file =
                     final_changes_string_for_file.trim_end().to_string();
+                final_changes_string_for_file.push('\n');
                 final_changes_string_for_file.push('\n');
 
                 std::fs::write(changesoutfile, &final_changes_string_for_file).inspect(|_| {

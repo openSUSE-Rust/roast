@@ -136,7 +136,11 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: &Path) -> Result<(), io::Error>
 {
     debug!("Copying sources");
     debug!(?dst);
-    fs::create_dir_all(dst)?;
+    let dst = dst.canonicalize().unwrap_or_else(|for_debug| {
+        debug!(?for_debug);
+        dst.to_path_buf()
+    });
+    fs::create_dir_all(&dst)?;
     let custom_walker = fs::read_dir(src)?;
     custom_walker.par_bridge().into_par_iter().try_for_each(|entry| {
         let entry = entry?;
@@ -146,7 +150,12 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: &Path) -> Result<(), io::Error>
         if ty.is_dir()
         {
             trace!(?ty, "Is directory?");
-            copy_dir_all(entry.path(), &dst.join(entry.file_name()))
+            let inner_dir = entry.path();
+            let inner_dir = inner_dir.canonicalize().unwrap_or_else(|for_debug| {
+                debug!(?for_debug);
+                inner_dir
+            });
+            copy_dir_all(&inner_dir, &dst.join(entry.file_name()))
 
         // Should we respect symlinks?
         // } else if ty.is_symlink() {
@@ -166,7 +175,12 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: &Path) -> Result<(), io::Error>
         else if ty.is_file()
         {
             trace!(?ty, "Is file?");
-            fs::copy(entry.path(), dst.join(entry.file_name()))?;
+            let inner_file = entry.path();
+            let inner_file = inner_file.canonicalize().unwrap_or_else(|for_debug| {
+                debug!(?for_debug);
+                inner_file
+            });
+            fs::copy(inner_file, dst.join(entry.file_name()))?;
             Ok(())
         }
         else

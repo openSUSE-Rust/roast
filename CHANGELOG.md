@@ -2,11 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.0.0] - 2025-06-22
+
+### Bug Fixes
+
+- Add missing fields [b551337](https://codeberg.org/Rusty-Geckos/roast/commit/b5513373cc95e5dc6bc5a9f695cd3f9734988531)
+
+### Dependencies
+
+- Specify clap_complete version [474ede3](https://codeberg.org/Rusty-Geckos/roast/commit/474ede3ed6c187b4c4538434faacd5f691add2bd)
+- Remove `walkdir` [770c048](https://codeberg.org/Rusty-Geckos/roast/commit/770c048462a37908e8ad1b760a0e106933aa896c)
+- Add clap_complete [e15cdfc](https://codeberg.org/Rusty-Geckos/roast/commit/e15cdfc02562d0ab442063bff88c0602d8bcf3fd)
+
+### Features
+
+- Create a new binary name for `roast_scm`. [65e9dcf](https://codeberg.org/Rusty-Geckos/roast/commit/65e9dcf00d246af4ff7d376eaa5df9cfd6e106d6)
+- Add new subcommand `generate-completions-for` using `clap_complete` [f6ab16b](https://codeberg.org/Rusty-Geckos/roast/commit/f6ab16b675fe9d0dc141a71678531d27d9fcfd42)
+
+### Other
+
+- Update workspace default members [047dfe3](https://codeberg.org/Rusty-Geckos/roast/commit/047dfe353a2978cb3904d4ac2272264927d6922d)
+
+### Refactor
+
+- `copy_dir_all` should canonicalise the paths to original sources first. [9193ab7](https://codeberg.org/Rusty-Geckos/roast/commit/9193ab7504ab5e945e9eb5c2afca5401916fb396)
+
 ## [8.1.5] - 2025-06-19
 
 ### Bug Fixes
 
 - Just add one newline lol [d237ec6](https://codeberg.org/Rusty-Geckos/roast/commit/d237ec6be30eb4c6e373a73987059461e6b776b8)
+
+### Miscellaneous Tasks
+
+- Bump to v8.1.5 [c2677a5](https://codeberg.org/Rusty-Geckos/roast/commit/c2677a51cc5e7eda213c3b1523712badd7c3a546)
 
 ## [8.1.4] - 2025-06-19
 

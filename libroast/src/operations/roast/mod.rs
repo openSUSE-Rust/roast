@@ -8,12 +8,17 @@
 pub mod helpers;
 use crate::{
     compress,
-    operations::cli,
+    operations::cli::{
+        self,
+        RoastArgs,
+        print_completions,
+    },
     utils::{
         process_globs,
         start_tracing,
     },
 };
+use clap::CommandFactory;
 use helpers::{
     filter_paths,
     is_excluded,
@@ -250,141 +255,164 @@ pub(crate) fn process_include_paths(
 /// important values that are passed down in this function. NOTE: Always pass
 /// `false` to the `start_trace` parameter if there is already a global tracing
 /// activated in the environment.
-pub fn roast_opts(roast_args: &cli::RoastArgs, start_trace: bool) -> io::Result<()>
+pub fn roast_opts(roast_args: &RoastArgs, start_trace: bool) -> io::Result<()>
 {
-    if start_trace
+    if let Some(ref subcommand) = roast_args.subcommands
     {
-        start_tracing();
+        let mut cmd = RoastArgs::command();
+        match subcommand
+        {
+            crate::operations::cli::Subcommands::GenerateCompletionsFor { shell } =>
+            {
+                print_completions(*shell, &mut cmd);
+            }
+        }
     }
+    else
+    {
+        if start_trace
+        {
+            start_tracing();
+        }
 
-    info!("❤️‍🔥 Starting Roast.");
-    debug!(?roast_args);
-    let target_path = process_globs(&roast_args.target)?;
-    let target_path = target_path.canonicalize().unwrap_or(target_path);
-    let tmp_binding = tempfile::Builder::new()
-        .prefix(".rooooooooooaaaaaaaasssst")
-        .rand_bytes(8)
-        .tempdir()
-        .inspect_err(|err| {
-            error!(?err, "Failed to create temporary directory");
+        info!("❤️‍🔥 Starting Roast.");
+        debug!(?roast_args);
+        let target_path = process_globs(
+            roast_args.target.as_ref().ok_or("No target directory provided.").map_err(|err| {
+                error!(err);
+                io::Error::new(io::ErrorKind::InvalidInput, err)
+            })?,
+        )?;
+        let target_path = target_path.canonicalize().unwrap_or(target_path);
+        let tmp_binding = tempfile::Builder::new()
+            .prefix(".rooooooooooaaaaaaaasssst")
+            .rand_bytes(8)
+            .tempdir()
+            .inspect_err(|err| {
+                error!(?err, "Failed to create temporary directory");
+            })?;
+
+        let workdir = &tmp_binding.path();
+        let setup_workdir = if roast_args.preserve_root
+        {
+            workdir.join(target_path.file_name().unwrap_or_default())
+        }
+        else
+        {
+            workdir.to_path_buf()
+        };
+        fs::create_dir_all(&setup_workdir)?;
+
+        let outdir = match &roast_args.outdir
+        {
+            Some(v) => v,
+            None => &std::env::current_dir()?,
+        };
+
+        if !outdir.is_dir()
+        {
+            std::fs::create_dir_all(outdir)?;
+        }
+
+        let outpath = outdir.join(
+            roast_args.outfile.as_ref().ok_or("No outfile value provided.").map_err(|err| {
+                error!(err);
+                io::Error::new(io::ErrorKind::InvalidInput, err)
+            })?,
+        );
+        let outpath = outpath.canonicalize().unwrap_or(outpath);
+
+        let mut exclude_canonicalized_paths: Vec<PathBuf> =
+            roast_args.exclude.clone().unwrap_or_default();
+
+        exclude_canonicalized_paths = exclude_canonicalized_paths
+            .iter()
+            .map(|p| target_path.join(p).canonicalize().unwrap_or_default())
+            // NOTE: This is important. as unwrap_or_default contains at least one element of
+            // Path::from("") or a PathBuf::new()
+            .filter(|p| !p.to_string_lossy().trim().is_empty())
+            .collect();
+
+        debug!(?exclude_canonicalized_paths);
+
+        if let Some(additional_paths) = &roast_args.additional_paths
+        {
+            process_additional_paths(
+                additional_paths,
+                &target_path,
+                &exclude_canonicalized_paths,
+                &setup_workdir,
+                roast_args,
+            )?;
+        }
+
+        if let Some(include_paths) = &roast_args.include
+        {
+            process_include_paths(
+                include_paths,
+                &exclude_canonicalized_paths,
+                &target_path,
+                &setup_workdir,
+                roast_args,
+            )?;
+        }
+
+        filter_paths(
+            &target_path,
+            &setup_workdir,
+            roast_args.ignore_hidden,
+            roast_args.ignore_git,
+            &exclude_canonicalized_paths,
+        )?;
+
+        let mut archive_files: Vec<PathBuf> = Vec::new();
+        get_all_files(&mut archive_files, workdir)?;
+
+        debug!(?archive_files);
+
+        let reproducible = roast_args.reproducible;
+
+        let outpath_str = outpath.as_os_str().to_string_lossy();
+        let result = if outpath_str.ends_with("tar.gz")
+        {
+            compress::targz(&outpath, workdir, &archive_files, reproducible)
+        }
+        else if outpath_str.ends_with("tar.xz")
+        {
+            compress::tarxz(&outpath, workdir, &archive_files, reproducible)
+        }
+        else if outpath_str.ends_with("tar.zst") | outpath_str.ends_with("tar.zstd")
+        {
+            compress::tarzst(&outpath, workdir, &archive_files, reproducible)
+        }
+        else if outpath_str.ends_with("tar.bz")
+        {
+            compress::tarbz2(&outpath, workdir, &archive_files, reproducible)
+        }
+        else if outpath_str.ends_with("tar")
+        {
+            compress::vanilla(&outpath, workdir, &archive_files, reproducible)
+        }
+        else
+        {
+            let msg = format!("Unsupported file: {}", outpath_str);
+            Err(io::Error::new(io::ErrorKind::Unsupported, msg))
+        };
+
+        // Do not return the error. Just inform the user.
+        // This will allow us to delete the temporary directory.
+        if let Err(err) = result
+        {
+            error!(?err);
+        }
+        else
+        {
+            info!("🧑‍🍳 Your new tarball is now in {}", &outpath.display());
+        }
+
+        tmp_binding.close().inspect_err(|e| {
+            error!(?e, "Failed to delete temporary directory!");
         })?;
-
-    let workdir = &tmp_binding.path();
-    let setup_workdir = if roast_args.preserve_root
-    {
-        workdir.join(target_path.file_name().unwrap_or_default())
     }
-    else
-    {
-        workdir.to_path_buf()
-    };
-    fs::create_dir_all(&setup_workdir)?;
-
-    let outdir = match &roast_args.outdir
-    {
-        Some(v) => v,
-        None => &std::env::current_dir()?,
-    };
-
-    if !outdir.is_dir()
-    {
-        std::fs::create_dir_all(outdir)?;
-    }
-
-    let outpath = outdir.join(&roast_args.outfile);
-    let outpath = outpath.canonicalize().unwrap_or(outpath);
-
-    let mut exclude_canonicalized_paths: Vec<PathBuf> =
-        roast_args.exclude.clone().unwrap_or_default();
-
-    exclude_canonicalized_paths = exclude_canonicalized_paths
-        .iter()
-        .map(|p| target_path.join(p).canonicalize().unwrap_or_default())
-        // NOTE: This is important. as unwrap_or_default contains at least one element of
-        // Path::from("") or a PathBuf::new()
-        .filter(|p| !p.to_string_lossy().trim().is_empty())
-        .collect();
-
-    debug!(?exclude_canonicalized_paths);
-
-    if let Some(additional_paths) = &roast_args.additional_paths
-    {
-        process_additional_paths(
-            additional_paths,
-            &target_path,
-            &exclude_canonicalized_paths,
-            &setup_workdir,
-            roast_args,
-        )?;
-    }
-
-    if let Some(include_paths) = &roast_args.include
-    {
-        process_include_paths(
-            include_paths,
-            &exclude_canonicalized_paths,
-            &target_path,
-            &setup_workdir,
-            roast_args,
-        )?;
-    }
-
-    filter_paths(
-        &target_path,
-        &setup_workdir,
-        roast_args.ignore_hidden,
-        roast_args.ignore_git,
-        &exclude_canonicalized_paths,
-    )?;
-
-    let mut archive_files: Vec<PathBuf> = Vec::new();
-    get_all_files(&mut archive_files, workdir)?;
-
-    debug!(?archive_files);
-
-    let reproducible = roast_args.reproducible;
-
-    let outpath_str = outpath.as_os_str().to_string_lossy();
-    let result = if outpath_str.ends_with("tar.gz")
-    {
-        compress::targz(&outpath, workdir, &archive_files, reproducible)
-    }
-    else if outpath_str.ends_with("tar.xz")
-    {
-        compress::tarxz(&outpath, workdir, &archive_files, reproducible)
-    }
-    else if outpath_str.ends_with("tar.zst") | outpath_str.ends_with("tar.zstd")
-    {
-        compress::tarzst(&outpath, workdir, &archive_files, reproducible)
-    }
-    else if outpath_str.ends_with("tar.bz")
-    {
-        compress::tarbz2(&outpath, workdir, &archive_files, reproducible)
-    }
-    else if outpath_str.ends_with("tar")
-    {
-        compress::vanilla(&outpath, workdir, &archive_files, reproducible)
-    }
-    else
-    {
-        let msg = format!("Unsupported file: {}", outpath_str);
-        Err(io::Error::new(io::ErrorKind::Unsupported, msg))
-    };
-
-    // Do not return the error. Just inform the user.
-    // This will allow us to delete the temporary directory.
-    if let Err(err) = result
-    {
-        error!(?err);
-    }
-    else
-    {
-        info!("🧑‍🍳 Your new tarball is now in {}", &outpath.display());
-    }
-
-    tmp_binding.close().inspect_err(|e| {
-        error!(?e, "Failed to delete temporary directory!");
-    })?;
-
     Ok(())
 }

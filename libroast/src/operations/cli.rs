@@ -2,8 +2,20 @@
 //! Also useful for just anything else not CLI.
 
 use crate::common::Compression;
-use clap::Parser;
-use std::path::PathBuf;
+use clap::{
+    Command,
+    Parser,
+    Subcommand,
+};
+use clap_complete::{
+    Generator,
+    Shell,
+    generate,
+};
+use std::{
+    io,
+    path::PathBuf,
+};
 #[allow(unused_imports)]
 use tracing::{
     Level,
@@ -13,6 +25,21 @@ use tracing::{
     trace,
     warn,
 };
+
+pub(crate) fn print_completions<G: Generator>(generator: G, cmd: &mut Command)
+{
+    generate(generator, cmd, cmd.get_name().to_string(), &mut io::stdout());
+}
+
+#[derive(Debug, Subcommand)]
+pub enum Subcommands
+{
+    #[command(about = "Generate shell completions")]
+    GenerateCompletionsFor
+    {
+        shell: Shell
+    },
+}
 
 #[derive(Debug, Parser)]
 #[command(
@@ -34,7 +61,7 @@ pub struct RoastArgs
         help = "Target directory to archive. This will be set as the root directory of the \
                 archive. Supports globbing."
     )]
-    pub target: PathBuf,
+    pub target: Option<PathBuf>,
     #[arg(
         long,
         short = 'i',
@@ -63,7 +90,7 @@ pub struct RoastArgs
     )]
     pub additional_paths: Option<Vec<String>>,
     #[arg(long, short = 'f', help = "Output file of the generated archive with path.")]
-    pub outfile: PathBuf,
+    pub outfile: Option<PathBuf>,
     #[arg(long, short = 'd', help = "Output path of the generated archive.")]
     pub outdir: Option<PathBuf>,
     #[arg(
@@ -98,6 +125,8 @@ pub struct RoastArgs
         action = clap::ArgAction::Set
     )]
     pub ignore_hidden: bool,
+    #[command(subcommand)]
+    pub subcommands: Option<Subcommands>,
 }
 
 #[derive(Debug, Parser)]
@@ -119,9 +148,11 @@ pub struct RawArgs
         short = 't',
         help = "Target tarball file to extract and decompress. Supports globbing."
     )]
-    pub target: PathBuf,
+    pub target: Option<PathBuf>,
     #[arg(long, short = 'd', help = "Output directory of extracted archive.")]
     pub outdir: Option<PathBuf>,
+    #[command(subcommand)]
+    pub subcommands: Option<Subcommands>,
 }
 
 #[derive(Debug, Parser)]
@@ -143,7 +174,7 @@ pub struct RecomprizzArgs
         short = 't',
         help = "Target tarball file to extract and recompress. Supports globbing."
     )]
-    pub target: PathBuf,
+    pub target: Option<PathBuf>,
     #[arg(
         long,
         short = 'i',
@@ -214,6 +245,8 @@ pub struct RecomprizzArgs
         action = clap::ArgAction::Set
     )]
     pub ignore_hidden: bool,
+    #[command(subcommand)]
+    pub subcommands: Option<Subcommands>,
 }
 
 #[derive(Debug, Parser)]
@@ -268,7 +301,7 @@ pub struct RoastScmArgs
     )]
     pub set_name: Option<String>,
     #[arg(long, short = 'U', help = "Remote URL to the git repository.", alias = "url")]
-    pub git_repository_url: String,
+    pub git_repository_url: Option<String>,
     #[arg(
         long,
         short = 'E',
@@ -280,7 +313,7 @@ pub struct RoastScmArgs
         long,
         help = "Revision or tag. It can also be a specific commit hash or branch. Supports <https://git-scm.com/docs/git-rev-parse.html#_specifying_revisions>."
     )]
-    pub revision: String,
+    pub revision: Option<String>,
     #[arg(
         long,
         help = "Pass a regex with capture groups. Required by `versionrewritepattern` flag. Each \
@@ -336,4 +369,6 @@ pub struct RoastScmArgs
     pub ignore_hidden: bool,
     #[arg(long, short = 'c', help = "Compression to use.", default_value_t)]
     pub compression: Compression,
+    #[command(subcommand)]
+    pub subcommands: Option<Subcommands>,
 }

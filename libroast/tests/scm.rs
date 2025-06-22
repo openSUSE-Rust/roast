@@ -36,15 +36,16 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_files() -> i
     let mut hasher2 = Keccak256::new();
     let outdir = tmp_binding.path();
     let r1 = RoastScmArgs {
+        subcommands: None,
         set_version: None,
         set_name: None,
         changesgenerate: false,
         changesauthor: None,
         changesemail: None,
         changesoutfile: None,
-        git_repository_url: "https://github.com/openSUSE-Rust/obs-service-cargo".to_string(),
+        git_repository_url: Some("https://github.com/openSUSE-Rust/obs-service-cargo".to_string()),
         exclude: None,
-        revision: "v5.1.0".to_string(),
+        revision: Some("v5.1.0".to_string()),
         versionrewriteregex: None,
         versionrewritepattern: None,
         depth: 0,
@@ -60,15 +61,16 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_files() -> i
     let buf1 = read(outdir.join("r1.tar.zst"))?;
     hasher1.update(buf1);
     let r2 = RoastScmArgs {
+        subcommands: None,
         set_version: None,
         set_name: None,
         changesgenerate: false,
         changesauthor: None,
         changesemail: None,
         changesoutfile: None,
-        git_repository_url: "https://github.com/openSUSE-Rust/obs-service-cargo".to_string(),
+        git_repository_url: Some("https://github.com/openSUSE-Rust/obs-service-cargo".to_string()),
         exclude: None,
-        revision: "2910335f66158a658dfeebca8b8bf6cfc09ba1c0".to_string(),
+        revision: Some("2910335f66158a658dfeebca8b8bf6cfc09ba1c0".to_string()),
         versionrewriteregex: None,
         versionrewritepattern: None,
         depth: 0,
@@ -103,15 +105,16 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() 
     let outdir1 = tmp_binding1.path();
     let outdir2 = tmp_binding2.path();
     let r1 = RoastScmArgs {
+        subcommands: None,
         set_version: None,
         set_name: None,
         changesgenerate: false,
         changesauthor: None,
         changesemail: None,
         changesoutfile: None,
-        git_repository_url: "https://github.com/openSUSE-Rust/obs-service-cargo".to_string(),
+        git_repository_url: Some("https://github.com/openSUSE-Rust/obs-service-cargo".to_string()),
         exclude: None,
-        revision: "v5.1.0".to_string(),
+        revision: Some("v5.1.0".to_string()),
         versionrewriteregex: None,
         versionrewritepattern: None,
         depth: 0,
@@ -125,15 +128,16 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() 
     };
     libroast::operations::roast_scm::roast_scm_opts(None, &r1, false)?;
     let r2 = RoastScmArgs {
+        subcommands: None,
         set_version: None,
         set_name: None,
         changesgenerate: false,
         changesauthor: None,
         changesemail: None,
         changesoutfile: None,
-        git_repository_url: "https://github.com/openSUSE-Rust/obs-service-cargo".to_string(),
+        git_repository_url: Some("https://github.com/openSUSE-Rust/obs-service-cargo".to_string()),
         exclude: None,
-        revision: "2910335f66158a658dfeebca8b8bf6cfc09ba1c0".to_string(),
+        revision: Some("2910335f66158a658dfeebca8b8bf6cfc09ba1c0".to_string()),
         versionrewriteregex: None,
         versionrewritepattern: None,
         depth: 0,
@@ -183,15 +187,16 @@ fn repo_with_submodules_1() -> io::Result<()>
     let outdir1 = tmp_binding1.path();
     let outdir2 = tmp_binding2.path();
     let r1 = RoastScmArgs {
+        subcommands: None,
         set_version: None,
         set_name: None,
         changesgenerate: false,
         changesauthor: None,
         changesemail: None,
         changesoutfile: None,
-        git_repository_url: "https://codeberg.org/river/river".to_string(),
+        git_repository_url: Some("https://codeberg.org/river/river".to_string()),
         exclude: None,
-        revision: "v0.2.2".to_string(),
+        revision: Some("v0.2.2".to_string()),
         versionrewriteregex: None,
         versionrewritepattern: None,
         depth: 0,
@@ -205,15 +210,16 @@ fn repo_with_submodules_1() -> io::Result<()>
     };
     libroast::operations::roast_scm::roast_scm_opts(None, &r1, false)?;
     let r2 = RoastScmArgs {
+        subcommands: None,
         set_version: None,
         set_name: None,
         changesgenerate: false,
         changesauthor: None,
         changesemail: None,
         changesoutfile: None,
-        git_repository_url: "https://codeberg.org/river/river".to_string(),
+        git_repository_url: Some("https://codeberg.org/river/river".to_string()),
         exclude: None,
-        revision: "v0.2.2".to_string(),
+        revision: Some("v0.2.2".to_string()),
         versionrewriteregex: None,
         versionrewritepattern: None,
         depth: 0,
@@ -263,15 +269,16 @@ fn repo_with_submodules_2() -> io::Result<()>
     let outdir1 = tmp_binding1.path();
     let outdir2 = tmp_binding2.path();
     let r1 = RoastScmArgs {
+        subcommands: None,
         set_version: None,
         set_name: None,
         changesgenerate: false,
         changesauthor: None,
         changesemail: None,
         changesoutfile: None,
-        git_repository_url: "https://github.com/mahkoh/jay".to_string(),
+        git_repository_url: Some("https://github.com/mahkoh/jay".to_string()),
         exclude: None,
-        revision: "master".to_string(),
+        revision: Some("master".to_string()),
         versionrewriteregex: None,
         versionrewritepattern: None,
         depth: 0,
@@ -285,15 +292,16 @@ fn repo_with_submodules_2() -> io::Result<()>
     };
     libroast::operations::roast_scm::roast_scm_opts(None, &r1, false)?;
     let r2 = RoastScmArgs {
+        subcommands: None,
         set_version: None,
         set_name: None,
         changesgenerate: false,
         changesauthor: None,
         changesemail: None,
         changesoutfile: None,
-        git_repository_url: "https://github.com/mahkoh/jay".to_string(),
+        git_repository_url: Some("https://github.com/mahkoh/jay".to_string()),
         exclude: None,
-        revision: "master".to_string(),
+        revision: Some("master".to_string()),
         versionrewriteregex: None,
         versionrewritepattern: None,
         depth: 0,

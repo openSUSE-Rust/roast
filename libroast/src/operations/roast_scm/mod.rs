@@ -3,6 +3,7 @@ use crate::{
         cli::{
             RoastArgs,
             RoastScmArgs,
+            print_completions,
         },
         roast::roast_opts,
     },
@@ -11,6 +12,7 @@ use crate::{
         start_tracing,
     },
 };
+use clap::CommandFactory;
 use core::str::FromStr;
 use hifitime::{
     efmt::Format,
@@ -840,7 +842,16 @@ fn generate_changelog_file(
                     })?
                     .join(format!(
                         "{}.changes",
-                        process_basename_from_url(&roast_scm_args.git_repository_url)?
+                        process_basename_from_url(
+                            roast_scm_args
+                                .git_repository_url
+                                .as_ref()
+                                .ok_or("No URL provided.")
+                                .map_err(|err| {
+                                    error!(err);
+                                    io::Error::new(io::ErrorKind::InvalidInput, err)
+                                })?
+                        )?
                     )),
             };
 
@@ -1054,118 +1065,152 @@ pub fn roast_scm_opts(
     start_trace: bool,
 ) -> io::Result<Option<std::path::PathBuf>>
 {
-    if start_trace
+    if let Some(ref subcommand) = roast_scm_args.subcommands
     {
-        start_tracing();
-    }
-    info!("⛓️🔥 Starting Roast SCM!");
-    debug!(?roast_scm_args);
-    let workdir = if let Some(workdir) = custom_workdir
-    {
-        workdir
-    }
-    else
-    {
-        let tmp_workdir = tempfile::TempDir::new()?;
-        if !roast_scm_args.is_temporary
+        let mut cmd = RoastScmArgs::command();
+        match subcommand
         {
-            tmp_workdir.keep()
-        }
-        else
-        {
-            tmp_workdir.path().to_owned()
-        }
-    };
-
-    let git_url = &roast_scm_args.git_repository_url.to_string();
-
-    info!(?git_url, "🫂 Cloning remote repository.");
-    info!(?workdir, "🏃 Cloning to local directory...");
-
-    let changelog_details =
-        git_clone2(git_url, &workdir, &roast_scm_args.revision, roast_scm_args.depth)?;
-
-    let final_revision_format =
-        rewrite_version_or_revision_from_changelog_details(&changelog_details, roast_scm_args)?;
-
-    let filename_prefix = if let Some(set_name) = &roast_scm_args.set_name
-    {
-        if let Some(set_version) = &roast_scm_args.set_version
-        {
-            format!("{}-{}", set_name, set_version)
-        }
-        else
-        {
-            format!("{}-{}", set_name, &final_revision_format)
-        }
-    }
-    else if let Some(set_version) = &roast_scm_args.set_version
-    {
-        process_filename_from_url_and_revision(&roast_scm_args.git_repository_url, set_version)?
-    }
-    else
-    {
-        process_filename_from_url_and_revision(
-            &roast_scm_args.git_repository_url,
-            &final_revision_format,
-        )?
-    };
-
-    let new_workdir_for_copy = tempfile::TempDir::new()?;
-    let local_copy_dir = new_workdir_for_copy.path().join(&filename_prefix);
-
-    copy_dir_all(&workdir, &local_copy_dir)?;
-
-    let outfile = match roast_scm_args.outfile.clone()
-    {
-        Some(outfile) => outfile,
-        None =>
-        {
-            let extension = &roast_scm_args.compression.to_extension();
-            let full_filename = format!("{}{}", filename_prefix, extension);
-            Path::new(&full_filename).to_path_buf()
-        }
-    };
-    info!(?git_url, "🫂 Finished cloning remote repository.");
-    info!("🍄 Cloned to `{}`.", &workdir.display());
-
-    let roast_args = RoastArgs {
-        target: local_copy_dir,
-        include: None,
-        exclude: roast_scm_args.exclude.clone(),
-        additional_paths: None,
-        outfile,
-        outdir: roast_scm_args.outdir.clone(),
-        preserve_root: true,
-        reproducible: roast_scm_args.reproducible,
-        ignore_git: roast_scm_args.ignore_git,
-        ignore_hidden: roast_scm_args.ignore_hidden,
-    };
-
-    roast_opts(&roast_args, false)
-        .map(|_| {
-            generate_changelog_file(roast_scm_args, &changelog_details, &final_revision_format)?;
-
-            if cfg!(feature = "obs")
+            crate::operations::cli::Subcommands::GenerateCompletionsFor { shell } =>
             {
-                set_version_in_specfile(&roast_scm_args.set_version, &final_revision_format)?;
+                print_completions(*shell, &mut cmd);
             }
-
+        }
+        Ok(None)
+    }
+    else
+    {
+        if start_trace
+        {
+            start_tracing();
+        }
+        info!("⛓️🔥 Starting Roast SCM!");
+        debug!(?roast_scm_args);
+        let workdir = if let Some(workdir) = custom_workdir
+        {
+            workdir
+        }
+        else
+        {
+            let tmp_workdir = tempfile::TempDir::new()?;
             if !roast_scm_args.is_temporary
             {
-                info!(
-                    "👁️ Locally cloned repository is not deleted and located at `{}`.",
-                    workdir.display()
-                );
-                Ok(Some(workdir.to_path_buf()))
+                tmp_workdir.keep()
             }
             else
             {
-                Ok(None)
+                tmp_workdir.path().to_owned()
             }
-        })
-        .inspect_err(|err| {
-            error!(?err);
-        })?
-        .inspect(|_| info!("⛓️🔥 Finished Roast SCM!"))
+        };
+
+        let revision = &roast_scm_args
+            .revision
+            .as_ref()
+            .ok_or("No revision provided.")
+            .map_err(|err| {
+                error!(err);
+                io::Error::new(io::ErrorKind::InvalidInput, err)
+            })?
+            .to_string();
+
+        let git_url = &roast_scm_args
+            .git_repository_url
+            .as_ref()
+            .ok_or("No URL provided.")
+            .map_err(|err| {
+                error!(err);
+                io::Error::new(io::ErrorKind::InvalidInput, err)
+            })?
+            .to_string();
+
+        info!(?git_url, "🫂 Cloning remote repository.");
+        info!(?workdir, "🏃 Cloning to local directory...");
+
+        let changelog_details = git_clone2(git_url, &workdir, revision, roast_scm_args.depth)?;
+
+        let final_revision_format =
+            rewrite_version_or_revision_from_changelog_details(&changelog_details, roast_scm_args)?;
+
+        let filename_prefix = if let Some(set_name) = &roast_scm_args.set_name
+        {
+            if let Some(set_version) = &roast_scm_args.set_version
+            {
+                format!("{}-{}", set_name, set_version)
+            }
+            else
+            {
+                format!("{}-{}", set_name, &final_revision_format)
+            }
+        }
+        else if let Some(set_version) = &roast_scm_args.set_version
+        {
+            process_filename_from_url_and_revision(git_url, set_version)?
+        }
+        else
+        {
+            process_filename_from_url_and_revision(git_url, &final_revision_format)?
+        };
+
+        let new_workdir_for_copy = tempfile::TempDir::new()?;
+        let local_copy_dir = new_workdir_for_copy.path().join(&filename_prefix);
+
+        copy_dir_all(&workdir, &local_copy_dir)?;
+
+        let outfile = match roast_scm_args.outfile.clone()
+        {
+            Some(outfile) => outfile,
+            None =>
+            {
+                let extension = &roast_scm_args.compression.to_extension();
+                let full_filename = format!("{}{}", filename_prefix, extension);
+                Path::new(&full_filename).to_path_buf()
+            }
+        };
+        info!(?git_url, "🫂 Finished cloning remote repository.");
+        info!("🍄 Cloned to `{}`.", &workdir.display());
+
+        let roast_args = RoastArgs {
+            target: Some(local_copy_dir),
+            include: None,
+            exclude: roast_scm_args.exclude.clone(),
+            additional_paths: None,
+            outfile: Some(outfile),
+            outdir: roast_scm_args.outdir.clone(),
+            preserve_root: true,
+            reproducible: roast_scm_args.reproducible,
+            ignore_git: roast_scm_args.ignore_git,
+            ignore_hidden: roast_scm_args.ignore_hidden,
+            subcommands: None,
+        };
+
+        roast_opts(&roast_args, false)
+            .map(|_| {
+                generate_changelog_file(
+                    roast_scm_args,
+                    &changelog_details,
+                    &final_revision_format,
+                )?;
+
+                if cfg!(feature = "obs")
+                {
+                    set_version_in_specfile(&roast_scm_args.set_version, &final_revision_format)?;
+                }
+
+                if !roast_scm_args.is_temporary
+                {
+                    info!(
+                        "👁️ Locally cloned repository is not deleted and located at `{}`.",
+                        workdir.display()
+                    );
+                    Ok(Some(workdir.to_path_buf()))
+                }
+                else
+                {
+                    Ok(None)
+                }
+            })
+            .inspect_err(|err| {
+                error!(?err);
+            })?
+            .inspect(|_| info!("⛓️🔥 Finished Roast SCM!"))
+    }
 }

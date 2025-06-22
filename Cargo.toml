@@ -14,7 +14,6 @@ resolver = "2"
 
 [workspace.dependencies]
 clap = "^4"
-libroast = { path = "./libroast" }
 
 [workspace.lints.rust]
 warnings = "deny"

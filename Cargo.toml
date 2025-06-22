@@ -9,7 +9,7 @@ readme = true
 
 [workspace]
 members = ["libroast", "roast-cli"]
-default-members = ["libroast"]
+default-members = ["libroast", "roast-cli"]
 resolver = "2"
 
 [workspace.dependencies]

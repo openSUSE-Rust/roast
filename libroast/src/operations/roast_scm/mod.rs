@@ -1079,7 +1079,7 @@ pub fn roast_scm_opts(
     }
     else
     {
-        if start_trace
+        if !roast_scm_args.silent && start_trace
         {
             start_tracing();
         }
@@ -1179,6 +1179,7 @@ pub fn roast_scm_opts(
             reproducible: roast_scm_args.reproducible,
             ignore_git: roast_scm_args.ignore_git,
             ignore_hidden: roast_scm_args.ignore_hidden,
+            silent: roast_scm_args.silent,
             subcommands: None,
         };
 

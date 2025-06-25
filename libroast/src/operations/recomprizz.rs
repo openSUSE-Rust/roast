@@ -128,7 +128,8 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
                 {
                     crate::common::SupportedFormat::Compressed(compression, path_buf) =>
                     {
-                        let path_buf_filename = path_buf.to_string_lossy();
+                        let path_buf_filename =
+                            path_buf.file_name().unwrap_or_default().to_string_lossy();
                         match path_buf_filename.rsplit_once(&compression.to_extension())
                         {
                             Some((name, _)) => name.to_string(),

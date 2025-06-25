@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [10.0.0] - 2025-06-25
+
+### Bug Fixes
+
+- The renaming logic have caused the `outdir` to be useless. [23673dc](https://codeberg.org/Rusty-Geckos/roast/commit/23673dc940a83de23d95dc065db88e5ef09892b3)
+
+### Documentation
+
+- Update README.md [7337011](https://codeberg.org/Rusty-Geckos/roast/commit/7337011b7600263255550f95184bfee4eb895348)
+- Add a section about reproducibility [91355df](https://codeberg.org/Rusty-Geckos/roast/commit/91355dfed43cbcfc6712cb162a4622481c29306d)
+
+### Features
+
+- If compiled with feature `obs`, make `--silent` flag do nothing. [704993f](https://codeberg.org/Rusty-Geckos/roast/commit/704993fcb8ba22d7012b4fe9108d01336094a989)
+- Add silent flag [fbe8d61](https://codeberg.org/Rusty-Geckos/roast/commit/fbe8d61f205e24589a46469dd9262cb1e8c45712)
+
+### Miscellaneous Tasks
+
+- Allow `clippy::if_same_then_else`. [11940e1](https://codeberg.org/Rusty-Geckos/roast/commit/11940e1012ebe77055da00363479bc8dd3b6be06)
+
+### Refactor
+
+- Path_buf_filename -> filename [278836f](https://codeberg.org/Rusty-Geckos/roast/commit/278836fdfceeb9c6cc6be1242722828681121de1)
+
+### Testing
+
+- Add missing flag `--silent` [efad22a](https://codeberg.org/Rusty-Geckos/roast/commit/efad22a0d6f36068655202633a8463ff14331fbb)
+
 ## [9.0.0] - 2025-06-22
 
 ### Bug Fixes
@@ -18,6 +46,10 @@ All notable changes to this project will be documented in this file.
 
 - Create a new binary name for `roast_scm`. [65e9dcf](https://codeberg.org/Rusty-Geckos/roast/commit/65e9dcf00d246af4ff7d376eaa5df9cfd6e106d6)
 - Add new subcommand `generate-completions-for` using `clap_complete` [f6ab16b](https://codeberg.org/Rusty-Geckos/roast/commit/f6ab16b675fe9d0dc141a71678531d27d9fcfd42)
+
+### Miscellaneous Tasks
+
+- V9.0.0 [c3d248b](https://codeberg.org/Rusty-Geckos/roast/commit/c3d248b3f90c9ef556bdb9bef4722ec021082725)
 
 ### Other
 

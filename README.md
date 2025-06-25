@@ -249,9 +249,12 @@ filename of `vendor.tar.zst.tar.gz`. Hence, be careful on how you construct your
 
 > [!NOTE]
 > The behaviours might differ in `roast_scm.service` if roast was compiled with `obs` feature. This additional feature flag
-> will update the version from a target specfile.
+> will update the version from a target specfile and makes the `--silent` flag do nothing, regardless of what value is passed.
+> Since the `--silent` flag does nothing, the flag is not documented in the service files.
+> All of the service files are assumed to have the executables to be compiled with `obs` flag.
 
-It maps when you run the following commands
+Most of the flags in the service files maps with the output of following commands
+
 - `raw -h`
 - `recomprizz -h`
 - `roast -h`

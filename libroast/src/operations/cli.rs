@@ -125,6 +125,8 @@ pub struct RoastArgs
         action = clap::ArgAction::Set
     )]
     pub ignore_hidden: bool,
+    #[arg(long, short = 'S', help = "Whether to silence the output or not.", default_value_t = true, action = clap::ArgAction::Set)]
+    pub silent: bool,
     #[command(subcommand)]
     pub subcommands: Option<Subcommands>,
 }
@@ -151,6 +153,8 @@ pub struct RawArgs
     pub target: Option<PathBuf>,
     #[arg(long, short = 'd', help = "Output directory of extracted archive.")]
     pub outdir: Option<PathBuf>,
+    #[arg(long, short = 'S', help = "Whether to silence the output or not.", default_value_t = true, action = clap::ArgAction::Set)]
+    pub silent: bool,
     #[command(subcommand)]
     pub subcommands: Option<Subcommands>,
 }
@@ -245,6 +249,8 @@ pub struct RecomprizzArgs
         action = clap::ArgAction::Set
     )]
     pub ignore_hidden: bool,
+    #[arg(long, short = 'S', help = "Whether to silence the output or not.", default_value_t = true, action = clap::ArgAction::Set)]
+    pub silent: bool,
     #[command(subcommand)]
     pub subcommands: Option<Subcommands>,
 }
@@ -369,6 +375,8 @@ pub struct RoastScmArgs
     pub ignore_hidden: bool,
     #[arg(long, short = 'c', help = "Compression to use.", default_value_t)]
     pub compression: Compression,
+    #[arg(long, short = 'S', help = "Whether to silence the output or not.", default_value_t = true, action = clap::ArgAction::Set)]
+    pub silent: bool,
     #[command(subcommand)]
     pub subcommands: Option<Subcommands>,
 }

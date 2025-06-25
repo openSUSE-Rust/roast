@@ -60,8 +60,14 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
     }
     else
     {
-        let start_trace = false;
-        start_tracing();
+        if cfg!(feature = "obs")
+        {
+            start_tracing();
+        }
+        else if !recomprizz_args.silent
+        {
+            start_tracing();
+        }
         info!("📤 Starting Recomprizz.");
         debug!(?recomprizz_args);
         let tmp_binding_for_raw = tempfile::Builder::new()
@@ -83,10 +89,11 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
         let raw_args = RawArgs {
             target: Some(target.clone()),
             outdir: Some(outpath_for_raw.to_path_buf()),
+            silent: recomprizz_args.silent,
             subcommands: None,
         };
 
-        raw_opts(raw_args, start_trace)?;
+        raw_opts(raw_args, false)?;
 
         let file_extension = recomprizz_args.compression.to_extension();
 
@@ -121,8 +128,8 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
                 {
                     crate::common::SupportedFormat::Compressed(compression, path_buf) =>
                     {
-                        let path_buf_filename = path_buf.to_string_lossy();
-                        match path_buf_filename.rsplit_once(&compression.to_extension())
+                        let filename = path_buf.file_name().unwrap_or_default().to_string_lossy();
+                        match filename.rsplit_once(&compression.to_extension())
                         {
                             Some((name, _)) => name.to_string(),
                             None =>
@@ -136,7 +143,7 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
                                     "Not removing old file extension. This will result to an \
                                      undesirable rename of the file."
                                 );
-                                path_buf_filename.to_string()
+                                filename.to_string()
                             }
                         }
                     }
@@ -161,10 +168,11 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
             ignore_git: recomprizz_args.ignore_git,
             ignore_hidden: recomprizz_args.ignore_hidden,
             include: recomprizz_args.include,
+            silent: recomprizz_args.silent,
             subcommands: None,
         };
 
-        roast_opts(&roast_args, start_trace)?;
+        roast_opts(&roast_args, false)?;
 
         info!("📥 Finished Recomprizz.");
     }

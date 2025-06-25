@@ -55,12 +55,14 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_files() -> i
         reproducible: true,
         ignore_git: true,
         ignore_hidden: false,
+        silent: false,
         compression: libroast::common::Compression::default(),
     };
     libroast::operations::roast_scm::roast_scm_opts(None, &r1, false)?;
     let buf1 = read(outdir.join("r1.tar.zst"))?;
     hasher1.update(buf1);
     let r2 = RoastScmArgs {
+        silent: false,
         subcommands: None,
         set_version: None,
         set_name: None,
@@ -105,6 +107,7 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() 
     let outdir1 = tmp_binding1.path();
     let outdir2 = tmp_binding2.path();
     let r1 = RoastScmArgs {
+        silent: false,
         subcommands: None,
         set_version: None,
         set_name: None,
@@ -128,6 +131,7 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() 
     };
     libroast::operations::roast_scm::roast_scm_opts(None, &r1, false)?;
     let r2 = RoastScmArgs {
+        silent: false,
         subcommands: None,
         set_version: None,
         set_name: None,
@@ -187,6 +191,7 @@ fn repo_with_submodules_1() -> io::Result<()>
     let outdir1 = tmp_binding1.path();
     let outdir2 = tmp_binding2.path();
     let r1 = RoastScmArgs {
+        silent: false,
         subcommands: None,
         set_version: None,
         set_name: None,
@@ -210,6 +215,7 @@ fn repo_with_submodules_1() -> io::Result<()>
     };
     libroast::operations::roast_scm::roast_scm_opts(None, &r1, false)?;
     let r2 = RoastScmArgs {
+        silent: false,
         subcommands: None,
         set_version: None,
         set_name: None,
@@ -269,6 +275,7 @@ fn repo_with_submodules_2() -> io::Result<()>
     let outdir1 = tmp_binding1.path();
     let outdir2 = tmp_binding2.path();
     let r1 = RoastScmArgs {
+        silent: false,
         subcommands: None,
         set_version: None,
         set_name: None,
@@ -292,6 +299,7 @@ fn repo_with_submodules_2() -> io::Result<()>
     };
     libroast::operations::roast_scm::roast_scm_opts(None, &r1, false)?;
     let r2 = RoastScmArgs {
+        silent: false,
         subcommands: None,
         set_version: None,
         set_name: None,

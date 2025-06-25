@@ -48,11 +48,17 @@ pub fn raw_opts(raw_args: RawArgs, start_trace: bool) -> io::Result<()>
     }
     else
     {
-        if start_trace
+        if cfg!(feature = "obs")
+        {
+            if start_trace
+            {
+                start_tracing();
+            }
+        }
+        else if !raw_args.silent && start_trace
         {
             start_tracing();
         }
-
         info!("🥩 Starting Raw.");
         debug!(?raw_args);
 

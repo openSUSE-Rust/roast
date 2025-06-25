@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [10.0.1] - 2025-06-25
+
+### Bug Fixes
+
+- `start_trace` should be passed [a267574](https://codeberg.org/Rusty-Geckos/roast/commit/a2675743abb34f0c4c4d3fcbb64686cf0de40ee2)
+
 ## [10.0.0] - 2025-06-25
 
 ### Bug Fixes
@@ -20,6 +26,7 @@ All notable changes to this project will be documented in this file.
 
 ### Miscellaneous Tasks
 
+- V10.0.0 [ba46b2d](https://codeberg.org/Rusty-Geckos/roast/commit/ba46b2dc0703e1ba17b2b723bb71b3bc3b042eb5)
 - Allow `clippy::if_same_then_else`. [11940e1](https://codeberg.org/Rusty-Geckos/roast/commit/11940e1012ebe77055da00363479bc8dd3b6be06)
 
 ### Refactor

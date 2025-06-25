@@ -48,6 +48,7 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_files() -> i
     std::env::set_current_dir(&outdir)?;
     fs::copy(&specfile_path, &outdir.join("obs-service-cargo.spec"))?;
     let r1 = RoastScmArgs {
+        silent: false,
         subcommands: None,
         changesgenerate: true,
         changesauthor: Some("Soc Virnyl Estela".to_string()),
@@ -77,6 +78,7 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_files() -> i
     let buf1 = read(outdir.join("r1.tar.zst"))?;
     hasher1.update(buf1);
     let r2 = RoastScmArgs {
+        silent: false,
         subcommands: None,
         changesgenerate: false,
         changesauthor: None,
@@ -133,6 +135,7 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() 
     fs::copy(&specfile_path, &outdir2.join("obs-service-cargo.spec"))?;
     std::env::set_current_dir(&outdir1)?;
     let r1 = RoastScmArgs {
+        silent: false,
         subcommands: None,
         changesgenerate: false,
         changesauthor: None,
@@ -157,6 +160,7 @@ fn different_revisions_pointing_to_the_same_commit_produce_the_same_filenames() 
     libroast::operations::roast_scm::roast_scm_opts(None, &r1, false)?;
     std::env::set_current_dir(&outdir2)?;
     let r2 = RoastScmArgs {
+        silent: false,
         subcommands: None,
         changesgenerate: false,
         changesauthor: None,

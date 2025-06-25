@@ -257,6 +257,20 @@ It maps when you run the following commands
 - `roast -h`
 - `roast_scm -h`
 
+# Reproducibility
+
+This project does not and will not support reproducible builds as a feature. If
+you submit a PR to enable those features, we may accept it but we will not
+maintain or guarantee that it will continue to work in the future.
+
+> [!NOTE]
+> Although, reproducible or deterministic tarballs are fine to reduce checks,
+> the idea of reproducibility for security is something the authors
+> of this project don't believe in e.g. the Jia Tan incident can't be
+> caught with reproducible builds. Although, the tainted sources can be identified using
+> reproducible / deterministic generation of the tarballs, those tainted sources
+> are **only known AFTER a successful malicious attempt**.
+
 [github]: https://github.com/openSUSE-Rust/roast
 [sourcehut]: https://git.sr.ht/~uncomfy/roast
 [codeberg]: https://codeberg.org/Rusty-Geckos/roast

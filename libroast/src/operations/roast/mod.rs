@@ -270,7 +270,14 @@ pub fn roast_opts(roast_args: &RoastArgs, start_trace: bool) -> io::Result<()>
     }
     else
     {
-        if start_trace
+        if cfg!(feature = "obs")
+        {
+            if start_trace
+            {
+                start_tracing();
+            }
+        }
+        else if !roast_args.silent && start_trace
         {
             start_tracing();
         }

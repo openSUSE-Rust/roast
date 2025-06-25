@@ -60,7 +60,11 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
     }
     else
     {
-        if !recomprizz_args.silent
+        if cfg!(feature = "obs")
+        {
+            start_tracing();
+        }
+        else if !recomprizz_args.silent
         {
             start_tracing();
         }

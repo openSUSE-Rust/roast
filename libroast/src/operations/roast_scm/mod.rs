@@ -1079,7 +1079,11 @@ pub fn roast_scm_opts(
     }
     else
     {
-        if !roast_scm_args.silent && start_trace
+        if cfg!(feature = "obs")
+        {
+            start_tracing();
+        }
+        else if !roast_scm_args.silent && start_trace
         {
             start_tracing();
         }

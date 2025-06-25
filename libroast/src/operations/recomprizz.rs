@@ -60,6 +60,7 @@ pub fn recomprizz_opts(recomprizz_args: RecomprizzArgs) -> io::Result<()>
     }
     else
     {
+        #[allow(clippy::if_same_then_else)] // It's not actually the same
         if cfg!(feature = "obs")
         {
             start_tracing();

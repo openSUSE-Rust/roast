@@ -1082,7 +1082,10 @@ pub fn roast_scm_opts(
         #[allow(clippy::if_same_then_else)] // It's not actually the same
         if cfg!(feature = "obs")
         {
-            start_tracing();
+            if start_trace
+            {
+                start_tracing();
+            }
         }
         else if !roast_scm_args.silent && start_trace
         {

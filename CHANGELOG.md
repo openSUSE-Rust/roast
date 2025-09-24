@@ -2,11 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [10.0.2] - 2025-09-24
+
+### Bug Fixes
+
+- Canonicalize path before stripping prefix [9fbbe45](https://codeberg.org/Rusty-Geckos/roast/commit/9fbbe45e5f57943ab3727b35e0081466d30a8e6f)
+
+### Continuous Integrations
+
+- Rename build.yml to ci.yml [059378f](https://codeberg.org/Rusty-Geckos/roast/commit/059378f6aea097338eae536e41a112d38446985c)
+
+### Other
+
+- Apply clippy fixes [22d2691](https://codeberg.org/Rusty-Geckos/roast/commit/22d269136590c6ffc79a4553294e350473c0c4c3)
+
 ## [10.0.1] - 2025-06-25
 
 ### Bug Fixes
 
 - `start_trace` should be passed [a267574](https://codeberg.org/Rusty-Geckos/roast/commit/a2675743abb34f0c4c4d3fcbb64686cf0de40ee2)
+
+### Miscellaneous Tasks
+
+- V10.0.1 [ff1d6d0](https://codeberg.org/Rusty-Geckos/roast/commit/ff1d6d0044899f8e46090d0900ae9e59c56b24d2)
 
 ## [10.0.0] - 2025-06-25
 
@@ -836,5 +854,7 @@ All notable changes to this project will be documented in this file.
 ### Features
 
 - Add preserve-root and properly handle extra files using tempfile crate [1dc9554](https://codeberg.org/Rusty-Geckos/roast/commit/1dc95548bd871bd296aecb91317e0b9c00690a5a)
+
+## [1.0.0] - 2024-09-07
 
 

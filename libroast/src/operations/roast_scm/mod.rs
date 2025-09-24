@@ -446,44 +446,42 @@ fn get_number_of_commits_since(
     if let Some((_prefix, long_name)) = describe_string.split_once("heads/")
     {
         if let Some((the_rest, _g_hash)) = long_name.rsplit_once("-")
+            && let Some((tag_, number_string)) = the_rest.rsplit_once("-")
         {
-            if let Some((tag_, number_string)) = the_rest.rsplit_once("-")
+            let tag_or_version = tag_.to_string();
+            let number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?;
+            if number_of_refs_since_commit == 0 || the_rest.trim().is_empty()
             {
-                let tag_or_version = tag_.to_string();
-                let number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
+                local_repository.tag_delete(&tag_or_version).map_err(|err| {
                     error!(?err);
                     io::Error::other(err)
                 })?;
-                if number_of_refs_since_commit == 0 || the_rest.trim().is_empty()
+                let new_describe_string = describe_revision(commit.as_object())?;
+                if let Some((the_rest, _g_hash)) = new_describe_string.rsplit_once("-")
                 {
-                    local_repository.tag_delete(&tag_or_version).map_err(|err| {
-                        error!(?err);
-                        io::Error::other(err)
-                    })?;
-                    let new_describe_string = describe_revision(commit.as_object())?;
-                    if let Some((the_rest, _g_hash)) = new_describe_string.rsplit_once("-")
+                    if let Some((_the_rest, number_string)) = the_rest.rsplit_once("-")
                     {
-                        if let Some((_the_rest, number_string)) = the_rest.rsplit_once("-")
-                        {
-                            let number_of_refs_since_commit =
-                                number_string.parse::<u32>().map_err(|err| {
-                                    error!(?err);
-                                    io::Error::other(err)
-                                })?;
-                            return Ok(number_of_refs_since_commit);
-                        }
-                        else
-                        {
-                            return count_commit_history_since_ref(commit, local_repository);
-                        }
+                        let number_of_refs_since_commit =
+                            number_string.parse::<u32>().map_err(|err| {
+                                error!(?err);
+                                io::Error::other(err)
+                            })?;
+                        return Ok(number_of_refs_since_commit);
                     }
                     else
                     {
                         return count_commit_history_since_ref(commit, local_repository);
                     }
                 }
-                return Ok(number_of_refs_since_commit);
+                else
+                {
+                    return count_commit_history_since_ref(commit, local_repository);
+                }
             }
+            return Ok(number_of_refs_since_commit);
         }
     }
     else if let Some((the_rest, _g_hash)) = describe_string.rsplit_once("-")
@@ -552,15 +550,13 @@ fn changelog_details_generate(
     if let Some((_prefix, long_name)) = describe_string.split_once("heads/")
     {
         if let Some((the_rest, _g_hash)) = long_name.rsplit_once("-")
+            && let Some((tag_, number_string)) = the_rest.rsplit_once("-")
         {
-            if let Some((tag_, number_string)) = the_rest.rsplit_once("-")
-            {
-                tag_or_version = tag_.to_string();
-                number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
-                    error!(?err);
-                    io::Error::other(err)
-                })?;
-            }
+            tag_or_version = tag_.to_string();
+            number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?;
         }
     }
     else if let Some((the_rest, _g_hash)) = describe_string.rsplit_once("-")

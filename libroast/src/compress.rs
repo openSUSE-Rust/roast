@@ -53,9 +53,11 @@ fn add_path_to_archive<T: Write>(
     reproducible: bool,
 ) -> io::Result<()>
 {
+    let additional_path = additional_path.canonicalize().unwrap_or(additional_path.to_path_buf());
+    let target_dir = target_dir.canonicalize().unwrap_or(target_dir.to_path_buf());
     let mut h = if reproducible
     {
-        create_deterministic_header(additional_path)?
+        create_deterministic_header(&additional_path)?
     }
     else
     {
@@ -66,7 +68,7 @@ fn add_path_to_archive<T: Write>(
     };
     // Each path is relative to prjdir. So we can split the
     // prjdir prefix to get the relative archive path.
-    let subpath = additional_path.strip_prefix(target_dir).map_err(|err| {
+    let subpath = &additional_path.strip_prefix(&target_dir).map_err(|err| {
         error!(
             ?err,
             "THIS IS A BUG. Unable to proceed. {} is not within {}.",
@@ -78,7 +80,7 @@ fn add_path_to_archive<T: Write>(
 
     if additional_path.is_file()
     {
-        let src = std::fs::File::open(additional_path).map(std::io::BufReader::new)?;
+        let src = std::fs::File::open(&additional_path).map(std::io::BufReader::new)?;
         builder.append_data(&mut h, subpath, src)?;
     }
     else if additional_path.is_symlink()

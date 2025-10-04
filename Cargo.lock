@@ -703,7 +703,7 @@ dependencies = [
 
 [[package]]
 name = "libroast"
-version = "10.0.2"
+version = "10.1.0"
 dependencies = [
  "bzip2",
  "clap",
@@ -1045,7 +1045,7 @@ checksum = "caf4aa5b0f434c91fe5c7f1ecb6a5ece2130b02ad2a590589dda5146df959001"
 
 [[package]]
 name = "roast-cli"
-version = "10.0.2"
+version = "10.1.0"
 dependencies = [
  "clap",
  "libroast",

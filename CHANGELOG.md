@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [10.1.0] - 2025-10-04
+
+### Bug Fixes
+
+- Replace unwrap with ? for better error handling in test functions [64195cd](https://codeberg.org/Rusty-Geckos/roast/commit/64195cd5a3a393b7764496ddbe1713cf8e8bb2fe)
+- Simplify check for empty processed paths in get_all_files function [ebe27a0](https://codeberg.org/Rusty-Geckos/roast/commit/ebe27a03ec651280e6df7364a73d307473794b10)
+- Ensure workdir is added to updated_paths if no processed paths are found [4780ab7](https://codeberg.org/Rusty-Geckos/roast/commit/4780ab7fcf9911a8033193560cb1b318fdfebdc8)
+
+### Miscellaneous Tasks
+
+- Add .vscode/ to .gitignore [19656ec](https://codeberg.org/Rusty-Geckos/roast/commit/19656ec73bc517ddd594d9d8278d1eaa2f80a603)
+
+### Other
+
+- Run cargo +nightly fmt [c3b224d](https://codeberg.org/Rusty-Geckos/roast/commit/c3b224dc5d15c35c20a73b13bfc04df2e6e1035b)
+
+### Styling
+
+- Run cargo format [6704064](https://codeberg.org/Rusty-Geckos/roast/commit/67040641221d3947c105ca4ac33be06a9c9cc003)
+- Apply clippy single component path import fix [68e6426](https://codeberg.org/Rusty-Geckos/roast/commit/68e6426a8176e73060d9118e777549c2fea53ee4)
+- Format imports for better readability in test_utils.rs [2ab3acd](https://codeberg.org/Rusty-Geckos/roast/commit/2ab3acd15bba9e598fa711ce32793460ec3699ca)
+
+### Testing
+
+- Add unit tests for directory copying functionality [cb6aef8](https://codeberg.org/Rusty-Geckos/roast/commit/cb6aef82d231e6e96613dc895ee123fda32033ec)
+
 ## [10.0.2] - 2025-09-24
 
 ### Bug Fixes
@@ -11,6 +37,10 @@ All notable changes to this project will be documented in this file.
 ### Continuous Integrations
 
 - Rename build.yml to ci.yml [059378f](https://codeberg.org/Rusty-Geckos/roast/commit/059378f6aea097338eae536e41a112d38446985c)
+
+### Miscellaneous Tasks
+
+- Bump to version 10.0.2 [8b863cc](https://codeberg.org/Rusty-Geckos/roast/commit/8b863ccbec6dd335ad3554e46403ef252cba0a1a)
 
 ### Other
 

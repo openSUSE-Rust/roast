@@ -1,5 +1,10 @@
 # Roast
 
+`roast` is a set of commandline utilities to create or extract tar archives.
+It's focus is ease of use and very clear commandline flag and descriptions. It
+also has a library called [libroast](./libroast), which you can use to integrate
+with your software tools.
+
 Read-only mirrors are available on [GitHub][github] and [sourcehut][sourcehut].
 
 The main repository is on [codeberg][codeberg], which is where the issue tracker is found and where contributions are accepted.
@@ -259,6 +264,64 @@ Most of the flags in the service files maps with the output of following command
 - `recomprizz -h`
 - `roast -h`
 - `roast_scm -h`
+
+
+# Compression Ratios
+
+> [!IMPORTANT]
+> The filesystem used here is **apfs**. I ran the following in an M2 Macbook Air
+> with 8GB of RAM and 512GB of storage.
+
+Let's take for example, a "vendor" directory containing files and subdirectories with a total size 290MB.
+
+We got this size by doing the following inside the project directory.
+
+```bash
+cargo vendor
+du -hs vendor
+```
+
+Then we ran the following commands to produce different kinds of tarballs.
+
+```bash
+roast -S false -t vendor -f vendor.tar
+roast -S false -t vendor -f vendor.tar.zst
+roast -S false -t vendor -f vendor.tar.xz
+roast -S false -t vendor -f vendor.tar.gz
+roast -S false -t vendor -f vendor.tar.bz
+```
+
+Running this command
+
+```bash
+du -sh vendor.tar*
+```
+
+will give us the resulting compressed sizes for the following compression algorithms.
+
+```
+281M    vendor.tar
+ 31M    vendor.tar.bz
+ 40M    vendor.tar.gz
+ 23M    vendor.tar.xz
+ 23M    vendor.tar.zst
+```
+
+Hence, here are the following compression ratios calculated
+from the sizes.
+
+- No compression: **1.03:1**
+- bzip2: **9.35:1**
+- gzip: **7.25:1**
+- xz: **12.61:1**
+- zstd: **12.61:1**
+
+Therefore, to get the **best compressed size**, you either have to select **xz** or **zstd**. Other
+compressions are also decent.
+
+> [!NOTE]
+> Those numbers are not based on real statistic so the best way to calculate the predicted compressed
+> size is to take a chunk of data as a stream and calculate the size of the bytes during roasting.
 
 # Reproducibility
 

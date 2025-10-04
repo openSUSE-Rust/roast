@@ -1,7 +1,7 @@
 # Roast
 
 `roast` is a set of commandline utilities to create or extract tar archives.
-It's focus is ease of use and very clear commandline flag and descriptions. It
+Its focus is ease of use and very clear commandline flag and descriptions. It
 also has a library called [libroast](./libroast), which you can use to integrate
 with your software tools.
 

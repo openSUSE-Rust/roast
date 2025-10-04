@@ -62,6 +62,11 @@ fn get_all_files(updated_paths: &mut Vec<PathBuf>, workdir: &Path) -> io::Result
                     != workdir.canonicalize().unwrap_or(workdir.to_path_buf())
             })
             .collect();
+
+        if processed_paths.len() == 0
+        {
+            updated_paths.push(workdir.canonicalize().unwrap_or(workdir.to_path_buf()))
+        }
         processed_paths.into_iter().try_for_each(|f| -> io::Result<()> {
             if f.is_dir()
             {

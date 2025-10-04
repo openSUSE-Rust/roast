@@ -1,25 +1,35 @@
+use libroast::operations::{
+    cli::RoastArgs,
+    roast::roast_opts,
+};
 use rayon::prelude::*;
 use sha3::{
     Digest,
     Keccak256,
 };
 use std::{
-    fs::read,
+    env,
+    fs::{
+        create_dir_all,
+        read,
+        File,
+    },
     io,
     path::{
         Path,
         PathBuf,
     },
 };
+use tar::Archive;
 use test_log::test;
 #[allow(unused_imports)]
 use tracing::{
-    Level,
     debug,
     error,
     info,
     trace,
     warn,
+    Level,
 };
 
 const MANIFEST_DIR: &str = std::env!("CARGO_MANIFEST_DIR", "No such manifest dir");
@@ -239,5 +249,58 @@ fn repro_vanilla_tarball() -> io::Result<()>
     hasher2.update(buf2);
     let hash2 = hasher2.finalize();
     assert_eq!(hash1, hash2);
+    Ok(())
+}
+
+#[test]
+fn a_tree_of_empty_dirs_is_not_empty() -> io::Result<()>
+{
+    let tmp = tempfile::tempdir()?;
+    let tmp_path = tmp.path();
+    let empty_dirs: Vec<PathBuf> = vec![
+        tmp_path.join("1/z/e/1/4"),
+        tmp_path.join("2/b/a"),
+        tmp_path.join("1/a/d/e/f"),
+        tmp_path.join("c/e/f/d"),
+    ];
+
+    for em in &empty_dirs
+    {
+        create_dir_all(em)?;
+    }
+
+    let outfile = env::temp_dir().join("tree.tar");
+
+    let roast_args = RoastArgs {
+        target: Some(tmp_path.to_path_buf()),
+        include: None,
+        exclude: None,
+        additional_paths: None,
+        outfile: Some(outfile.to_path_buf()),
+        outdir: None,
+        preserve_root: false,
+        reproducible: true,
+        ignore_git: true,
+        ignore_hidden: true,
+        silent: false,
+        subcommands: None,
+    };
+
+    roast_opts(&roast_args, false)?;
+
+    let file = File::open(outfile)?;
+
+    let mut a = Archive::new(&file);
+
+    for file in a.entries()?
+    {
+        let file = file.unwrap();
+        info!("{:?}", file.header().path());
+        info!("{:?}", file.header().size());
+
+        let filepath = file.header().path()?.to_path_buf();
+        assert!(empty_dirs.contains(&tmp_path.join(&filepath)))
+    }
+
     Ok(())
 }

@@ -45,6 +45,40 @@ cargo install roast-cli
 Both commands pull from source. The only difference is that the first one
 obviously relies on git.
 
+# Quick Start
+
+**Compressing a file**
+
+Determined by file extension
+
+```bash
+roast -t directory -f file.tar.zst
+```
+
+Invalid extensions won't work. This command will fail
+
+```bash
+roast -t directory -f file.zst
+```
+
+**Recompressing** from a file to another file. This command will produce `file.tar.xz`
+
+```bash
+recomprizz -t file.tar.zst -c xz
+```
+
+**Extracting**
+
+```bash
+raw -t file.tar.zst
+```
+
+with custom directory
+
+```bash
+raw -t file.tar.zst -d new_directory
+```
+
 ## Roast - How it works
 
 There are three path behaviours in Roast.

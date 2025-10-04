@@ -1,20 +1,23 @@
 use libroast::utils;
 use std::{
-    env, fs::{
+    env,
+    fs::{
         read_dir,
         remove_dir,
-    }, io, path::Path
+    },
+    io,
+    path::Path,
 };
 use tempfile;
 use test_log::test;
 #[allow(unused_imports)]
 use tracing::{
+    Level,
     debug,
     error,
     info,
     trace,
     warn,
-    Level,
 };
 
 #[test]

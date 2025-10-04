@@ -10,9 +10,9 @@ use sha3::{
 use std::{
     env,
     fs::{
+        File,
         create_dir_all,
         read,
-        File,
     },
     io,
     path::{
@@ -24,12 +24,12 @@ use tar::Archive;
 use test_log::test;
 #[allow(unused_imports)]
 use tracing::{
+    Level,
     debug,
     error,
     info,
     trace,
     warn,
-    Level,
 };
 
 const MANIFEST_DIR: &str = std::env!("CARGO_MANIFEST_DIR", "No such manifest dir");

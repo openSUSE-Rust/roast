@@ -294,7 +294,7 @@ fn a_tree_of_empty_dirs_is_not_empty() -> io::Result<()>
 
     for file in a.entries()?
     {
-        let file = file.unwrap();
+        let file = file?;
         info!("{:?}", file.header().path());
         info!("{:?}", file.header().size());
 

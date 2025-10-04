@@ -1,51 +1,49 @@
 use libroast::utils;
 use std::{
-    env,
-    fs::{
+    env, fs::{
         read_dir,
         remove_dir,
-    },
-    path::Path,
+    }, io, path::Path
 };
 use tempfile;
 use test_log::test;
 #[allow(unused_imports)]
 use tracing::{
-    Level,
     debug,
     error,
     info,
     trace,
     warn,
+    Level,
 };
 
 #[test]
-fn test_copy_empty_dir()
+fn test_copy_empty_dir() -> io::Result<()>
 {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = tempfile::tempdir()?;
     assert!(dir.path().exists());
 
     // The directory will be deleted when `dir` goes out of scope
     let dir_as_path = dir.path();
 
-    for el in read_dir(dir_as_path).unwrap().flatten()
+    for el in read_dir(dir_as_path)?.flatten()
     {
         info!("{}", el.path().display())
     }
 
-    assert!(read_dir(dir_as_path).unwrap().flatten().count() == 0);
+    assert!(read_dir(dir_as_path)?.flatten().count() == 0);
 
     let new_dir = env::temp_dir().join("destination");
-    utils::copy_dir_all(dir_as_path, &new_dir).unwrap();
+    utils::copy_dir_all(dir_as_path, &new_dir)?;
     assert!(new_dir.is_dir());
-    remove_dir(new_dir).unwrap()
+    remove_dir(new_dir)
 }
 
 #[test]
-fn test_copy_project_to_another_temp_dir()
+fn test_copy_project_to_another_temp_dir() -> io::Result<()>
 {
     const MANIFEST_DIR: &str = std::env!("CARGO_MANIFEST_DIR", "No such manifest dir");
-    let dir = tempfile::tempdir().unwrap();
+    let dir = tempfile::tempdir()?;
     assert!(dir.path().exists());
 
     let dir_as_path = dir.path();
@@ -54,8 +52,9 @@ fn test_copy_project_to_another_temp_dir()
 
     let libroast_dir = Path::new(MANIFEST_DIR);
 
-    utils::copy_dir_all(libroast_dir, dir_as_path).unwrap();
+    utils::copy_dir_all(libroast_dir, dir_as_path)?;
 
-    let ls = read_dir(dir_as_path).unwrap().flatten();
+    let ls = read_dir(dir_as_path)?.flatten();
     assert!(ls.count() > 0);
+    Ok(())
 }

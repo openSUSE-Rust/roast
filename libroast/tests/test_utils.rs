@@ -8,7 +8,7 @@ use std::{
     io,
     path::Path,
 };
-use tempfile;
+
 use test_log::test;
 #[allow(unused_imports)]
 use tracing::{

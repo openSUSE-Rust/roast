@@ -63,7 +63,7 @@ fn get_all_files(updated_paths: &mut Vec<PathBuf>, workdir: &Path) -> io::Result
             })
             .collect();
 
-        if processed_paths.len() == 0
+        if processed_paths.is_empty()
         {
             updated_paths.push(workdir.canonicalize().unwrap_or(workdir.to_path_buf()))
         }

@@ -557,6 +557,36 @@ fn get_commit_from_roast_info<'a>(
     Err(io::Error::other("Cannot split string to get info"))
 }
 
+fn get_number_of_changes_from_describe_string(describe_string: &str) -> io::Result<(String, u32)>
+{
+    if let Some((_prefix, long_name)) = describe_string.split_once("heads/")
+    {
+        if let Some((the_rest, _g_hash)) = long_name.rsplit_once("-")
+            && let Some((tag_, number_string)) = the_rest.rsplit_once("-")
+        {
+            return Ok((
+                tag_.to_string(),
+                number_string.parse::<u32>().map_err(|err| {
+                    error!(?err);
+                    io::Error::other(err)
+                })?,
+            ));
+        }
+    }
+    else if let Some((the_rest, _g_hash)) = describe_string.rsplit_once("-")
+        && let Some((tag_, number_string)) = the_rest.rsplit_once("-")
+    {
+        return Ok((
+            tag_.to_string(),
+            number_string.parse::<u32>().map_err(|err| {
+                error!(?err);
+                io::Error::other(err)
+            })?,
+        ));
+    }
+    Err(io::Error::other("Number of changes is 0"))
+}
+
 fn changelog_details_generate(
     local_repository: &Repository,
     git_object: &Object,
@@ -564,13 +594,38 @@ fn changelog_details_generate(
 {
     let mut bulk_commit_message = String::new();
     let mut tag_or_version: String = String::new();
-    let mut number_of_refs_since_commit: u32 = 0;
+    let number_of_refs_since_commit: u32;
 
     let roast_info_path = std::env::current_dir()?.join("roast_scm.info");
 
     let processed_git_commit = if roast_info_path.is_file() && cfg!(feature = "obs")
     {
-        get_commit_from_roast_info(local_repository, &roast_info_path)?
+        let commit_from_roast_info =
+            get_commit_from_roast_info(local_repository, &roast_info_path)?;
+        let from_this_commit = get_commit(git_object)?;
+        let number_from_roast_info = match get_number_of_changes_from_describe_string(
+            &describe_revision(commit_from_roast_info.as_object())?,
+        )
+        {
+            Ok((_, v)) => v,
+            Err(_err) => 0,
+        };
+        let number_from_this_commit = match get_number_of_changes_from_describe_string(
+            &describe_revision(from_this_commit.as_object())?,
+        )
+        {
+            Ok((_, v)) => v,
+            Err(_err) => 0,
+        };
+
+        if number_from_this_commit >= number_from_roast_info
+        {
+            from_this_commit
+        }
+        else
+        {
+            commit_from_roast_info
+        }
     }
     else
     {
@@ -582,33 +637,37 @@ fn changelog_details_generate(
     info!(?describe_string, "Result of `git describe`: ");
     let number_of_changes_for_bulk_commit_message_processing =
         get_number_of_commits_since(local_repository, &describe_string, &processed_git_commit)?;
-    if let Some((_prefix, long_name)) = describe_string.split_once("heads/")
+
+    if let Ok((tag_, num)) = get_number_of_changes_from_describe_string(&describe_string)
     {
-        if let Some((the_rest, _g_hash)) = long_name.rsplit_once("-")
-            && let Some((tag_, number_string)) = the_rest.rsplit_once("-")
-        {
-            tag_or_version = tag_.to_string();
-            number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
-                error!(?err);
-                io::Error::other(err)
-            })?;
-        }
-    }
-    else if let Some((the_rest, _g_hash)) = describe_string.rsplit_once("-")
-    {
-        if let Some((tag_, number_string)) = the_rest.rsplit_once("-")
-        {
-            tag_or_version = tag_.to_string();
-            number_of_refs_since_commit = number_string.parse::<u32>().map_err(|err| {
-                error!(?err);
-                io::Error::other(err)
-            })?;
-        }
+        tag_or_version = tag_;
+        number_of_refs_since_commit = num;
     }
     else
     {
         number_of_refs_since_commit = number_of_changes_for_bulk_commit_message_processing;
     }
+    // if let Some((_prefix, long_name)) = describe_string.split_once("heads/") {
+    //     if let Some((the_rest, _g_hash)) = long_name.rsplit_once("-")
+    //         && let Some((tag_, number_string)) = the_rest.rsplit_once("-")
+    //     {
+    //         tag_or_version = tag_.to_string();
+    //         number_of_refs_since_commit =
+    // number_string.parse::<u32>().map_err(|err| {             error!(?err);
+    //             io::Error::other(err)
+    //         })?;
+    //     }
+    // } else if let Some((the_rest, _g_hash)) = describe_string.rsplit_once("-") {
+    //     if let Some((tag_, number_string)) = the_rest.rsplit_once("-") {
+    //         tag_or_version = tag_.to_string();
+    //         number_of_refs_since_commit =
+    // number_string.parse::<u32>().map_err(|err| {             error!(?err);
+    //             io::Error::other(err)
+    //         })?;
+    //     }
+    // } else {
+    //     number_of_refs_since_commit =
+    // number_of_changes_for_bulk_commit_message_processing; }
 
     debug!(?processed_git_commit);
     debug!(?number_of_changes_for_bulk_commit_message_processing);

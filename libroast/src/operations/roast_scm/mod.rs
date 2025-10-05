@@ -1084,10 +1084,9 @@ fn set_version_in_specfile(
     Ok(())
 }
 
-fn produce_log_info(commit_hash: &str) -> io::Result<()>
+fn produce_roast_info(outdir: &Path, commit_hash: &str) -> io::Result<()>
 {
-    let cur_dir = std::env::current_dir()?;
-    let output_file = cur_dir.join("roast_scm.info");
+    let output_file = outdir.join("roast_scm.info");
     let content = format!(r#"commit: {}"#, commit_hash);
     if output_file.is_file()
     {
@@ -1248,7 +1247,10 @@ pub fn roast_scm_opts(
                 if cfg!(feature = "obs")
                 {
                     set_version_in_specfile(&roast_scm_args.set_version, &final_revision_format)?;
-                    produce_log_info(&changelog_details.commit_hash)?;
+                    produce_roast_info(
+                        &roast_scm_args.outdir.clone().unwrap_or(std::env::current_dir()?),
+                        &changelog_details.commit_hash,
+                    )?;
                 }
 
                 if !roast_scm_args.is_temporary

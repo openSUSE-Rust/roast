@@ -1,0 +1,27 @@
+matrix:
+  ARCH:
+    - linux/amd64
+
+when:
+  - event: [push, tag, pull_request]
+    branch: [main]
+    path:
+      include: ['.woodpecker/*.yaml', '*.woodpecker/*.yml', "**/*.rs"]
+      exclude: ['*.md', 'docs/**', '*.service', 'advocacy/**']
+
+labels:
+  platform: ${ARCH}
+
+steps:
+  tests:
+    image: opensuse/leap
+    commands:
+      - zypper --non-interactive install rustup openssl-devel libzstd-devel tar gzip
+      - rustup default stable
+      - rustup install nightly
+      - rustup update
+      - cargo update
+      - cargo test --release -- --test-threads=1
+      - cargo test -F obs --test obs_scm --release -- --test-threads=1  # Tests are separated here because apparently, envs are shared between threads.
+
+runs_on: [ success, failure ]

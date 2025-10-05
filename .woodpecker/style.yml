@@ -1,0 +1,27 @@
+matrix:
+  ARCH:
+    - linux/amd64
+
+when:
+  - event: [push, tag, pull_request]
+    branch: [main]
+    path:
+      include: ['.woodpecker/*.yaml', '*.woodpecker/*.yml', "**/*.rs"]
+      exclude: ['*.md', 'docs/**', '*.service', 'advocacy/**']
+
+labels:
+  platform: ${ARCH}
+
+steps:
+  style:
+    image: opensuse/leap
+    commands:
+      - zypper --non-interactive install rustup openssl-devel libzstd-devel tar gzip
+      - rustup default stable
+      - rustup install nightly
+      - rustup update
+      - cargo update
+      - cargo +nightly fmt -- --check
+      - cargo clippy --tests
+
+runs_on: [ success, failure ]

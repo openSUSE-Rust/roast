@@ -24,7 +24,8 @@ Create archive tarballs and roast them!
 
 # How to install the binaries
 
-Roast contains to binaries
+Roast contains the following binaries:
+
 - `raw`
 - `recomprizz`
 - `roast`
@@ -33,11 +34,13 @@ Roast contains to binaries
 ## Cargo
 
 **From source**:
+
 ```bash
 cargo install --git https://github.com/openSUSE-Rust/roast
 ```
 
 **From crates.io**:
+
 ```bash
 cargo install roast-cli
 ```
@@ -123,7 +126,7 @@ remote repository. It uses `roast` under the hood.
 
 > [!NOTE]
 > The naming mechanism follows a certain logic:
-> - get the last segment of the git URL e.g. <https://codeberg.org/Rusty-Geckos/roast.git>'s last segment is "roast". `.git` will be removed.
+> - get the last segment of the git URL e.g. <https://codeberg.org/Rusty-Geckos/roast.git>'s last segment is "roast". `.git` is removed.
 > - get the recent git tag if there is, otherwise, get the number of commits since revision. Format it to follow <https://en.opensuse.org/openSUSE:Package_versioning_guidelines>.
 >
 > **The explanation is done in reverse as you read further below so you can easily grasp the logic**.

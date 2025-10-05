@@ -24,10 +24,12 @@ To install, run the following command.
 cargo install roast-cli
 ```
 
-This will install three binaries:
+This will install the following binaries:
 - `roast`
 - `raw`
 - `recomprizz`
+- `roast_scm`  (same as the last one)
+- `roast-scm`
 
 [github]: https://github.com/openSUSE-Rust/roast
 [sourcehut]: https://git.sr.ht/~uncomfy/roast

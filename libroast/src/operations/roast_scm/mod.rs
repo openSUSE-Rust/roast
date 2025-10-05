@@ -30,6 +30,7 @@ use git2::{
     Commit,
     FetchOptions,
     Object,
+    Oid,
     Repository,
     Submodule,
     SubmoduleUpdateOptions,
@@ -37,6 +38,7 @@ use git2::{
 };
 use regex::Regex;
 use std::{
+    fs::read_to_string,
     io::{
         self,
     },
@@ -432,8 +434,8 @@ fn get_commit<'a>(git_object: &'a Object<'a>) -> io::Result<Commit<'a>>
 
 fn get_number_of_commits_since(
     local_repository: &Repository,
-    describe_string: &str,
-    commit: &Commit,
+    from_this_describe_string: &str,
+    to_this_commit: &Commit,
 ) -> io::Result<u32>
 {
     // NOTE: Let's process if the describe string has a tag.
@@ -443,7 +445,7 @@ fn get_number_of_commits_since(
     // of commits since tag>-g<current commit hash of current commit>`
     // NOTE: Some users pass a hash, and the git object won't be considered as a
     // tag. so we have to split the `describe_string`.
-    if let Some((_prefix, long_name)) = describe_string.split_once("heads/")
+    if let Some((_prefix, long_name)) = from_this_describe_string.split_once("heads/")
     {
         if let Some((the_rest, _g_hash)) = long_name.rsplit_once("-")
             && let Some((tag_, number_string)) = the_rest.rsplit_once("-")
@@ -459,7 +461,7 @@ fn get_number_of_commits_since(
                     error!(?err);
                     io::Error::other(err)
                 })?;
-                let new_describe_string = describe_revision(commit.as_object())?;
+                let new_describe_string = describe_revision(to_this_commit.as_object())?;
                 if let Some((the_rest, _g_hash)) = new_describe_string.rsplit_once("-")
                 {
                     if let Some((_the_rest, number_string)) = the_rest.rsplit_once("-")
@@ -473,18 +475,18 @@ fn get_number_of_commits_since(
                     }
                     else
                     {
-                        return count_commit_history_since_ref(commit, local_repository);
+                        return count_commit_history_since_ref(to_this_commit, local_repository);
                     }
                 }
                 else
                 {
-                    return count_commit_history_since_ref(commit, local_repository);
+                    return count_commit_history_since_ref(to_this_commit, local_repository);
                 }
             }
             return Ok(number_of_refs_since_commit);
         }
     }
-    else if let Some((the_rest, _g_hash)) = describe_string.rsplit_once("-")
+    else if let Some((the_rest, _g_hash)) = from_this_describe_string.rsplit_once("-")
     {
         if let Some((tag_, number_string)) = the_rest.rsplit_once("-")
         {
@@ -500,7 +502,7 @@ fn get_number_of_commits_since(
                     error!("Error happened here?");
                     io::Error::other(err)
                 })?;
-                let new_describe_string = describe_revision(commit.as_object())?;
+                let new_describe_string = describe_revision(to_this_commit.as_object())?;
                 if let Some((the_rest, _g_hash)) = new_describe_string.rsplit_once("-")
                 {
                     if let Some((_the_rest, number_string)) = the_rest.rsplit_once("-")
@@ -514,12 +516,12 @@ fn get_number_of_commits_since(
                     }
                     else
                     {
-                        return count_commit_history_since_ref(commit, local_repository);
+                        return count_commit_history_since_ref(to_this_commit, local_repository);
                     }
                 }
                 else
                 {
-                    return count_commit_history_since_ref(commit, local_repository);
+                    return count_commit_history_since_ref(to_this_commit, local_repository);
                 }
             }
             return Ok(number_of_refs_since_commit);
@@ -527,9 +529,32 @@ fn get_number_of_commits_since(
     }
     else
     {
-        return count_commit_history_since_ref(commit, local_repository);
+        return count_commit_history_since_ref(to_this_commit, local_repository);
     }
     Err(io::Error::other("Cannot process number of commit history."))
+}
+
+fn get_commit_from_roast_info<'a>(
+    local_repository: &'a Repository,
+    roast_info_path: &Path,
+) -> io::Result<Commit<'a>>
+{
+    let content = read_to_string(roast_info_path)?;
+    if let Some((_head, commit_hash)) = content.trim().split_once(" ")
+    {
+        let oid = Oid::from_str(commit_hash).map_err(|err| {
+            error!(?err);
+            io::Error::other(err)
+        })?;
+
+        let commit = local_repository.find_commit(oid).map_err(|err| {
+            error!(?err);
+            io::Error::other(err)
+        })?;
+
+        return Ok(commit);
+    }
+    Err(io::Error::other("Cannot split string to get info"))
 }
 
 fn changelog_details_generate(
@@ -541,7 +566,17 @@ fn changelog_details_generate(
     let mut tag_or_version: String = String::new();
     let mut number_of_refs_since_commit: u32 = 0;
 
-    let processed_git_commit = get_commit(git_object)?;
+    let roast_info_path = std::env::current_dir()?.join("roast_scm.info");
+
+    let processed_git_commit = if roast_info_path.is_file() && cfg!(feature = "obs")
+    {
+        get_commit_from_roast_info(local_repository, &roast_info_path)?
+    }
+    else
+    {
+        get_commit(git_object)?
+    };
+
     let commit_hash = format!("{}", processed_git_commit.id());
     let describe_string = describe_revision(git_object)?;
     info!(?describe_string, "Result of `git describe`: ");
@@ -1049,6 +1084,21 @@ fn set_version_in_specfile(
     Ok(())
 }
 
+fn produce_log_info(commit_hash: &str) -> io::Result<()>
+{
+    let cur_dir = std::env::current_dir()?;
+    let output_file = cur_dir.join("roast_scm.info");
+    let content = format!(r#"commit: {}"#, commit_hash);
+    if output_file.is_file()
+    {
+        warn!("Overwriting {}", output_file.display());
+    }
+    std::fs::write(output_file, content).inspect_err(|err| {
+        error!(?err);
+    })?;
+    Ok(())
+}
+
 /// Creates a tarball from a given URL. URL must be a valid remote git
 /// repository.
 ///
@@ -1198,6 +1248,7 @@ pub fn roast_scm_opts(
                 if cfg!(feature = "obs")
                 {
                     set_version_in_specfile(&roast_scm_args.set_version, &final_revision_format)?;
+                    produce_log_info(&changelog_details.commit_hash)?;
                 }
 
                 if !roast_scm_args.is_temporary
